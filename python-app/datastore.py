@@ -1,7 +1,7 @@
 import json
 import uuid
 import wsgiref
-from google.appengine.ext import webapp, db
+from google.appengine.ext import webapp, db, ndb
 import webapp2
 
 class Project(db.Model):
@@ -15,6 +15,12 @@ class Module(db.Model):
   id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
   description = db.StringProperty(required=True)
+
+class Counter(db.Model):
+  counter = db.IntegerProperty(required=True)
+
+class NDBCounter(ndb.Model):
+  counter = ndb.IntegerProperty(required=True)
 
 def serialize(entity):
   dict = {'id' : entity.id, 'name': entity.name, 'description': entity.description}
@@ -202,6 +208,118 @@ class ProjectFilterHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
+class TransactionHandler(webapp2.RequestHandler):
+  def increment_counter(self, key, amount):
+    counter = Counter.get_by_key_name(key)
+    if counter is None:
+      counter = Counter(key_name=key, counter=0)
+
+    for i in range(0,amount):
+      counter.counter += 1
+      if counter.counter == 5:
+        raise Exception('Mock Exception')
+      counter.put()
+
+  def increment_counters(self, key, amount):
+    backup = key + '_backup'
+    counter1 = Counter.get_by_key_name(key)
+    counter2 = Counter.get_by_key_name(backup)
+    if counter1 is None:
+      counter1 = Counter(key_name=key, counter=0)
+      counter2 = Counter(key_name=backup, counter=0)
+
+    for i in range(0,amount):
+      counter1.counter += 1
+      counter2.counter += 1
+      if counter1.counter == 5:
+        raise Exception('Mock Exception')
+      counter1.put()
+      counter2.put()
+
+  def get(self):
+    key = self.request.get('key')
+    amount = self.request.get('amount')
+    xg = self.request.get('xg')
+    if xg is not None and xg == 'true':
+      try:
+        xg_on = db.create_transaction_options(xg=True)
+        db.run_in_transaction_options(xg_on, self.increment_counters, key, int(amount))
+        counter1 = Counter.get_by_key_name(key)
+        counter2 = Counter.get_by_key_name(key + '_backup')
+        status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
+      except Exception as e:
+        counter1 = Counter.get_by_key_name(key)
+        counter2 = Counter.get_by_key_name(key + '_backup')
+        status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }
+    else:
+      try:
+        db.run_in_transaction(self.increment_counter, key, int(amount))
+        counter = Counter.get_by_key_name(key)
+        status = { 'success' : True, 'counter' : counter.counter }
+      except Exception:
+        counter = Counter.get_by_key_name(key)
+        status = { 'success' : False, 'counter' : counter.counter }
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(status))
+
+  def delete(self):
+    db.delete(Counter.all())
+
+class NDBTransactionHandler(webapp2.RequestHandler):
+  @ndb.transactional
+  def increment_counter(self, key, amount):
+    counter = NDBCounter.get_by_id(key)
+    if counter is None:
+      counter = NDBCounter(id=key, counter=0)
+
+    for i in range(0,amount):
+      counter.counter += 1
+      if counter.counter == 5:
+        raise Exception('Mock Exception')
+      counter.put()
+
+  @ndb.transactional(xg=True)
+  def increment_counters(self, key, amount):
+    backup = key + '_backup'
+    counter1 = NDBCounter.get_by_id(key)
+    counter2 = NDBCounter.get_by_id(backup)
+    if counter1 is None:
+      counter1 = NDBCounter(id=key, counter=0)
+      counter2 = NDBCounter(id=backup, counter=0)
+
+    for i in range(0,amount):
+      counter1.counter += 1
+      counter2.counter += 1
+      if counter1.counter == 5:
+        raise Exception('Mock Exception')
+      counter1.put()
+      counter2.put()
+
+  def get(self):
+    key = self.request.get('key')
+    amount = self.request.get('amount')
+    xg = self.request.get('xg')
+    if xg is not None and xg == 'true':
+      try:
+        self.increment_counters(key, int(amount))
+        counter1 = NDBCounter.get_by_id(key)
+        counter2 = NDBCounter.get_by_id(key + '_backup')
+        status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
+      except Exception as e:
+        counter1 = NDBCounter.get_by_id(key)
+        counter2 = NDBCounter.get_by_id(key + '_backup')
+        status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }
+    else:
+      try:
+        self.increment_counter(key, int(amount))
+        counter = NDBCounter.get_by_id(key)
+        status = { 'success' : True, 'counter' : counter.counter }
+      except Exception:
+        counter = NDBCounter.get_by_id(key)
+        status = { 'success' : False, 'counter' : counter.counter }
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(status))
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -211,6 +329,8 @@ application = webapp.WSGIApplication([
   ('/python/datastore/project_ratings', ProjectRatingHandler),
   ('/python/datastore/project_fields', ProjectFieldHandler),
   ('/python/datastore/project_filter', ProjectFilterHandler),
+  ('/python/datastore/transactions', TransactionHandler),
+  ('/python/datastore/ndb_transactions', NDBTransactionHandler),
 ], debug=True)
 
 if __name__ == '__main__':

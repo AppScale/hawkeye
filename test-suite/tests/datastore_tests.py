@@ -1,5 +1,7 @@
 import json
+from time import sleep
 from unittest.suite import TestSuite
+import uuid
 from hawkeye_test_case import HawkeyeTestCase
 
 __author__ = 'hiranya'
@@ -19,6 +21,8 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     response = self.http_delete('/datastore/module')
     self.assertEquals(response.status, 200)
     response = self.http_delete('/datastore/project')
+    self.assertEquals(response.status, 200)
+    response = self.http_delete('/datastore/transactions')
     self.assertEquals(response.status, 200)
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
@@ -51,6 +55,9 @@ class SimpleKindAwareInsertTest(HawkeyeTestCase):
     project_id = dict['project_id']
     self.assertTrue(project_id is not None)
     all_projects[PROJECT_HADOOP] = project_id
+
+    # Allow some time to eventual consistency to run its course
+    sleep(2)
 
 class KindAwareInsertWithParentTest(HawkeyeTestCase):
   def runTest(self):
@@ -255,6 +262,85 @@ class CompositeQueryTest(HawkeyeTestCase):
     self.assertEquals(len(entity_list), 1)
     self.assertEquals(entity_list[0]['name'], PROJECT_HADOOP)
 
+class SimpleTransactionTest(HawkeyeTestCase):
+  def runTest(self):
+    key = str(uuid.uuid1())
+    response = self.http_get('/datastore/transactions?key={0}&amount=1'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 1)
+
+    response = self.http_get('/datastore/transactions?key={0}&amount=1'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+
+    response = self.http_get('/datastore/transactions?key={0}&amount=3'.format(key))
+    entity = json.loads(response.read())
+    self.assertFalse(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+
+class CrossGroupTransactionTest(HawkeyeTestCase):
+  def runTest(self):
+    key = str(uuid.uuid1())
+    response = self.http_get('/datastore/transactions?key={0}&amount=1&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 1)
+    self.assertEquals(entity['backup'], 1)
+
+    response = self.http_get('/datastore/transactions?key={0}&amount=1&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+    self.assertEquals(entity['backup'], 2)
+
+    response = self.http_get('/datastore/transactions?key={0}&amount=3&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertFalse(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+    self.assertEquals(entity['backup'], 2)
+
+class SimpleNDBTransactionTest(HawkeyeTestCase):
+  def runTest(self):
+    key = str(uuid.uuid1())
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=1'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 1)
+
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=1'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=3'.format(key))
+    entity = json.loads(response.read())
+    self.assertFalse(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+
+class NDBCrossGroupTransactionTest(HawkeyeTestCase):
+  def runTest(self):
+    key = str(uuid.uuid1())
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=1&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 1)
+    self.assertEquals(entity['backup'], 1)
+
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=1&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertTrue(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+    self.assertEquals(entity['backup'], 2)
+
+    response = self.http_get('/datastore/ndb_transactions?key={0}&amount=3&xg=true'.format(key))
+    entity = json.loads(response.read())
+    self.assertFalse(entity['success'])
+    self.assertEquals(entity['counter'], 2)
+    self.assertEquals(entity['backup'], 2)
+
+
 def suite():
   suite = TestSuite()
   suite.addTest(DataStoreCleanupTest())
@@ -270,6 +356,10 @@ def suite():
   suite.addTest(LimitedResultQueryTest())
   suite.addTest(ProjectionQueryTest())
   suite.addTest(CompositeQueryTest())
+  suite.addTest(SimpleTransactionTest())
+  suite.addTest(CrossGroupTransactionTest())
+  suite.addTest(SimpleNDBTransactionTest())
+  suite.addTest(NDBCrossGroupTransactionTest())
   return suite
 
 
