@@ -5,16 +5,26 @@ from google.appengine.ext import webapp, db, ndb
 import webapp2
 
 class Project(db.Model):
-  id = db.StringProperty(required=True)
+  project_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
   description = db.StringProperty(required=True)
   rating = db.IntegerProperty(required=True)
   license = db.StringProperty(required=True)
 
+class NDBProject(ndb.Model):
+  name = ndb.StringProperty(required=True)
+  description = ndb.StringProperty(required=True)
+  rating = ndb.IntegerProperty(required=True)
+  license = ndb.StringProperty(required=True)
+
 class Module(db.Model):
-  id = db.StringProperty(required=True)
+  module_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
   description = db.StringProperty(required=True)
+
+class NDBModule(ndb.Model):
+  name = ndb.StringProperty(required=True)
+  description = ndb.StringProperty(required=True)
 
 class Counter(db.Model):
   counter = db.IntegerProperty(required=True)
@@ -23,12 +33,22 @@ class NDBCounter(ndb.Model):
   counter = ndb.IntegerProperty(required=True)
 
 def serialize(entity):
-  dict = {'id' : entity.id, 'name': entity.name, 'description': entity.description}
+  dict = {'name': entity.name, 'description': entity.description}
   if isinstance(entity, Project):
+    dict['project_id'] = entity.project_id
     dict['type'] = 'project'
     dict['rating'] = entity.rating
     dict['license'] = entity.license
   elif isinstance(entity, Module):
+    dict['module_id'] = entity.module_id
+    dict['type'] = 'module'
+  elif isinstance(entity, NDBProject):
+    dict['project_id'] = entity.key.urlsafe()
+    dict['type'] = 'project'
+    dict['rating'] = entity.rating
+    dict['license'] = entity.license
+  elif isinstance(entity, NDBModule):
+    dict['module_id'] = entity.key.urlsafe()
     dict['type'] = 'module'
   else:
     dict['type'] = 'unknown'
@@ -44,7 +64,7 @@ class ProjectHandler(webapp2.RequestHandler):
         else:
           query = db.GqlQuery("SELECT * FROM Project")
       else:
-        query = db.GqlQuery("SELECT * FROM Project WHERE id = '{0}'".format(id))
+        query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(id))
 
       data = []
       for result in query:
@@ -55,7 +75,7 @@ class ProjectHandler(webapp2.RequestHandler):
     def post(self):
       project_id = str(uuid.uuid1())
       project_name = self.request.get('name')
-      project = Project(id=project_id, name=project_name, rating=int(self.request.get('rating')),
+      project = Project(project_id=project_id, name=project_name, rating=int(self.request.get('rating')),
         description=self.request.get('description'), license=self.request.get('license'),
         key_name=project_name)
       project.put()
@@ -66,13 +86,42 @@ class ProjectHandler(webapp2.RequestHandler):
     def delete(self):
       db.delete(Project.all())
 
+class NDBProjectHandler(webapp2.RequestHandler):
+  def get(self):
+    id = self.request.get('id')
+    if id is None or id.strip() == '':
+      entities = NDBProject.query()
+    else:
+      key = ndb.Key(urlsafe=id)
+      entities = [ key.get() ]
+
+    data = []
+    for result in entities:
+      data.append(result)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+  def post(self):
+    project_name = self.request.get('name')
+    project = NDBProject(name=project_name, rating=int(self.request.get('rating')),
+      description=self.request.get('description'), license=self.request.get('license'))
+    project_key = project.put()
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.set_status(201)
+    self.response.out.write(json.dumps({ 'success' : True, 'project_id' : project_key.urlsafe() }))
+
+  def delete(self):
+    q = NDBProject.query()
+    for entity in q:
+      entity.key.delete()
+
 class ModuleHandler(webapp2.RequestHandler):
   def get(self):
     id = self.request.get('id')
     if id is None or id.strip() == '':
       query = db.GqlQuery("SELECT * FROM Module")
     else:
-      query = db.GqlQuery("SELECT * FROM Module WHERE id = '{0}'".format(id))
+      query = db.GqlQuery("SELECT * FROM Module WHERE module_id = '{0}'".format(id))
 
     data = []
     for result in query:
@@ -82,10 +131,10 @@ class ModuleHandler(webapp2.RequestHandler):
 
   def post(self):
     project_id = self.request.get('project_id')
-    query = db.GqlQuery("SELECT * FROM Project WHERE id = '{0}'".format(project_id))
+    query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
     module_id = str(uuid.uuid1())
     module_name = self.request.get('name')
-    module = Module(id=module_id, name=module_name,
+    module = Module(module_id=module_id, name=module_name,
       description=self.request.get('description'), parent=query[0], key_name=module_name)
     module.put()
     self.response.headers['Content-Type'] = "application/json"
@@ -95,10 +144,39 @@ class ModuleHandler(webapp2.RequestHandler):
   def delete(self):
     db.delete(Module.all())
 
+class NDBModuleHandler(webapp2.RequestHandler):
+  def get(self):
+    id = self.request.get('id')
+    if id is None or id.strip() == '':
+      query = NDBModule.query()
+    else:
+      query = [ ndb.Key(urlsafe=id).get() ]
+
+    data = []
+    for result in query:
+      data.append(result)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+  def post(self):
+    project_id = self.request.get('project_id')
+    project_key = ndb.Key(urlsafe=project_id)
+    module_name = self.request.get('name')
+    module = NDBModule(name=module_name, description=self.request.get('description'), parent=project_key)
+    module_id = module.put()
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.set_status(201)
+    self.response.out.write(json.dumps({ 'success' : True, 'module_id' : module_id.urlsafe() }))
+
+  def delete(self):
+    q = NDBModule.query()
+    for entity in q:
+      entity.key.delete()
+
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE id = '{0}'".format(project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
     q = db.Query()
     q.ancestor(project_query[0])
     data = []
@@ -111,7 +189,7 @@ class ProjectKeyHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
     ancestor = self.request.get('ancestor')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE id = '{0}'".format(project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
     q = db.Query()
     if ancestor is not None and ancestor == 'true':
       q.ancestor(project_query[0])
@@ -322,7 +400,9 @@ class NDBTransactionHandler(webapp2.RequestHandler):
 
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
+  ('/python/datastore/ndb_project', NDBProjectHandler),
   ('/python/datastore/module', ModuleHandler),
+  ('/python/datastore/ndb_module', NDBModuleHandler),
   ('/python/datastore/project_modules', ProjectModuleHandler),
   ('/python/datastore/project_keys', ProjectKeyHandler),
   ('/python/datastore/entity_names', EntityNameHandler),

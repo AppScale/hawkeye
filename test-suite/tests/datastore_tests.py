@@ -9,6 +9,9 @@ __author__ = 'hiranya'
 all_projects = {}
 synapse_modules = {}
 
+ndb_all_projects = {}
+ndb_synapse_modules = {}
+
 PROJECT_SYNAPSE = 'Synapse'
 PROJECT_XERCES = 'Xerces'
 PROJECT_HADOOP = 'Hadoop'
@@ -23,6 +26,10 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     response = self.http_delete('/datastore/project')
     self.assertEquals(response.status, 200)
     response = self.http_delete('/datastore/transactions')
+    self.assertEquals(response.status, 200)
+    response = self.http_delete('/datastore/ndb_project')
+    self.assertEquals(response.status, 200)
+    response = self.http_delete('/datastore/ndb_module')
     self.assertEquals(response.status, 200)
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
@@ -85,7 +92,7 @@ class SimpleKindAwareQueryTest(HawkeyeTestCase):
   def runTest(self):
     project_list = self.assert_and_get_list('/datastore/project')
     for entry in project_list:
-      response = self.http_get('/datastore/project?id={0}'.format(entry['id']))
+      response = self.http_get('/datastore/project?id={0}'.format(entry['project_id']))
       list = json.loads(response.read())
       dict = list[0]
       self.assertEquals(len(list), 1)
@@ -93,7 +100,7 @@ class SimpleKindAwareQueryTest(HawkeyeTestCase):
 
     module_list = self.assert_and_get_list('/datastore/module')
     for entry in module_list:
-      response = self.http_get('/datastore/module?id={0}'.format(entry['id']))
+      response = self.http_get('/datastore/module?id={0}'.format(entry['module_id']))
       list = json.loads(response.read())
       dict = list[0]
       self.assertEquals(len(list), 1)
@@ -158,12 +165,12 @@ class QueryByKeyNameTest(HawkeyeTestCase):
 
     response = self.http_get('/datastore/entity_names?project_name={0}'.format(PROJECT_SYNAPSE))
     entity = json.loads(response.read())
-    self.assertEquals(entity['id'], all_projects[PROJECT_SYNAPSE])
+    self.assertEquals(entity['project_id'], all_projects[PROJECT_SYNAPSE])
 
     response = self.http_get('/datastore/entity_names?project_name={0}&module_name={1}'.format(
       PROJECT_SYNAPSE, MOD_CORE))
     entity = json.loads(response.read())
-    self.assertEquals(entity['id'], synapse_modules[MOD_CORE])
+    self.assertEquals(entity['module_id'], synapse_modules[MOD_CORE])
 
 class SinglePropertyBasedQueryTest(HawkeyeTestCase):
   def runTest(self):
@@ -222,12 +229,12 @@ class LimitedResultQueryTest(HawkeyeTestCase):
 
 class ProjectionQueryTest(HawkeyeTestCase):
   def runTest(self):
-    entity_list = self.assert_and_get_list('/datastore/project_fields?fields=id,name')
+    entity_list = self.assert_and_get_list('/datastore/project_fields?fields=project_id,name')
     self.assertEquals(len(entity_list), 3)
     for entity in entity_list:
       self.assertTrue(entity['rating'] is None)
       self.assertTrue(entity['description'] is None)
-      self.assertTrue(entity['id'] is not None)
+      self.assertTrue(entity['project_id'] is not None)
       self.assertTrue(entity['name'] is not None)
 
     entity_list = self.assert_and_get_list('/datastore/project_fields?fields=name,rating&gql=true')
@@ -235,7 +242,7 @@ class ProjectionQueryTest(HawkeyeTestCase):
     for entity in entity_list:
       self.assertTrue(entity['rating'] is not None)
       self.assertTrue(entity['description'] is None)
-      self.assertTrue(entity['id'] is None)
+      self.assertTrue(entity['project_id'] is None)
       self.assertTrue(entity['name'] is not None)
 
     entity_list = self.assert_and_get_list('/datastore/project_fields?fields=name,rating&rate_limit=8')
@@ -243,7 +250,7 @@ class ProjectionQueryTest(HawkeyeTestCase):
     for entity in entity_list:
       self.assertTrue(entity['rating'] is not None)
       self.assertTrue(entity['description'] is None)
-      self.assertTrue(entity['id'] is None)
+      self.assertTrue(entity['project_id'] is None)
       self.assertTrue(entity['name'] is not None)
       self.assertNotEquals(entity['name'], PROJECT_XERCES)
 
@@ -300,6 +307,80 @@ class CrossGroupTransactionTest(HawkeyeTestCase):
     self.assertFalse(entity['success'])
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
+
+class SimpleKindAwareNDBInsertTest(HawkeyeTestCase):
+  def runTest(self):
+    global ndb_all_projects
+
+    response = self.http_post('/datastore/ndb_project',
+      'name={0}&description=Mediation Engine&rating=8&license=L1'.format(PROJECT_SYNAPSE))
+    dict = json.loads(response.read())
+    self.assertEquals(response.status, 201)
+    self.assertTrue(dict['success'])
+    project_id = dict['project_id']
+    self.assertTrue(project_id is not None)
+    ndb_all_projects[PROJECT_SYNAPSE] = project_id
+
+    response = self.http_post('/datastore/ndb_project',
+      'name={0}&description=XML Parser&rating=6&license=L1'.format(PROJECT_XERCES))
+    dict = json.loads(response.read())
+    self.assertEquals(response.status, 201)
+    self.assertTrue(dict['success'])
+    project_id = dict['project_id']
+    self.assertTrue(project_id is not None)
+    ndb_all_projects[PROJECT_XERCES] = project_id
+
+    response = self.http_post('/datastore/ndb_project',
+      'name={0}&description=MapReduce Framework&rating=10&license=L2'.format(PROJECT_HADOOP))
+    dict = json.loads(response.read())
+    self.assertEquals(response.status, 201)
+    self.assertTrue(dict['success'])
+    project_id = dict['project_id']
+    self.assertTrue(project_id is not None)
+    ndb_all_projects[PROJECT_HADOOP] = project_id
+
+    # Allow some time to eventual consistency to run its course
+    sleep(2)
+
+class KindAwareNDBInsertWithParentTest(HawkeyeTestCase):
+  def runTest(self):
+    global ndb_all_projects
+    global ndb_synapse_modules
+    response = self.http_post('/datastore/ndb_module',
+      'name={0}&description=Mediation Core&project_id={1}'.format(MOD_CORE, ndb_all_projects[PROJECT_SYNAPSE]))
+    dict = json.loads(response.read())
+    self.assertEquals(response.status, 201)
+    self.assertTrue(dict['success'])
+    module_id = dict['module_id']
+    self.assertTrue(module_id is not None)
+    ndb_synapse_modules[MOD_CORE] = module_id
+
+    response = self.http_post('/datastore/ndb_module',
+      'name={0}&description=NIO HTTP transport&project_id={1}'.format(MOD_NHTTP, ndb_all_projects[PROJECT_SYNAPSE]))
+    dict = json.loads(response.read())
+    self.assertEquals(response.status, 201)
+    self.assertTrue(dict['success'])
+    module_id = dict['module_id']
+    self.assertTrue(module_id is not None)
+    ndb_synapse_modules[MOD_NHTTP] = module_id
+
+class SimpleKindAwareNDBQueryTest(HawkeyeTestCase):
+  def runTest(self):
+    project_list = self.assert_and_get_list('/datastore/ndb_project')
+    for entry in project_list:
+      response = self.http_get('/datastore/ndb_project?id={0}'.format(entry['project_id']))
+      list = json.loads(response.read())
+      dict = list[0]
+      self.assertEquals(len(list), 1)
+      self.assertEquals(dict['name'], entry['name'])
+
+    module_list = self.assert_and_get_list('/datastore/ndb_module')
+    for entry in module_list:
+      response = self.http_get('/datastore/ndb_module?id={0}'.format(entry['module_id']))
+      list = json.loads(response.read())
+      dict = list[0]
+      self.assertEquals(len(list), 1)
+      self.assertEquals(dict['name'], entry['name'])
 
 class SimpleNDBTransactionTest(HawkeyeTestCase):
   def runTest(self):
@@ -358,6 +439,10 @@ def suite():
   suite.addTest(CompositeQueryTest())
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
+
+  suite.addTest(SimpleKindAwareNDBInsertTest())
+  suite.addTest(KindAwareNDBInsertWithParentTest())
+  suite.addTest(SimpleKindAwareNDBQueryTest())
   suite.addTest(SimpleNDBTransactionTest())
   suite.addTest(NDBCrossGroupTransactionTest())
   return suite
