@@ -11,3 +11,6 @@ handlers:
 
 - url: /python/datastore/(.*)
   script: datastore.py
+
+- url: /python/ndb/(.*)
+  script: ndb.py

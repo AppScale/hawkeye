@@ -23,6 +23,11 @@ indexes:
 - kind: Project
   properties:
   - name: name
+  - name: project_id
+
+- kind: Project
+  properties:
+  - name: name
   - name: rating
 
 - kind: Project

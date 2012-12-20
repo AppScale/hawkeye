@@ -35,3 +35,11 @@ class HawkeyeTestCase(TestCase):
     response = conn.getresponse()
     conn.close()
     return response
+
+class HawkeyeConstants:
+  PROJECT_SYNAPSE = 'Synapse'
+  PROJECT_XERCES = 'Xerces'
+  PROJECT_HADOOP = 'Hadoop'
+
+  MOD_CORE = 'Core'
+  MOD_NHTTP = 'NHTTP'
