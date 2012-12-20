@@ -1,4 +1,8 @@
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
+
 import wsgiref
 from google.appengine.ext import ndb, webapp
 import webapp2
@@ -174,8 +178,8 @@ class NDBProjectFilterHandler(webapp2.RequestHandler):
     rate_limit = self.request.get('rate_limit')
     gql = self.request.get('gql')
     if gql is not None and gql == 'true':
-      q = ndb.gql("SELECT * FROM NDBProject WHERE license = '{0}' "\
-                      "AND rating >= {1}".format(license, rate_limit))
+      q = ndb.gql("SELECT * FROM NDBProject WHERE license = '%s' "\
+                      "AND rating >= %s" % (license, rate_limit))
     else:
       q = NDBProject.query(ndb.AND(NDBProject.license == license,
         NDBProject.rating >= int(rate_limit)))
@@ -236,7 +240,7 @@ class NDBTransactionHandler(webapp2.RequestHandler):
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
         status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
-      except Exception as e:
+      except Exception:
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
         status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }

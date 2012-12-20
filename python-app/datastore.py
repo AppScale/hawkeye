@@ -1,4 +1,8 @@
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
+
 import uuid
 import wsgiref
 from google.appengine.ext import webapp, db
@@ -39,11 +43,11 @@ class ProjectHandler(webapp2.RequestHandler):
       name = self.request.get('name')
       if id is None or id.strip() == '':
         if name is not None and len(name) > 0:
-          query = db.GqlQuery("SELECT * FROM Project WHERE name = '{0}'".format(name))
+          query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % name)
         else:
           query = db.GqlQuery("SELECT * FROM Project")
       else:
-        query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(id))
+        query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % str(id))
 
       data = []
       for result in query:
@@ -71,7 +75,7 @@ class ModuleHandler(webapp2.RequestHandler):
     if id is None or id.strip() == '':
       query = db.GqlQuery("SELECT * FROM Module")
     else:
-      query = db.GqlQuery("SELECT * FROM Module WHERE module_id = '{0}'".format(id))
+      query = db.GqlQuery("SELECT * FROM Module WHERE module_id = '%s'" % str(id))
 
     data = []
     for result in query:
@@ -81,7 +85,7 @@ class ModuleHandler(webapp2.RequestHandler):
 
   def post(self):
     project_id = self.request.get('project_id')
-    query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
+    query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % str(project_id))
     module_id = str(uuid.uuid1())
     module_name = self.request.get('name')
     module = Module(module_id=module_id, name=module_name,
@@ -97,7 +101,7 @@ class ModuleHandler(webapp2.RequestHandler):
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % (project_id))
     q = db.Query()
     q.ancestor(project_query[0])
     data = []
@@ -110,7 +114,7 @@ class ProjectKeyHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
     ancestor = self.request.get('ancestor')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '{0}'".format(project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % (project_id))
     q = db.Query()
     if ancestor is not None and ancestor == 'true':
       q.ancestor(project_query[0])
@@ -133,7 +137,7 @@ class EntityNameHandler(webapp2.RequestHandler):
     module_name = self.request.get('module_name')
     if project_name is not None and len(project_name) > 0:
       if module_name is not None and len(module_name) > 0:
-        project_query = db.GqlQuery("SELECT * FROM Project WHERE name = '{0}'".format(project_name))
+        project_query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % (project_name))
         entity = Module.get_by_key_name(module_name, parent=project_query[0])
       else:
         entity = Project.get_by_key_name(project_name, parent=None)
@@ -182,7 +186,7 @@ class ProjectFieldHandler(webapp2.RequestHandler):
     gql = self.request.get('gql')
     rate_limit = self.request.get('rate_limit')
     if gql is not None and gql == 'true':
-      q = db.GqlQuery("SELECT {0} FROM Project".format(fields))
+      q = db.GqlQuery("SELECT %s FROM Project" % (fields))
     else:
       field_tuple = tuple(fields.split(','))
       q = db.Query(Project, projection=field_tuple)
@@ -199,8 +203,8 @@ class ProjectFilterHandler(webapp2.RequestHandler):
   def get(self):
     license = self.request.get('license')
     rate_limit = self.request.get('rate_limit')
-    q = db.GqlQuery("SELECT * FROM Project WHERE license = '{0}' " \
-                    "AND rating >= {1}".format(license, rate_limit))
+    q = db.GqlQuery("SELECT * FROM Project WHERE license = '%s' " \
+                    "AND rating >= %s" % (license, rate_limit))
     data = []
     for entity in q:
       data.append(entity)
@@ -246,7 +250,7 @@ class TransactionHandler(webapp2.RequestHandler):
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
         status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
-      except Exception as e:
+      except Exception:
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
         status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }

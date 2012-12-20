@@ -34,7 +34,6 @@ class HawkeyeTestCase(TestCase):
     else:
       conn.request(method, path)
     response = conn.getresponse()
-    conn.close()
     return response
 
 class HawkeyeTestSuite(TestSuite):
