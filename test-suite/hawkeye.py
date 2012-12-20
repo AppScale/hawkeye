@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import optparse
 from unittest.runner import TextTestRunner
 import sys

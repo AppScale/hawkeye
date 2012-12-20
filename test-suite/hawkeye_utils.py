@@ -21,8 +21,9 @@ class HawkeyeTestCase(TestCase):
     return self.__make_request('DELETE', path)
 
   def assert_and_get_list(self, path):
-    response = self.http_get(path)
-    list = json.loads(response.read())
+    status, headers, payload = self.http_get(path)
+    self.assertEquals(status, 200)
+    list = json.loads(payload)
     self.assertTrue(len(list) > 0)
     return list
 
@@ -34,7 +35,9 @@ class HawkeyeTestCase(TestCase):
     else:
       conn.request(method, path)
     response = conn.getresponse()
-    return response
+    status, headers, payload = response.status, response.getheaders(), response.read()
+    conn.close()
+    return status, headers, payload
 
 class HawkeyeTestSuite(TestSuite):
   def __init__(self, name):
