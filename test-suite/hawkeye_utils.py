@@ -1,6 +1,7 @@
 import httplib
 import json
 from unittest.case import TestCase
+from unittest.suite import TestSuite
 
 __author__ = 'hiranya'
 
@@ -35,6 +36,11 @@ class HawkeyeTestCase(TestCase):
     response = conn.getresponse()
     conn.close()
     return response
+
+class HawkeyeTestSuite(TestSuite):
+  def __init__(self, name):
+    TestSuite.__init__(self)
+    self.name = name
 
 class HawkeyeConstants:
   PROJECT_SYNAPSE = 'Synapse'

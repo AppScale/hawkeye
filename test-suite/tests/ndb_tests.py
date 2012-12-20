@@ -1,8 +1,7 @@
 import json
 from time import sleep
-from unittest.suite import TestSuite
 import uuid
-from hawkeye_test_case import HawkeyeTestCase, HawkeyeConstants
+from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
 
 __author__ = 'hiranya'
 
@@ -134,7 +133,7 @@ class NDBCrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['backup'], 2)
 
 def suite():
-  suite = TestSuite()
+  suite = HawkeyeTestSuite('NDB Test Suite')
   suite.addTest(NDBCleanupTest())
   suite.addTest(SimpleKindAwareNDBInsertTest())
   suite.addTest(KindAwareNDBInsertWithParentTest())

@@ -1,8 +1,7 @@
 import optparse
-import unittest
 from unittest.runner import TextTestRunner
 import sys
-import hawkeye_test_case
+import hawkeye_utils
 from tests import datastore_tests, ndb_tests
 
 __author__ = 'hiranya'
@@ -35,6 +34,10 @@ if __name__ == '__main__':
   if options.suites is not None:
     suite_names = options.suites.split(',')
 
+  hawkeye_utils.HOST = options.server
+  hawkeye_utils.PORT = options.port
+  hawkeye_utils.LANG = options.lang
+
   suites = []
   for suite_name in suite_names:
     suite_name = suite_name.strip()
@@ -48,9 +51,8 @@ if __name__ == '__main__':
     else:
       print_usage_and_exit('Unsupported test suite: {0}'.format(suite_name), parser)
 
-  hawkeye_test_case.HOST = options.server
-  hawkeye_test_case.PORT = options.port
-  hawkeye_test_case.LANG = options.lang
-
-  aggregate_suite = unittest.TestSuite(suites)
-  TextTestRunner(verbosity=2).run(aggregate_suite)
+  for suite in suites:
+    runner = TextTestRunner(verbosity=2)
+    runner.stream.writeln('\n' + suite.name)
+    runner.stream.writeln('=' * len(suite.name))
+    runner.run(suite)

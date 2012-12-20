@@ -1,8 +1,7 @@
 import json
 from time import sleep
-from unittest.suite import TestSuite
 import uuid
-from hawkeye_test_case import HawkeyeTestCase, HawkeyeConstants
+from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
 
 __author__ = 'hiranya'
 
@@ -310,7 +309,7 @@ class CrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['backup'], 2)
 
 def suite():
-  suite = TestSuite()
+  suite = HawkeyeTestSuite('Datastore Test Suite')
   suite.addTest(DataStoreCleanupTest())
   suite.addTest(SimpleKindAwareInsertTest())
   suite.addTest(KindAwareInsertWithParentTest())
