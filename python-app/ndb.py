@@ -3,9 +3,9 @@ try:
 except ImportError:
   import simplejson as json
 
-import wsgiref
 from google.appengine.ext import ndb, webapp
 import webapp2
+import wsgiref
 
 __author__ = 'hiranya'
 

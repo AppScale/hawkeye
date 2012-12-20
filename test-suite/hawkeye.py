@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
+import hawkeye_utils
 import optparse
 import os
-import shutil
-from unittest.runner import TextTestRunner
 import sys
-import hawkeye_utils
 from tests import datastore_tests, ndb_tests
 
 __author__ = 'hiranya'

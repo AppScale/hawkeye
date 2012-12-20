@@ -1,7 +1,7 @@
+from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
 import json
 from time import sleep
 import uuid
-from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
 
 __author__ = 'hiranya'
 

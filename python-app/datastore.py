@@ -3,10 +3,10 @@ try:
 except ImportError:
   import simplejson as json
 
-import uuid
-import wsgiref
 from google.appengine.ext import webapp, db
+import uuid
 import webapp2
+import wsgiref
 
 class Project(db.Model):
   project_id = db.StringProperty(required=True)

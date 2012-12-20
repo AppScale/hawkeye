@@ -1,9 +1,9 @@
 import httplib
 import json
+import sys
 from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
 from unittest.suite import TestSuite
-import sys
 
 __author__ = 'hiranya'
 
@@ -42,23 +42,25 @@ class HawkeyeTestCase(TestCase):
 
     original = sys.stdout
     sys.stdout = http_log
-    print
-    path = "/" + LANG + path
-    conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
-    conn.set_debuglevel(1)
-    if method == 'POST' or method == 'PUT':
-      conn.request(method, path, payload)
-      print 'req-body: ' + payload
-    else:
-      conn.request(method, path)
-    response = conn.getresponse()
-    status, headers, payload = response.status, response.getheaders(), response.read()
-    conn.close()
-    if payload is not None and len(payload) > 0:
-      print 'resp-body: ' + payload
-    sys.stdout = original
-    http_log.close()
-    return status, headers, payload
+    try:
+      print
+      path = "/" + LANG + path
+      conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
+      conn.set_debuglevel(1)
+      if method == 'POST' or method == 'PUT':
+        conn.request(method, path, payload)
+        print 'req-body: ' + payload
+      else:
+        conn.request(method, path)
+      response = conn.getresponse()
+      status, headers, payload = response.status, response.getheaders(), response.read()
+      conn.close()
+      if payload is not None and len(payload) > 0:
+        print 'resp-body: ' + payload
+      return status, headers, payload
+    finally:
+      sys.stdout = original
+      http_log.close()
 
 class HawkeyeTestSuite(TestSuite):
   def __init__(self, name, short_name):
