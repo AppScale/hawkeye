@@ -10,6 +10,21 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: NDBProject
+  properties:
+  - name: description
+  - name: name
+
+- kind: NDBProject
+  properties:
+  - name: license
+  - name: rating
+
+- kind: NDBProject
+  properties:
+  - name: rating
+  - name: name
+
 - kind: Project
   properties:
   - name: id

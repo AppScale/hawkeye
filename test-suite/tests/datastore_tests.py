@@ -16,10 +16,6 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     response = self.http_delete('/datastore/transactions')
     self.assertEquals(response.status, 200)
-    response = self.http_delete('/ndb/project')
-    self.assertEquals(response.status, 200)
-    response = self.http_delete('/ndb/module')
-    self.assertEquals(response.status, 200)
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
   def runTest(self):

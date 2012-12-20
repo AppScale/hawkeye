@@ -19,13 +19,32 @@ class NDBCounter(ndb.Model):
   counter = ndb.IntegerProperty(required=True)
 
 def serialize(entity):
-  dict = {'name': entity.name, 'description': entity.description}
+  dict = {}
   if isinstance(entity, NDBProject):
     dict['project_id'] = entity.key.urlsafe()
     dict['type'] = 'project'
-    dict['rating'] = entity.rating
-    dict['license'] = entity.license
+    if len(entity._projection) == 0 or 'name' in entity._projection:
+      dict['name'] = entity.name
+    else:
+      dict['name'] = None
+
+    if len(entity._projection) == 0 or 'description' in entity._projection:
+      dict['description'] = entity.description
+    else:
+      dict['description'] = None
+
+    if len(entity._projection) == 0 or 'rating' in entity._projection:
+      dict['rating'] = entity.rating
+    else:
+      dict['rating'] = None
+
+    if len(entity._projection) == 0 or 'license' in entity._projection:
+      dict['license'] = entity.license
+    else:
+      dict['license'] = None
   elif isinstance(entity, NDBModule):
+    dict['name'] = entity.name
+    dict['description'] = entity.description
     dict['module_id'] = entity.key.urlsafe()
     dict['type'] = 'module'
   else:
@@ -90,6 +109,93 @@ class NDBModuleHandler(webapp2.RequestHandler):
     for entity in q:
       entity.key.delete()
 
+class NDBProjectModuleHandler(webapp2.RequestHandler):
+  def get(self):
+    project_id = self.request.get('project_id')
+    q = NDBModule.query(ancestor=ndb.Key(urlsafe=project_id))
+    data = []
+    for entity in q:
+      data.append(entity)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+class NDBProjectRatingHandler(webapp2.RequestHandler):
+  def get(self):
+    rating = self.request.get('rating')
+    comparator = self.request.get('comparator')
+    limit = self.request.get('limit')
+    desc = self.request.get('desc')
+    if comparator is None or comparator == '' or comparator == 'eq':
+      q = NDBProject.query(NDBProject.rating == int(rating))
+    elif comparator == 'gt':
+      q = NDBProject.query(NDBProject.rating > int(rating))
+    elif comparator == 'ge':
+      q = NDBProject.query(NDBProject.rating >= int(rating))
+    elif comparator == 'lt':
+      q = NDBProject.query(NDBProject.rating < int(rating))
+    elif comparator == 'le':
+      q = NDBProject.query(NDBProject.rating <= int(rating))
+    elif comparator == 'ne':
+      q = NDBProject.query(NDBProject.rating != int(rating))
+    else:
+      raise Exception('Unsupported comparator')
+
+    if desc is not None and desc == 'true':
+      q = q.order(-NDBProject.rating)
+
+    if limit is not None and len(limit) > 0:
+      q = q.fetch(int(limit))
+
+    data = []
+    for entity in q:
+      data.append(entity)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+class NDBProjectFieldHandler(webapp2.RequestHandler):
+  def get(self):
+    fields = self.request.get('fields')
+    rate_limit = self.request.get('rate_limit')
+    field_tuple = fields.split(',')
+    if rate_limit is not None and len(rate_limit) > 0 and 'rating' in field_tuple:
+      q = NDBProject.query(NDBProject.rating >= int(rate_limit)).fetch(projection=field_tuple)
+    else:
+      q = NDBProject.query().fetch(projection=field_tuple)
+
+    data = []
+    for entity in q:
+      data.append(entity)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+class NDBProjectFilterHandler(webapp2.RequestHandler):
+  def get(self):
+    license = self.request.get('license')
+    rate_limit = self.request.get('rate_limit')
+    gql = self.request.get('gql')
+    if gql is not None and gql == 'true':
+      q = ndb.gql("SELECT * FROM NDBProject WHERE license = '{0}' "\
+                      "AND rating >= {1}".format(license, rate_limit))
+    else:
+      q = NDBProject.query(ndb.AND(NDBProject.license == license,
+        NDBProject.rating >= int(rate_limit)))
+
+    data = []
+    for entity in q:
+      data.append(entity)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
+class NDBProjectLicenseFilterHandler(webapp2.RequestHandler):
+  def get(self):
+    licenses = self.request.get('licenses')
+    q = NDBProject.query(NDBProject.license.IN(licenses.split(',')))
+    data = []
+    for entity in q:
+      data.append(entity)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
+
 class NDBTransactionHandler(webapp2.RequestHandler):
   @ndb.transactional
   def increment_counter(self, key, amount):
@@ -145,10 +251,33 @@ class NDBTransactionHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(status))
 
+  def delete(self):
+    q = NDBCounter.query()
+    for entity in q:
+      entity.key.delete()
+
+class NDBProjectCursorHandler(webapp2.RequestHandler):
+  def get(self):
+    cursor_value = self.request.get('cursor')
+    cursor = ndb.Cursor(urlsafe=cursor_value)
+    project, next_cursor, more = NDBProject.query().fetch_page(1, start_cursor=cursor)
+    if len(project) == 1:
+      output = { 'project' : project[0].name, 'next' : next_cursor.urlsafe() }
+    else:
+      output = { 'project' : None, 'next' : None }
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(output))
+
 application = webapp.WSGIApplication([
   ('/python/ndb/project', NDBProjectHandler),
   ('/python/ndb/module', NDBModuleHandler),
+  ('/python/ndb/project_modules', NDBProjectModuleHandler),
+  ('/python/ndb/project_ratings', NDBProjectRatingHandler),
+  ('/python/ndb/project_fields', NDBProjectFieldHandler),
+  ('/python/ndb/project_filter', NDBProjectFilterHandler),
+  ('/python/ndb/project_license_filter', NDBProjectLicenseFilterHandler),
   ('/python/ndb/transactions', NDBTransactionHandler),
+  ('/python/ndb/project_cursor', NDBProjectCursorHandler),
 ], debug=True)
 
 if __name__ == '__main__':
