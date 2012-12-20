@@ -250,7 +250,7 @@ class TransactionHandler(webapp2.RequestHandler):
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
         status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
-      except Exception as e:
+      except Exception:
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
         status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }

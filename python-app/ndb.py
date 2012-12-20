@@ -240,7 +240,7 @@ class NDBTransactionHandler(webapp2.RequestHandler):
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
         status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
-      except Exception as e:
+      except Exception:
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
         status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }
