@@ -250,16 +250,19 @@ class SimpleNDBTransactionTest(HawkeyeTestCase):
   def runTest(self):
     key = str(uuid.uuid1())
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=1'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertTrue(entity['success'])
     self.assertEquals(entity['counter'], 1)
 
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=1'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertTrue(entity['success'])
     self.assertEquals(entity['counter'], 2)
 
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=3'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertFalse(entity['success'])
     self.assertEquals(entity['counter'], 2)
@@ -268,25 +271,28 @@ class NDBCrossGroupTransactionTest(HawkeyeTestCase):
   def runTest(self):
     key = str(uuid.uuid1())
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=1&xg=true'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertTrue(entity['success'])
     self.assertEquals(entity['counter'], 1)
     self.assertEquals(entity['backup'], 1)
 
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=1&xg=true'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertTrue(entity['success'])
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
     status, headers, payload = self.http_get('/ndb/transactions?key={0}&amount=3&xg=true'.format(key))
+    self.assertEquals(status, 200)
     entity = json.loads(payload)
     self.assertFalse(entity['success'])
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
 def suite():
-  suite = HawkeyeTestSuite('NDB Test Suite')
+  suite = HawkeyeTestSuite('NDB Test Suite', 'ndb')
   suite.addTest(NDBCleanupTest())
   suite.addTest(SimpleKindAwareNDBInsertTest())
   suite.addTest(KindAwareNDBInsertWithParentTest())

@@ -305,7 +305,7 @@ class CrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['backup'], 2)
 
 def suite():
-  suite = HawkeyeTestSuite('Datastore Test Suite')
+  suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
   suite.addTest(SimpleKindAwareInsertTest())
   suite.addTest(KindAwareInsertWithParentTest())

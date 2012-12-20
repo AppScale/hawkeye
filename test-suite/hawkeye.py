@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import optparse
+import os
+import shutil
 from unittest.runner import TextTestRunner
 import sys
 import hawkeye_utils
@@ -53,8 +55,17 @@ if __name__ == '__main__':
     else:
       print_usage_and_exit('Unsupported test suite: {0}'.format(suite_name), parser)
 
+  if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+  for file in os.listdir('logs'):
+    file_path = os.path.join('logs', file)
+    try:
+      if os.path.isfile(file_path):
+        os.unlink(file_path)
+    except Exception, e:
+      print e
+
   for suite in suites:
-    runner = TextTestRunner(verbosity=2)
-    runner.stream.writeln('\n' + suite.name)
-    runner.stream.writeln('=' * len(suite.name))
-    runner.run(suite)
+    runner = hawkeye_utils.HawkeyeTestRunner(suite)
+    runner.run_suite()
