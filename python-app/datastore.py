@@ -1,4 +1,8 @@
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
+
 import uuid
 import wsgiref
 from google.appengine.ext import webapp, db
