@@ -1,5 +1,3 @@
-from google.appengine.datastore.datastore_query import Cursor
-
 try:
   import json
 except ImportError:
@@ -129,7 +127,8 @@ class ProjectKeyHandler(webapp2.RequestHandler):
 
     data = []
     for entity in q:
-      data.append(entity)
+      if isinstance(entity, Project) or isinstance(entity, Module):
+        data.append(entity)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
@@ -201,7 +200,7 @@ class ProjectFieldHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
-class ProjectBrowserHandler(webapp2.RedirectHandler):
+class ProjectBrowserHandler(webapp2.RequestHandler):
   def get(self):
     cursor_str = self.request.get('cursor')
     q = Project.all()

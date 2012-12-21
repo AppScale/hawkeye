@@ -4,6 +4,9 @@ runtime: python
 api_version: 1
 threadsafe: yes
 
+builtins:
+- deferred: on
+
 handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
@@ -17,3 +20,6 @@ handlers:
 
 - url: /python/memcache.*
   script: memcache.py
+
+- url: /python/taskqueue/(.*)
+  script: taskqueue.py

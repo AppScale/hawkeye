@@ -16,6 +16,8 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     self.assertEquals(status, 200)
     status, headers, payload = self.http_delete('/datastore/transactions')
     self.assertEquals(status, 200)
+    status, headers, payload = self.http_delete('/taskqueue/counter')
+    self.assertEquals(status, 200)
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
   def runTest(self):
