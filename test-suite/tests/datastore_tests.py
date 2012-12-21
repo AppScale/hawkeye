@@ -304,6 +304,20 @@ class CrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
+class QueryCursorTest(HawkeyeTestCase):
+  def runTest(self):
+    project1 = self.assert_and_get_list('/datastore/project_cursor')
+    project2 = self.assert_and_get_list('/datastore/project_cursor?cursor={0}'.format(project1['next']))
+    project3 = self.assert_and_get_list('/datastore/project_cursor?cursor={0}'.format(project2['next']))
+    projects = [ project1['project'], project2['project'], project3['project'] ]
+    self.assertTrue(HawkeyeConstants.PROJECT_SYNAPSE in projects)
+    self.assertTrue(HawkeyeConstants.PROJECT_XERCES in projects)
+    self.assertTrue(HawkeyeConstants.PROJECT_HADOOP in projects)
+
+    project4 = self.assert_and_get_list('/datastore/project_cursor?cursor={0}'.format(project3['next']))
+    self.assertTrue(project4['project'] is None)
+    self.assertTrue(project4['next'] is None)
+
 def suite():
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -321,6 +335,7 @@ def suite():
   suite.addTest(CompositeQueryTest())
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
+  suite.addTest(QueryCursorTest())
   return suite
 
 

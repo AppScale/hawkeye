@@ -1,3 +1,5 @@
+from google.appengine.datastore.datastore_query import Cursor
+
 try:
   import json
 except ImportError:
@@ -101,7 +103,7 @@ class ModuleHandler(webapp2.RequestHandler):
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % (project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % project_id)
     q = db.Query()
     q.ancestor(project_query[0])
     data = []
@@ -114,7 +116,7 @@ class ProjectKeyHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
     ancestor = self.request.get('ancestor')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % (project_id))
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % project_id)
     q = db.Query()
     if ancestor is not None and ancestor == 'true':
       q.ancestor(project_query[0])
@@ -137,7 +139,7 @@ class EntityNameHandler(webapp2.RequestHandler):
     module_name = self.request.get('module_name')
     if project_name is not None and len(project_name) > 0:
       if module_name is not None and len(module_name) > 0:
-        project_query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % (project_name))
+        project_query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % project_name)
         entity = Module.get_by_key_name(module_name, parent=project_query[0])
       else:
         entity = Project.get_by_key_name(project_name, parent=None)
@@ -186,7 +188,7 @@ class ProjectFieldHandler(webapp2.RequestHandler):
     gql = self.request.get('gql')
     rate_limit = self.request.get('rate_limit')
     if gql is not None and gql == 'true':
-      q = db.GqlQuery("SELECT %s FROM Project" % (fields))
+      q = db.GqlQuery("SELECT %s FROM Project" % fields)
     else:
       field_tuple = tuple(fields.split(','))
       q = db.Query(Project, projection=field_tuple)
@@ -198,6 +200,21 @@ class ProjectFieldHandler(webapp2.RequestHandler):
       data.append(entity)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
+
+class ProjectBrowserHandler(webapp2.RedirectHandler):
+  def get(self):
+    cursor_str = self.request.get('cursor')
+    q = Project.all()
+    if cursor_str:
+      q.with_cursor(cursor_str)
+
+    result = q.fetch(1)
+    cursor = q.cursor()
+    self.response.headers['Content-Type'] = "application/json"
+    if len(result) == 1:
+      self.response.out.write(json.dumps({ 'project' :  result[0].name, 'next' : cursor }))
+    else:
+      self.response.out.write(json.dumps({ 'project' :  None, 'next' : None }))
 
 class ProjectFilterHandler(webapp2.RequestHandler):
   def get(self):
@@ -277,6 +294,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/project_ratings', ProjectRatingHandler),
   ('/python/datastore/project_fields', ProjectFieldHandler),
   ('/python/datastore/project_filter', ProjectFilterHandler),
+  ('/python/datastore/project_cursor', ProjectBrowserHandler),
   ('/python/datastore/transactions', TransactionHandler),
 ], debug=True)
 

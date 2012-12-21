@@ -14,3 +14,6 @@ handlers:
 
 - url: /python/ndb/(.*)
   script: ndb.py
+
+- url: /python/memcache.*
+  script: memcache.py
