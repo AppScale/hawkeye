@@ -20,6 +20,7 @@ if __name__ == '__main__':
   parser.add_option('-s', '--server', action='store', type='string', dest='server')
   parser.add_option('-p', '--port', action='store', type='int', dest='port')
   parser.add_option('-l', '--lang', action='store', type='string', dest='lang')
+  parser.add_option('-c', '--console', action='store_true', dest='console')
   parser.add_option('--suites', action='store', type='string', dest='suites')
   (options,args) = parser.parse_args(sys.argv[1:])
 
@@ -39,6 +40,9 @@ if __name__ == '__main__':
   hawkeye_utils.HOST = options.server
   hawkeye_utils.PORT = options.port
   hawkeye_utils.LANG = options.lang
+
+  if options.console:
+    hawkeye_utils.CONSOLE_MODE = True
 
   suites = []
   for suite_name in suite_names:

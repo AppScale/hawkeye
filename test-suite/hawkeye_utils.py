@@ -10,6 +10,7 @@ __author__ = 'hiranya'
 HOST = None
 PORT = -1
 LANG = None
+CONSOLE_MODE = False
 
 class HawkeyeTestCase(TestCase):
 
@@ -96,6 +97,18 @@ class HawkeyeTestResult(TextTestResult):
       error_log.write('\n')
     error_log.flush()
     error_log.close()
+
+    if CONSOLE_MODE:
+      for test, err in errors:
+        self.stream.write(self.separator1)
+        self.stream.write('\n')
+        self.stream.write("%s: %s" % (flavour,self.getDescription(test)))
+        self.stream.write('\n')
+        self.stream.write(self.separator2)
+        self.stream.write('\n')
+        self.stream.write("%s" % err)
+        self.stream.write('\n')
+      self.stream.flush()
 
 class HawkeyeTestRunner(TextTestRunner):
   def __init__(self, suite):
