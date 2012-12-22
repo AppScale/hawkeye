@@ -23,3 +23,6 @@ handlers:
 
 - url: /python/taskqueue/(.*)
   script: taskqueue.py
+
+- url: /python/blobstore/(.*)
+  script: blobstore.py

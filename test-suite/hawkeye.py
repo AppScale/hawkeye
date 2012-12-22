@@ -4,7 +4,7 @@ import hawkeye_utils
 import optparse
 import os
 import sys
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
+from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests
 
 __author__ = 'hiranya'
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     suite_name = suite_name.strip()
     if suite_name == 'all':
       suites = [ datastore_tests.suite(), ndb_tests.suite(), memcache_tests.suite(),
-                 taskqueue_tests.suite() ]
+                 taskqueue_tests.suite(), blobstore_tests.suite() ]
       break
     elif suite_name == 'datastore':
       suites.append(datastore_tests.suite())
@@ -59,6 +59,8 @@ if __name__ == '__main__':
       suites.append(memcache_tests.suite())
     elif suite_name == 'taskqueue':
       suites.append(taskqueue_tests.suite())
+    elif suite_name == 'blobstore':
+      suites.append(blobstore_tests.suite())
     else:
       print_usage_and_exit('Unsupported test suite: {0}'.format(suite_name), parser)
 

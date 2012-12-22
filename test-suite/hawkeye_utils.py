@@ -27,6 +27,9 @@ class HawkeyeTestCase(TestCase):
   def http_delete(self, path):
     return self.__make_request('DELETE', path)
 
+  def file_upload(self, path, payload, headers):
+    return self.__make_request('POST', path, payload, headers, False)
+
   def assert_and_get_list(self, path):
     status, headers, payload = self.http_get(path)
     self.assertEquals(status, 200)
@@ -34,7 +37,7 @@ class HawkeyeTestCase(TestCase):
     self.assertTrue(len(list) > 0)
     return list
 
-  def __make_request(self, method, path, payload=None):
+  def __make_request(self, method, path, payload=None, headers=None, append_lang=True):
     http_log = open('logs/http.log', 'a')
     if not self.description_printed:
       http_log.write('\n' + str(self) + '\n')
@@ -45,11 +48,15 @@ class HawkeyeTestCase(TestCase):
     sys.stdout = http_log
     try:
       print
-      path = "/" + LANG + path
+      if append_lang:
+        path = "/" + LANG + path
       conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
       conn.set_debuglevel(1)
       if method == 'POST' or method == 'PUT':
-        conn.request(method, path, payload)
+        if headers is not None:
+          conn.request(method, path, payload, headers)
+        else:
+          conn.request(method, path, payload)
         print 'req-body: ' + payload
       else:
         conn.request(method, path)
