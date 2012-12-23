@@ -12,34 +12,38 @@ class PushQueueTest(HawkeyeTestCase):
     self.assertEquals(status, 200)
 
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&get=true'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}&get=true'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
     for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}'.format(key))
-      dict = json.loads(payload)
+      status, headers, payload = self.http_post('/taskqueue/counter',
+        'key={0}'.format(key))
+      task_info = json.loads(payload)
       self.assertEquals(status, 200)
-      self.assertTrue(dict['status'])
+      self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
   def get_and_assert_counter(self, key, expected):
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 600)
     while True:
-      status, headers, payload = self.http_get('/taskqueue/counter?key={0}'.format(key))
+      status, headers, payload = self.http_get('/taskqueue/counter?' \
+                                               'key={0}'.format(key))
       self.assertTrue(status == 200 or status == 404)
       if status == 200:
-        dict = json.loads(payload)
-        if dict[key] == expected:
+        task_info = json.loads(payload)
+        if task_info[key] == expected:
           break
 
       if datetime.datetime.now() > end:
@@ -50,69 +54,76 @@ class PushQueueTest(HawkeyeTestCase):
 class DeferredTaskTest(PushQueueTest):
   def runTest(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&defer=true'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}&defer=true'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&defer=true'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}&defer=true'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
     for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&defer=true'.format(key))
-      dict = json.loads(payload)
+      status, headers, payload = self.http_post('/taskqueue/counter',
+        'key={0}&defer=true'.format(key))
+      task_info = json.loads(payload)
       self.assertEquals(status, 200)
-      self.assertTrue(dict['status'])
+      self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
 class BackendTaskTest(PushQueueTest):
   def runTest(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&backend=true'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}&backend=true'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&backend=true'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/counter',
+      'key={0}&backend=true'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
     for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter', 'key={0}&backend=true'.format(key))
-      dict = json.loads(payload)
+      status, headers, payload = self.http_post('/taskqueue/counter',
+        'key={0}&backend=true'.format(key))
+      task_info = json.loads(payload)
       self.assertEquals(status, 200)
-      self.assertTrue(dict['status'])
+      self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
 class QueueStatisticsTest(HawkeyeTestCase):
   def runTest(self):
     status, headers, payload = self.http_get('/taskqueue/counter?stats=true')
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertEquals(dict['queue'], 'default')
+    task_info = json.loads(payload)
+    self.assertEquals(task_info['queue'], 'default')
 
 class PullQueueTest(HawkeyeTestCase):
   def runTest(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/pull', 'key={0}'.format(key))
-    dict = json.loads(payload)
+    status, headers, payload = self.http_post('/taskqueue/pull',
+      'key={0}'.format(key))
+    task_info = json.loads(payload)
     self.assertEquals(status, 200)
-    self.assertTrue(dict['status'])
+    self.assertTrue(task_info['status'])
 
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 60)
     while True:
       status, headers, payload = self.http_get('/taskqueue/pull')
       self.assertEquals(status, 200)
-      dict = json.loads(payload)
-      if len(dict['tasks']) == 1 and key in dict['tasks']:
+      task_info = json.loads(payload)
+      if len(task_info['tasks']) == 1 and key in task_info['tasks']:
         break
       if datetime.datetime.now() > end:
         self.fail('Pull queue deadline exceeded with no result')

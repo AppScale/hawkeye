@@ -47,11 +47,11 @@ class UploadBlobTest(HawkeyeTestCase):
   def encode (self, file_name, content):
     # Thanks Pietro Abate for the helpful post at:
     # http://mancoosi.org/~abate/upload-file-using-httplib
-    BOUNDARY = '----------boundary------'
-    CRLF = '\r\n'
+    boundary = '----------boundary------'
+    delimiter = '\r\n'
     body = []
     body.extend(
-      ['--' + BOUNDARY,
+      ['--' + boundary,
        'Content-Disposition: form-data; name="file"; filename="%s"'
        % file_name,
        # The upload server determines the mime-type, no need to set it.
@@ -60,47 +60,54 @@ class UploadBlobTest(HawkeyeTestCase):
        content,
        ])
     # Finalize the form body
-    body.extend(['--' + BOUNDARY + '--', ''])
-    return 'multipart/form-data; boundary=%s' % BOUNDARY, CRLF.join(body)
+    body.extend(['--' + boundary + '--', ''])
+    return 'multipart/form-data; boundary=%s' % boundary, delimiter.join(body)
 
 class DownloadBlobTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(
+      file_uploads[FILE1]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, FILE1_DATA)
 
-    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(
+      file_uploads[FILE2]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, FILE2_DATA)
 
 class QueryBlobMetadataTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_get('/blobstore/query?key={0}'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}'.format(
+      file_uploads[FILE1]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertEquals(dict['file'], FILE1)
+    file_info = json.loads(payload)
+    self.assertEquals(file_info['file'], FILE1)
 
-    status, headers, payload = self.http_get('/blobstore/query?key={0}'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}'.format(
+      file_uploads[FILE2]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertEquals(dict['file'], FILE2)
+    file_info = json.loads(payload)
+    self.assertEquals(file_info['file'], FILE2)
 
     status, headers, payload = self.http_get('/blobstore/query?key=bogus')
     self.assertEquals(status, 404)
 
 class BlobstoreGQLTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_get('/blobstore/query?file=file1.txt'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/query?' \
+                                'file=file1.txt'.format(file_uploads[FILE1]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertEquals(dict['file'], FILE1)
+    file_info = json.loads(payload)
+    self.assertEquals(file_info['file'], FILE1)
 
-    status, headers, payload = self.http_get('/blobstore/query?file=file2.txt'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/query?' \
+                                'file=file2.txt'.format(file_uploads[FILE2]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertEquals(dict['file'], FILE2)
+    file_info = json.loads(payload)
+    self.assertEquals(file_info['file'], FILE2)
 
-    status, headers, payload = self.http_get('/blobstore/query?size={0}'.format(len(FILE1_DATA)))
+    status, headers, payload = self.http_get('/blobstore/query?' \
+                                'size={0}'.format(len(FILE1_DATA)))
     self.assertEquals(status, 200)
     blobs = json.loads(payload)
     self.assertTrue(len(blobs) > 0)
@@ -110,40 +117,48 @@ class BlobstoreGQLTest(HawkeyeTestCase):
 
 class QueryBlobDataTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=true&start=0&end=5'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=' \
+                            'true&start=0&end=5'.format(file_uploads[FILE1]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, 'FILE U')
 
-    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=true&start=0&end=5'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=' \
+                            'true&start=0&end=5'.format(file_uploads[FILE2]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, 'AppSca')
 
 class AsyncQueryBlobDataTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=true&start=0&end=5&async=true'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=' \
+                            'true&start=0&end=5&async=true'.format(file_uploads[FILE1]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, 'FILE U')
 
-    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=true&start=0&end=5&async=true'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/query?key={0}&data=' \
+                            'true&start=0&end=5&async=true'.format(file_uploads[FILE2]))
     self.assertEquals(status, 200)
     self.assertEquals(payload, 'AppSca')
 
 class DeleteBlobTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_delete('/blobstore/query?key={0}'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_delete('/blobstore/query?key={0}'.format(
+      file_uploads[FILE1]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertTrue(dict['success'])
+    file_info = json.loads(payload)
+    self.assertTrue(file_info['success'])
 
-    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(file_uploads[FILE1]))
+    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(
+      file_uploads[FILE1]))
     self.assertEquals(status, 500)
 
-    status, headers, payload = self.http_delete('/blobstore/query?key={0}'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_delete('/blobstore/query?key={0}'.format(
+      file_uploads[FILE2]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertTrue(dict['success'])
+    file_info = json.loads(payload)
+    self.assertTrue(file_info['success'])
 
-    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(file_uploads[FILE2]))
+    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(
+      file_uploads[FILE2]))
     self.assertEquals(status, 500)
 
 class AsyncUploadBlobTest(UploadBlobTest):
@@ -165,12 +180,14 @@ class AsyncUploadBlobTest(UploadBlobTest):
 
 class AsyncDeleteBlobTest(HawkeyeTestCase):
   def runTest(self):
-    status, headers, payload = self.http_delete('/blobstore/query?key={0}&async=true'.format(file_uploads[FILE3]))
+    status, headers, payload = self.http_delete('/blobstore/query?key={0}&' \
+                                  'async=true'.format(file_uploads[FILE3]))
     self.assertEquals(status, 200)
-    dict = json.loads(payload)
-    self.assertTrue(dict['success'])
+    file_info = json.loads(payload)
+    self.assertTrue(file_info['success'])
 
-    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(file_uploads[FILE3]))
+    status, headers, payload = self.http_get('/blobstore/download/{0}'.format(
+      file_uploads[FILE3]))
     self.assertEquals(status, 500)
 
 def suite():

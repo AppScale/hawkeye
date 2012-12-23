@@ -84,10 +84,13 @@ class HawkeyeTestResult(TextTestResult):
   def printErrors(self):
     if self.dots or self.showAll:
       self.stream.writeln()
-    self.printErrorInfo('ERROR', self.errors, False)
-    self.printErrorInfo('FAIL', self.failures, True)
+    self.print_error_info('ERROR', self.errors, False)
+    self.print_error_info('FAIL', self.failures, True)
 
-  def printErrorInfo(self, flavour, errors, append):
+  def print_error_info(self, flavour, errors, append):
+    if len(errors) == 0:
+      return
+
     if append:
       mode = 'a'
     else:
@@ -128,7 +131,8 @@ class HawkeyeTestRunner(TextTestRunner):
     self.run(self.suite)
 
   def _makeResult(self):
-    return HawkeyeTestResult(self.stream, self.descriptions, self.verbosity, self.suite.short_name)
+    return HawkeyeTestResult(self.stream, self.descriptions,
+      self.verbosity, self.suite.short_name)
 
 class HawkeyeConstants:
   PROJECT_SYNAPSE = 'Synapse'
