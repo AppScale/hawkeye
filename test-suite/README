@@ -1,0 +1,2 @@
+You must run this with python2.7
+python2.7 hawkeye.py <SERVER> <PORT>
