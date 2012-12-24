@@ -26,3 +26,7 @@ handlers:
 
 - url: /python/blobstore/(.*)
   script: blobstore.py
+
+- url: /python/users/(.*)
+  script: users.py
+  login: required
