@@ -7,30 +7,30 @@ from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
 __author__ = 'hiranya'
 
 class PushQueueTest(HawkeyeTestCase):
-  def runTest(self):
-    status, headers, payload = self.http_delete('/taskqueue/counter')
-    self.assertEquals(status, 200)
+  def run_hawkeye_test(self):
+    response = self.http_delete('/taskqueue/counter')
+    self.assertEquals(response.status, 200)
 
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}&get=true'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
-    for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter',
+    for _ in range(10):
+      response = self.http_post('/taskqueue/counter',
         'key={0}'.format(key))
-      task_info = json.loads(payload)
-      self.assertEquals(status, 200)
+      task_info = json.loads(response.payload)
+      self.assertEquals(response.status, 200)
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
@@ -38,11 +38,10 @@ class PushQueueTest(HawkeyeTestCase):
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 600)
     while True:
-      status, headers, payload = self.http_get('/taskqueue/counter?' \
-                                               'key={0}'.format(key))
-      self.assertTrue(status == 200 or status == 404)
-      if status == 200:
-        task_info = json.loads(payload)
+      response = self.http_get('/taskqueue/counter?key={0}'.format(key))
+      self.assertTrue(response.status == 200 or response.status == 404)
+      if response.status == 200:
+        task_info = json.loads(response.payload)
         if task_info[key] == expected:
           break
 
@@ -52,77 +51,77 @@ class PushQueueTest(HawkeyeTestCase):
         sleep(2)
 
 class DeferredTaskTest(PushQueueTest):
-  def runTest(self):
+  def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}&defer=true'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}&defer=true'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
     for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter',
+      response = self.http_post('/taskqueue/counter',
         'key={0}&defer=true'.format(key))
-      task_info = json.loads(payload)
-      self.assertEquals(status, 200)
+      task_info = json.loads(response.payload)
+      self.assertEquals(response.status, 200)
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
 class BackendTaskTest(PushQueueTest):
-  def runTest(self):
+  def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}&backend=true'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 1)
 
-    status, headers, payload = self.http_post('/taskqueue/counter',
+    response = self.http_post('/taskqueue/counter',
       'key={0}&backend=true'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
     for i in range(0, 10):
-      status, headers, payload = self.http_post('/taskqueue/counter',
+      response = self.http_post('/taskqueue/counter',
         'key={0}&backend=true'.format(key))
-      task_info = json.loads(payload)
-      self.assertEquals(status, 200)
+      task_info = json.loads(response.payload)
+      self.assertEquals(response.status, 200)
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
 class QueueStatisticsTest(HawkeyeTestCase):
-  def runTest(self):
-    status, headers, payload = self.http_get('/taskqueue/counter?stats=true')
-    self.assertEquals(status, 200)
-    task_info = json.loads(payload)
+  def run_hawkeye_test(self):
+    response = self.http_get('/taskqueue/counter?stats=true')
+    self.assertEquals(response.status, 200)
+    task_info = json.loads(response.payload)
     self.assertEquals(task_info['queue'], 'default')
 
 class PullQueueTest(HawkeyeTestCase):
-  def runTest(self):
+  def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    status, headers, payload = self.http_post('/taskqueue/pull',
+    response = self.http_post('/taskqueue/pull',
       'key={0}'.format(key))
-    task_info = json.loads(payload)
-    self.assertEquals(status, 200)
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
 
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 60)
     while True:
-      status, headers, payload = self.http_get('/taskqueue/pull')
-      self.assertEquals(status, 200)
-      task_info = json.loads(payload)
+      response = self.http_get('/taskqueue/pull')
+      self.assertEquals(response.status, 200)
+      task_info = json.loads(response.payload)
       if len(task_info['tasks']) == 1 and key in task_info['tasks']:
         break
       if datetime.datetime.now() > end:
