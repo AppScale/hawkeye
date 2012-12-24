@@ -70,10 +70,11 @@ class MemcacheMultiKeyHandler(webapp2.RequestHandler):
     else:
       response = memcache.add_multi(mapping, int(timeout))
 
-    if len(response) == 0:
+    if not response:
       self.response.out.write(json.dumps({ 'success' : True }))
     else:
-      self.response.out.write(json.dumps({ 'success' : False, 'failed_keys' : response }))
+      self.response.out.write(
+        json.dumps({ 'success' : False, 'failed_keys' : response }))
 
   def delete(self):
     keys = self.request.get('keys')

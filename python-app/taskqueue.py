@@ -42,7 +42,8 @@ class TaskCounterHandler(webapp2.RequestHandler):
     backend = self.request.get('backend')
 
     if backend is not None and backend == 'true':
-      taskqueue.add(url='/python/taskqueue/worker', params={'key': key}, target='hawkeyepython')
+      taskqueue.add(url='/python/taskqueue/worker',
+        params={'key': key}, target='hawkeyepython')
     elif defer is not None and defer == 'true':
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':

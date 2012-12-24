@@ -102,11 +102,15 @@ class NDBModuleHandler(webapp2.RequestHandler):
     project_id = self.request.get('project_id')
     project_key = ndb.Key(urlsafe=project_id)
     module_name = self.request.get('name')
-    module = NDBModule(name=module_name, description=self.request.get('description'), parent=project_key)
+    module = NDBModule(
+      name=module_name,
+      description=self.request.get('description'),
+      parent=project_key)
     module_id = module.put()
     self.response.headers['Content-Type'] = "application/json"
     self.response.set_status(201)
-    self.response.out.write(json.dumps({ 'success' : True, 'module_id' : module_id.urlsafe() }))
+    self.response.out.write(
+      json.dumps({ 'success' : True, 'module_id' : module_id.urlsafe() }))
 
   def delete(self):
     q = NDBModule.query()
@@ -162,7 +166,8 @@ class NDBProjectFieldHandler(webapp2.RequestHandler):
     rate_limit = self.request.get('rate_limit')
     field_tuple = fields.split(',')
     if rate_limit is not None and len(rate_limit) > 0 and 'rating' in field_tuple:
-      q = NDBProject.query(NDBProject.rating >= int(rate_limit)).fetch(projection=field_tuple)
+      q = NDBProject.query(
+        NDBProject.rating >= int(rate_limit)).fetch(projection=field_tuple)
     else:
       q = NDBProject.query().fetch(projection=field_tuple)
 
@@ -239,11 +244,19 @@ class NDBTransactionHandler(webapp2.RequestHandler):
         self.increment_counters(key, int(amount))
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
-        status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
+        status = {
+          'success' : True,
+          'counter' : counter1.counter,
+          'backup' : counter2.counter
+        }
       except Exception:
         counter1 = NDBCounter.get_by_id(key)
         counter2 = NDBCounter.get_by_id(key + '_backup')
-        status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }
+        status = {
+          'success' : False,
+          'counter' : counter1.counter,
+          'backup' : counter2.counter
+        }
     else:
       try:
         self.increment_counter(key, int(amount))

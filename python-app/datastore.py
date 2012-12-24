@@ -47,7 +47,8 @@ class ProjectHandler(webapp2.RequestHandler):
         else:
           query = db.GqlQuery("SELECT * FROM Project")
       else:
-        query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % str(id))
+        query = db.GqlQuery("SELECT * FROM Project WHERE "
+                            "project_id = '%s'" % str(id))
 
       data = []
       for result in query:
@@ -58,13 +59,17 @@ class ProjectHandler(webapp2.RequestHandler):
     def post(self):
       project_id = str(uuid.uuid1())
       project_name = self.request.get('name')
-      project = Project(project_id=project_id, name=project_name, rating=int(self.request.get('rating')),
-        description=self.request.get('description'), license=self.request.get('license'),
+      project = Project(project_id=project_id,
+        name=project_name,
+        rating=int(self.request.get('rating')),
+        description=self.request.get('description'),
+        license=self.request.get('license'),
         key_name=project_name)
       project.put()
       self.response.headers['Content-Type'] = "application/json"
       self.response.set_status(201)
-      self.response.out.write(json.dumps({ 'success' : True, 'project_id' : project_id }))
+      self.response.out.write(
+        json.dumps({ 'success' : True, 'project_id' : project_id }))
 
     def delete(self):
       db.delete(Project.all())
@@ -75,7 +80,8 @@ class ModuleHandler(webapp2.RequestHandler):
     if id is None or id.strip() == '':
       query = db.GqlQuery("SELECT * FROM Module")
     else:
-      query = db.GqlQuery("SELECT * FROM Module WHERE module_id = '%s'" % str(id))
+      query = db.GqlQuery("SELECT * FROM Module WHERE "
+                          "module_id = '%s'" % str(id))
 
     data = []
     for result in query:
@@ -85,15 +91,20 @@ class ModuleHandler(webapp2.RequestHandler):
 
   def post(self):
     project_id = self.request.get('project_id')
-    query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % str(project_id))
+    query = db.GqlQuery("SELECT * FROM Project WHERE "
+                        "project_id = '%s'" % str(project_id))
     module_id = str(uuid.uuid1())
     module_name = self.request.get('name')
-    module = Module(module_id=module_id, name=module_name,
-      description=self.request.get('description'), parent=query[0], key_name=module_name)
+    module = Module(module_id=module_id,
+      name=module_name,
+      description=self.request.get('description'),
+      parent=query[0],
+      key_name=module_name)
     module.put()
     self.response.headers['Content-Type'] = "application/json"
     self.response.set_status(201)
-    self.response.out.write(json.dumps({ 'success' : True, 'module_id' : module_id }))
+    self.response.out.write(
+      json.dumps({ 'success' : True, 'module_id' : module_id }))
 
   def delete(self):
     db.delete(Module.all())
@@ -101,7 +112,8 @@ class ModuleHandler(webapp2.RequestHandler):
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % project_id)
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE "
+                                "project_id = '%s'" % project_id)
     q = db.Query()
     q.ancestor(project_query[0])
     data = []
@@ -114,7 +126,8 @@ class ProjectKeyHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
     ancestor = self.request.get('ancestor')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE project_id = '%s'" % project_id)
+    project_query = db.GqlQuery("SELECT * FROM Project WHERE "
+                                "project_id = '%s'" % project_id)
     q = db.Query()
     if ancestor is not None and ancestor == 'true':
       q.ancestor(project_query[0])
@@ -138,7 +151,8 @@ class EntityNameHandler(webapp2.RequestHandler):
     module_name = self.request.get('module_name')
     if project_name is not None and len(project_name) > 0:
       if module_name is not None and len(module_name) > 0:
-        project_query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % project_name)
+        project_query = db.GqlQuery("SELECT * FROM Project WHERE "
+                                    "name = '%s'" % project_name)
         entity = Module.get_by_key_name(module_name, parent=project_query[0])
       else:
         entity = Project.get_by_key_name(project_name, parent=None)
@@ -211,9 +225,11 @@ class ProjectBrowserHandler(webapp2.RequestHandler):
     cursor = q.cursor()
     self.response.headers['Content-Type'] = "application/json"
     if len(result) == 1:
-      self.response.out.write(json.dumps({ 'project' :  result[0].name, 'next' : cursor }))
+      self.response.out.write(
+        json.dumps({ 'project' :  result[0].name, 'next' : cursor }))
     else:
-      self.response.out.write(json.dumps({ 'project' :  None, 'next' : None }))
+      self.response.out.write(
+        json.dumps({ 'project' :  None, 'next' : None }))
 
 class ProjectFilterHandler(webapp2.RequestHandler):
   def get(self):
@@ -262,14 +278,23 @@ class TransactionHandler(webapp2.RequestHandler):
     if xg is not None and xg == 'true':
       try:
         xg_on = db.create_transaction_options(xg=True)
-        db.run_in_transaction_options(xg_on, self.increment_counters, key, int(amount))
+        db.run_in_transaction_options(xg_on,
+          self.increment_counters, key, int(amount))
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
-        status = { 'success' : True, 'counter' : counter1.counter, 'backup' : counter2.counter }
+        status = {
+          'success' : True,
+          'counter' : counter1.counter,
+          'backup' : counter2.counter
+        }
       except Exception:
         counter1 = Counter.get_by_key_name(key)
         counter2 = Counter.get_by_key_name(key + '_backup')
-        status = { 'success' : False, 'counter' : counter1.counter, 'backup' : counter2.counter }
+        status = {
+          'success' : False,
+          'counter' : counter1.counter,
+          'backup' : counter2.counter
+        }
     else:
       try:
         db.run_in_transaction(self.increment_counter, key, int(amount))

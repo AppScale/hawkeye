@@ -35,6 +35,19 @@ class PushQueueTest(HawkeyeTestCase):
     self.get_and_assert_counter(key, 12)
 
   def get_and_assert_counter(self, key, expected):
+    """
+    Perform a HTTP GET on /taskqueue/counter for the given key and
+    obtain the counter value from GAE datastore API. The returned value
+    will be asserted against the provided expected value. This method
+    is blocking in that it blocks until a valid response is received from
+    the backend service. If a valid response is not received within 10
+    minutes, this method will force the parent test case to fail.
+
+    Args:
+      key A datastore key string
+      expected  Expected integer value
+    """
+
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 600)
     while True:
@@ -67,7 +80,7 @@ class DeferredTaskTest(PushQueueTest):
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
-    for i in range(0, 10):
+    for _ in range(10):
       response = self.http_post('/taskqueue/counter',
         'key={0}&defer=true'.format(key))
       task_info = json.loads(response.payload)
@@ -92,7 +105,7 @@ class BackendTaskTest(PushQueueTest):
     self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 2)
 
-    for i in range(0, 10):
+    for _ in range(10):
       response = self.http_post('/taskqueue/counter',
         'key={0}&backend=true'.format(key))
       task_info = json.loads(response.payload)
