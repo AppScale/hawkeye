@@ -146,7 +146,11 @@ def suite():
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTest(PushQueueTest())
   suite.addTest(DeferredTaskTest())
+
+  # Does not work due to a bug in the dev server
+  # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())
+
   suite.addTest(PullQueueTest())
   suite.addTest(QueueStatisticsTest())
   return suite

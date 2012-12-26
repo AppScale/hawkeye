@@ -94,8 +94,7 @@ if __name__ == '__main__':
         format(exclude_suite), parser)
 
   if not suites:
-    print_usage_and_exit('Must specify at least one suite to execute'.
-      format(suite_name), parser)
+    print_usage_and_exit('Must specify at least one suite to execute', parser)
 
   if not os.path.exists('logs'):
     os.makedirs('logs')
