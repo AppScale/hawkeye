@@ -29,4 +29,3 @@ handlers:
 
 - url: /python/users/(.*)
   script: users.py
-  login: required
