@@ -10,6 +10,15 @@ __author__ = 'hiranya'
 
 SUPPORTED_LANGUAGES = [ 'java', 'python' ]
 
+TEST_SUITES = {
+  'datastore' : datastore_tests.suite(),
+  'ndb' : ndb_tests.suite(),
+  'taskqueue' : taskqueue_tests.suite(),
+  'blobstore' : blobstore_tests.suite(),
+  'memcache' : memcache_tests.suite(),
+  'users' : user_tests.suite(),
+}
+
 def print_usage_and_exit(msg, parser):
   print msg
   parser.print_help()
@@ -18,19 +27,21 @@ def print_usage_and_exit(msg, parser):
 if __name__ == '__main__':
   parser = optparse.OptionParser()
   parser.add_option('-s', '--server', action='store',
-    type='string', dest='server')
+    type='string', dest='server', help='Hostname of the target AppEngine server')
   parser.add_option('-p', '--port', action='store',
-    type='int', dest='port')
+    type='int', dest='port', help='Port of the target AppEngine server')
   parser.add_option('-l', '--lang', action='store',
-    type='string', dest='lang')
+    type='string', dest='lang', help='Language binding to test (eg: python, java')
   parser.add_option('--user', action='store',
-    type='string', dest='user')
+    type='string', dest='user', help='Admin username (defaults to a@a.a)')
   parser.add_option('--pass', action='store',
-    type='string', dest='password')
+    type='string', dest='password', help='Admin password (defaults to aaaaaa')
   parser.add_option('-c', '--console', action='store_true',
-    dest='console')
+    dest='console', help='Log errors and failures to console')
   parser.add_option('--suites', action='store', type='string',
-    dest='suites')
+    dest='suites', help='A comma separated list of suites to run')
+  parser.add_option('--exclude-suites', action='store', type='string',
+    dest='exclude_suites', help='A comma separated list of suites to exclude')
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
@@ -44,8 +55,11 @@ if __name__ == '__main__':
     options.lang = 'python'
 
   suite_names = ['all']
+  exclude_suites = []
   if options.suites is not None:
     suite_names = options.suites.split(',')
+  if options.exclude_suites is not None:
+    exclude_suites = options.exclude_suites.split(',')
 
   if options.user is not None:
     hawkeye_utils.USER_EMAIL = options.user
@@ -59,28 +73,29 @@ if __name__ == '__main__':
   if options.console:
     hawkeye_utils.CONSOLE_MODE = True
 
-  suites = []
+  suites = {}
   for suite_name in suite_names:
     suite_name = suite_name.strip()
     if suite_name == 'all':
-      suites = [ datastore_tests.suite(), ndb_tests.suite(), memcache_tests.suite(),
-                 taskqueue_tests.suite(), blobstore_tests.suite(), user_tests.suite() ]
+      suites = TEST_SUITES
       break
-    elif suite_name == 'datastore':
-      suites.append(datastore_tests.suite())
-    elif suite_name == 'ndb':
-      suites.append(ndb_tests.suite())
-    elif suite_name == 'memcache':
-      suites.append(memcache_tests.suite())
-    elif suite_name == 'taskqueue':
-      suites.append(taskqueue_tests.suite())
-    elif suite_name == 'blobstore':
-      suites.append(blobstore_tests.suite())
-    elif suite_name == 'users':
-      suites.append(user_tests.suite())
+    elif TEST_SUITES.has_key(suite_name):
+      suites[suite_name] = TEST_SUITES[suite_name]
     else:
       print_usage_and_exit('Unsupported test suite: {0}'.
         format(suite_name), parser)
+
+  for exclude_suite in exclude_suites:
+    exclude_suite = exclude_suite.strip()
+    if suites.has_key(exclude_suite):
+      del(suites[exclude_suite])
+    elif not TEST_SUITES.has_key(exclude_suite):
+      print_usage_and_exit('Unsupported test suite: {0}'.
+        format(exclude_suite), parser)
+
+  if not suites:
+    print_usage_and_exit('Must specify at least one suite to execute'.
+      format(suite_name), parser)
 
   if not os.path.exists('logs'):
     os.makedirs('logs')
@@ -90,6 +105,6 @@ if __name__ == '__main__':
     if os.path.isfile(file_path):
       os.unlink(file_path)
 
-  for suite in suites:
+  for suite in suites.values():
     runner = hawkeye_utils.HawkeyeTestRunner(suite)
     runner.run_suite()
