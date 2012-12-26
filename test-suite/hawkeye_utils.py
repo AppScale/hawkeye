@@ -1,5 +1,6 @@
 import httplib
 import json
+import os
 import sys
 from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
@@ -359,3 +360,41 @@ class HawkeyeConstants:
 
   MOD_CORE = 'Core'
   MOD_NHTTP = 'NHTTP'
+
+
+def encode (file_name, content):
+  """
+  Encode the specified file name and content payload into a HTTP
+  file upload request.
+
+  Args:
+    file_name Name of the file
+    content   String payload to be uploaded
+
+  Returns:
+    A HTTP multipart form request encoded payload string
+  """
+
+  # Thanks Pietro Abate for the helpful post at:
+  # http://mancoosi.org/~abate/upload-file-using-httplib
+  boundary = '----------boundary------'
+  delimiter = '\r\n'
+  body = []
+  body.extend(
+    ['--' + boundary,
+     'Content-Disposition: form-data; name="file"; filename="%s"'
+     % file_name,
+     # The upload server determines the mime-type, no need to set it.
+     'Content-Type: application/octet-stream',
+     '',
+     content,
+     ])
+  # Finalize the form body
+  body.extend(['--' + boundary + '--', ''])
+  return 'multipart/form-data; boundary=%s' % boundary, delimiter.join(body)
+
+def encode_file(file_path):
+  file_data = open(file_path, 'rb')
+  content = file_data.read()
+  file_data.close()
+  return encode(os.path.basename(file_path), content)

@@ -33,3 +33,6 @@ handlers:
 
 - url: /python/users/(.*)
   script: users.py
+
+- url: /python/images/(.*)
+  script: images.py

@@ -4,7 +4,7 @@ import hawkeye_utils
 import optparse
 import os
 import sys
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests
+from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests
 
 __author__ = 'hiranya'
 
@@ -17,6 +17,7 @@ TEST_SUITES = {
   'blobstore' : blobstore_tests.suite(),
   'memcache' : memcache_tests.suite(),
   'users' : user_tests.suite(),
+  'images' : images_tests.suite()
 }
 
 def print_usage_and_exit(msg, parser):

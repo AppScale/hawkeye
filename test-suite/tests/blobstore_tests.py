@@ -1,6 +1,7 @@
 import json
 import urlparse
 from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
+import hawkeye_utils
 
 __author__ = 'hiranya'
 
@@ -20,7 +21,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     url = json.loads(response.payload)['url']
     self.assertTrue(url is not None and len(url) > 0)
-    content_type, body = self.encode(FILE1, FILE1_DATA)
+    content_type, body = hawkeye_utils.encode(FILE1, FILE1_DATA)
     headers = { 'Content-Type': content_type }
     parser = urlparse.urlparse(url)
     response = self.file_upload(parser.path, body, headers)
@@ -33,7 +34,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     url = json.loads(response.payload)['url']
     self.assertTrue(url is not None and len(url) > 0)
-    content_type, body = self.encode(FILE2, FILE2_DATA)
+    content_type, body = hawkeye_utils.encode(FILE2, FILE2_DATA)
     headers = { 'Content-Type': content_type }
     parser = urlparse.urlparse(url)
     response = self.file_upload(parser.path, body, headers)
@@ -41,37 +42,6 @@ class UploadBlobTest(HawkeyeTestCase):
     blob_key = json.loads(response.payload)['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
     FILE_UPLOADS[FILE2] = blob_key
-
-  def encode (self, file_name, content):
-    """
-    Encode the specified file name and content payload into a HTTP
-    file upload request.
-
-    Args:
-      file_name Name of the file
-      content   String payload to be uploaded
-
-    Returns:
-      A HTTP multipart form request encoded payload string
-    """
-
-    # Thanks Pietro Abate for the helpful post at:
-    # http://mancoosi.org/~abate/upload-file-using-httplib
-    boundary = '----------boundary------'
-    delimiter = '\r\n'
-    body = []
-    body.extend(
-      ['--' + boundary,
-       'Content-Disposition: form-data; name="file"; filename="%s"'
-       % file_name,
-       # The upload server determines the mime-type, no need to set it.
-       'Content-Type: application/octet-stream',
-       '',
-       content,
-       ])
-    # Finalize the form body
-    body.extend(['--' + boundary + '--', ''])
-    return 'multipart/form-data; boundary=%s' % boundary, delimiter.join(body)
 
 class DownloadBlobTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -171,13 +141,13 @@ class DeleteBlobTest(HawkeyeTestCase):
       FILE_UPLOADS[FILE2]))
     self.assertEquals(response.status, 500)
 
-class AsyncUploadBlobTest(UploadBlobTest):
+class AsyncUploadBlobTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/blobstore/url?async=true')
     self.assertEquals(response.status, 200)
     url = json.loads(response.payload)['url']
     self.assertTrue(url is not None and len(url) > 0)
-    content_type, body = self.encode(FILE3, FILE3_DATA)
+    content_type, body = hawkeye_utils.encode(FILE3, FILE3_DATA)
     headers = { 'Content-Type': content_type }
     parser = urlparse.urlparse(url)
     response = self.file_upload(parser.path, body, headers)
