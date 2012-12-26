@@ -23,6 +23,10 @@ if __name__ == '__main__':
     type='int', dest='port')
   parser.add_option('-l', '--lang', action='store',
     type='string', dest='lang')
+  parser.add_option('--user', action='store',
+    type='string', dest='user')
+  parser.add_option('--pass', action='store',
+    type='string', dest='password')
   parser.add_option('-c', '--console', action='store_true',
     dest='console')
   parser.add_option('--suites', action='store', type='string',
@@ -42,6 +46,11 @@ if __name__ == '__main__':
   suite_names = ['all']
   if options.suites is not None:
     suite_names = options.suites.split(',')
+
+  if options.user is not None:
+    hawkeye_utils.USER_EMAIL = options.user
+  if options.password is not None:
+    hawkeye_utils.USER_PASSWORD = options.password
 
   hawkeye_utils.HOST = options.server
   hawkeye_utils.PORT = options.port
