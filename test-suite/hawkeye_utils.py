@@ -11,6 +11,8 @@ HOST = None
 PORT = -1
 LANG = None
 CONSOLE_MODE = False
+USER_EMAIL = 'a@a.a'
+USER_PASSWORD = 'aaaaaa'
 
 class ResponseInfo:
   """
@@ -25,7 +27,9 @@ class ResponseInfo:
     object.
     """
     self.status = response.status
-    self.headers = response.getheaders()
+    self.headers = {}
+    for header in response.getheaders():
+      self.headers[header[0]] = header[1]
     self.payload = response.read()
 
 class HawkeyeTestCase(TestCase):
@@ -58,77 +62,87 @@ class HawkeyeTestCase(TestCase):
     """
     raise NotImplementedError
 
-  def http_get(self, path):
+  def http_get(self, path, headers=None, prepend_lang=True):
     """
     Perform a HTTP GET request on the specified URL path.
     The hostname and port segments of the URL are inferred from
     the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. Further to that, the value of the constant
-    hawkeye_utils.LANG will be prepended to the provided URL path.
+    hawkeye_utils.PORT.
 
     Args:
-      path  A URL path fragment (eg: /foo)
+      path          A URL path fragment (eg: /foo)
+      headers       A dictionary to be sent as HTTP headers
+      prepend_lang  If True the value of hawkeye_utils.LANG will be
+                    prepended to the provided URL path. Default is
+                    True
 
     Returns:
       An instance of ResponseInfo
     """
-    return self.__make_request('GET', path)
+    return self.__make_request('GET', path, headers=headers,
+      prepend_lang=prepend_lang)
 
-  def http_post(self, path, payload):
+  def http_post(self, path, payload, headers=None, prepend_lang=True):
     """
     Perform a HTTP POST request on the specified URL path.
     The hostname and port segments of the URL are inferred from
     the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. Further to that, the value of the constant
-    hawkeye_utils.LANG will be prepended to the provided URL path.
-    This method is best suited for performing HTTP form posts as the
-    method does not provide any control over content type manipulation.
+    hawkeye_utils.PORT. This method is best suited for performing
+    HTTP form posts as the method does not provide any control over
+    content type manipulation.
 
     Args:
-      path     A URL path fragment (eg: /foo)
-      payload  A string payload to be sent POSTed
+      path          A URL path fragment (eg: /foo)
+      payload       A string payload to be sent POSTed
+      headers       A dictionary of headers
+      prepend_lang  If True the value of hawkeye_utils.LANG will be
+                    prepended to the provided URL path. Default is
+                    True
 
     Returns:
       An instance of ResponseInfo
     """
-    return self.__make_request('POST', path, payload)
+    return self.__make_request('POST', path, payload, headers=headers,
+      prepend_lang=prepend_lang)
 
-  def http_delete(self, path):
+  def http_delete(self, path, prepend_lang=True):
     """
     Perform a HTTP DELETE request on the specified URL path.
     The hostname and port segments of the URL are inferred from
     the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. Further to that, the value of the constant
-    hawkeye_utils.LANG will be prepended to the provided URL path.
+    hawkeye_utils.PORT.
 
     Args:
-      path  A URL path fragment (eg: /foo)
+      path          A URL path fragment (eg: /foo)
+      prepend_lang  If True the value of hawkeye_utils.LANG will be
+                    prepended to the provided URL path. Default is
+                    True
 
     Returns:
       An instance of ResponseInfo
     """
-    return self.__make_request('DELETE', path)
+    return self.__make_request('DELETE', path, prepend_lang=prepend_lang)
 
-  def file_upload(self, path, payload, headers):
+  def file_upload(self, path, payload, headers, prepend_lang=False):
     """
     Perform a HTTP POST request on the specified URL path and uploads
     the specified payload as a HTTP form based file upload..
     The hostname and port segments of the URL are inferred from
     the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. Unlike other helper methods in this class,
-    this method does not prepend the LANG constant to the specified
-    URL fragment. This is to facilitate the fact and GAE uses a separate
-    base URL to handle all file uploads, independent of all apps.
+    hawkeye_utils.PORT.
 
     Args:
-      path    A URL path fragment (eg: /foo)
-      payload Payload string content to be uploaded
-      headers A list of tuples to be sent as HTTP headers
+      path          A URL path fragment (eg: /foo)
+      payload       Payload string content to be uploaded
+      headers       A dictionary to be sent as HTTP headers
+      prepend_lang  If True the value of hawkeye_utils.LANG will be
+                    prepended to the provided URL path. Default is
+                    False.
 
     Returns:
       An instance of ResponseInfo
     """
-    return self.__make_request('POST', path, payload, headers, False)
+    return self.__make_request('POST', path, payload, headers, prepend_lang)
 
   def assert_and_get_list(self, path):
     """
@@ -153,7 +167,8 @@ class HawkeyeTestCase(TestCase):
     self.assertTrue(len(list) > 0)
     return list
 
-  def __make_request(self, method, path, payload=None, headers=None, prepend_lang=True):
+  def __make_request(self, method, path, payload=None, headers=None,
+                     prepend_lang=True):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
     are traced and logged to logs/http.log.
@@ -162,7 +177,7 @@ class HawkeyeTestCase(TestCase):
       method  HTTP method (eg: GET, POST)
       path    URL path to execute on
       payload Payload to be sent. Only used if the method is POST or PUT
-      headers Any HTTP headers to be sent as a list of tuples
+      headers Any HTTP headers to be sent as a dictionary
       prepend_lang If True the value of hawkeye_utils.LANG will be prepended
                     to the URL
 
@@ -190,7 +205,10 @@ class HawkeyeTestCase(TestCase):
           conn.request(method, path, payload)
         print 'req-body: ' + payload
       else:
-        conn.request(method, path)
+        if headers is not None:
+          conn.request(method, path, headers=headers)
+        else:
+          conn.request(method, path)
       response = conn.getresponse()
       response_info = ResponseInfo(response)
       conn.close()
