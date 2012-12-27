@@ -21,7 +21,7 @@ public class ModuleHandlerServlet extends HttpServlet {
         if (id == null || "".equals(id.trim())) {
             q = new Query("Module");
         } else {
-            Query.FilterPredicate filter = new Query.FilterPredicate("moduleId",
+            Query.FilterPredicate filter = new Query.FilterPredicate("module_id",
                     Query.FilterOperator.EQUAL, id);
             q = new Query("Module").setFilter(filter);
         }
@@ -31,7 +31,7 @@ public class ModuleHandlerServlet extends HttpServlet {
         List<JSONSerializable> modules = new ArrayList<JSONSerializable>();
         for (Entity result : preparedQuery.asIterable()) {
             Module module = new Module();
-            module.setModuleId((String) result.getProperty("moduleId"));
+            module.setModuleId((String) result.getProperty("module_id"));
             module.setName((String) result.getProperty("name"));
             module.setDescription((String) result.getProperty("description"));
             modules.add(module);
@@ -45,7 +45,7 @@ public class ModuleHandlerServlet extends HttpServlet {
                           HttpServletResponse response) throws ServletException, IOException {
         String projectId = request.getParameter("project_id");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate("projectId",
+        Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
                 Query.FilterOperator.EQUAL, projectId);
         Query q = new Query("Project").setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(q);
@@ -54,7 +54,7 @@ public class ModuleHandlerServlet extends HttpServlet {
         String moduleId = UUID.randomUUID().toString();
         String moduleName = request.getParameter("name");
         Entity module = new Entity("Module", moduleName, project.getKey());
-        module.setProperty("moduleId", moduleId);
+        module.setProperty("module_id", moduleId);
         module.setProperty("name", moduleName);
         module.setProperty("description", request.getParameter("description"));
         datastore.put(module);

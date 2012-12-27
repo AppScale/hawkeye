@@ -19,7 +19,7 @@ public class ProjectHandlerServlet extends HttpServlet {
         String projectId = UUID.randomUUID().toString();
         String projectName = request.getParameter("name");
         Entity project = new Entity("Project", projectName);
-        project.setProperty("projectId", projectId);
+        project.setProperty("project_id", projectId);
         project.setProperty("name", projectName);
         project.setProperty("description", request.getParameter("description"));
         project.setProperty("license", request.getParameter("license"));
@@ -47,7 +47,7 @@ public class ProjectHandlerServlet extends HttpServlet {
                 q = new Query("Project");
             }
         } else {
-            Query.FilterPredicate filter = new Query.FilterPredicate("projectId",
+            Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
                     Query.FilterOperator.EQUAL, id);
             q = new Query("Project").setFilter(filter);
         }
@@ -57,7 +57,7 @@ public class ProjectHandlerServlet extends HttpServlet {
         List<JSONSerializable> projects = new ArrayList<JSONSerializable>();
         for (Entity result : preparedQuery.asIterable()) {
             Project project = new Project();
-            project.setProjectId((String) result.getProperty("projectId"));
+            project.setProjectId((String) result.getProperty("project_id"));
             project.setName((String) result.getProperty("name"));
             project.setDescription((String) result.getProperty("description"));
             project.setLicense((String) result.getProperty("license"));

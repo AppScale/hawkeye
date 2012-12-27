@@ -20,7 +20,7 @@ public class ProjectModuleHandlerServlet extends HttpServlet {
 
         String projectId = request.getParameter("project_id");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate("projectId",
+        Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
                 Query.FilterOperator.EQUAL, projectId);
         Query q = new Query("Project").setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(q);
@@ -31,7 +31,7 @@ public class ProjectModuleHandlerServlet extends HttpServlet {
         List<JSONSerializable> modules = new ArrayList<JSONSerializable>();
         for (Entity result : preparedQuery.asIterable()) {
             Module module = new Module();
-            module.setModuleId((String) result.getProperty("moduleId"));
+            module.setModuleId((String) result.getProperty("module_id"));
             module.setName((String) result.getProperty("name"));
             module.setDescription((String) result.getProperty("description"));
             modules.add(module);

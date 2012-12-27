@@ -19,7 +19,7 @@ public class ProjectKeyHandlerServlet extends HttpServlet {
         String comparator = request.getParameter("comparator");
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate("projectId",
+        Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
                 Query.FilterOperator.EQUAL, projectId);
         Query projectQuery = new Query("Project").setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(projectQuery);

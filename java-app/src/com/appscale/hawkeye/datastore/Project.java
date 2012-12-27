@@ -54,13 +54,16 @@ public class Project implements JSONSerializable {
 
     public JSONObject toJSON() {
         try {
-            return new JSONObject().
+            JSONObject json = new JSONObject().
                     put("project_id", projectId).
                     put("name", name).
                     put("description", description).
                     put("license", license).
-                    put("rating", rating).
                     put("type", "project");
+            if (rating >= 0) {
+                json.put("rating", rating);
+            }
+            return json;
         } catch (JSONException e) {
             throw new RuntimeException("Error constructing JSON", e);
         }

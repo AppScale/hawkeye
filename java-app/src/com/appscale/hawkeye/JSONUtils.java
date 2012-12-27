@@ -41,8 +41,13 @@ public class JSONUtils {
 
     public static void serialize(PreparedQuery preparedQuery,
                                  HttpServletResponse response) throws IOException {
+        serialize(preparedQuery.asIterable(), response);
+    }
+
+    public static void serialize(Iterable<Entity> iterable,
+                                 HttpServletResponse response) throws IOException {
         List<JSONSerializable> entities = new ArrayList<JSONSerializable>();
-        for (Entity result : preparedQuery.asIterable()) {
+        for (Entity result : iterable) {
             JSONSerializable json = toJSONSerializable(result);
             if (json != null) {
                 entities.add(json);
@@ -53,19 +58,23 @@ public class JSONUtils {
     }
 
     private static JSONSerializable toJSONSerializable(Entity entity) {
-        if (entity.hasProperty("moduleId")) {
+        if (entity.hasProperty("module_id")) {
             Module module = new Module();
-            module.setModuleId((String) entity.getProperty("moduleId"));
+            module.setModuleId((String) entity.getProperty("module_id"));
             module.setName((String) entity.getProperty("name"));
             module.setDescription((String) entity.getProperty("description"));
             return module;
-        } else if (entity.hasProperty("projectId")) {
+        } else if (entity.hasProperty("project_id")) {
             Project project = new Project();
-            project.setProjectId((String) entity.getProperty("projectId"));
+            project.setProjectId((String) entity.getProperty("project_id"));
             project.setName((String) entity.getProperty("name"));
             project.setDescription((String) entity.getProperty("description"));
             project.setLicense((String) entity.getProperty("license"));
-            project.setRating((Long) entity.getProperty("rating"));
+            if (entity.hasProperty("rating")) {
+                project.setRating((Long) entity.getProperty("rating"));
+            } else {
+                project.setRating(-1);
+            }
             return project;
         }
         return null;

@@ -28,6 +28,26 @@
         <servlet-name>EntityNameHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.EntityNameHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ProjectRatingHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.ProjectRatingHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProjectFieldHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.ProjectFieldHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProjectFilterHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.ProjectFilterHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TransactionHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.TransactionHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ProjectBrowserHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.ProjectBrowserHandlerServlet</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -48,5 +68,25 @@
     <servlet-mapping>
         <servlet-name>EntityNameHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/entity_names</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProjectRatingHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/project_ratings</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProjectFieldHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/project_fields</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProjectFilterHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/project_filter</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TransactionHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/transactions</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProjectBrowserHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/project_cursor</url-pattern>
     </servlet-mapping>
 </web-app>
