@@ -44,6 +44,12 @@
                 <include name="**/*.xml" />
             </fileset>
         </copy>
+        <copy
+                todir="war/WEB-INF/classes/META-INF">
+            <fileset dir="web/WEB-INF/classes/META-INF">
+                <include name="**/*.xml" />
+            </fileset>
+        </copy>
         <javac
                 srcdir="src"
                 destdir="war/WEB-INF/classes"
@@ -63,7 +69,11 @@
 
     <target name="runserver" depends="datanucleusenhance"
             description="Starts the development server.">
-        <dev_appserver war="war" />
+        <dev_appserver war="war">
+            <options>
+                <arg value="--jvm_flag=-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=20"/>
+            </options>
+        </dev_appserver>
     </target>
 
     <target name="update" depends="datanucleusenhance"

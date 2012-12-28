@@ -1,4 +1,4 @@
-package com.appscale.hawkeye.datastore;
+package com.appscale.hawkeye.datastore.jdo;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManagerFactory;

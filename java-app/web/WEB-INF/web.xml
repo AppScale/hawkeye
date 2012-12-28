@@ -50,7 +50,11 @@
     </servlet>
     <servlet>
         <servlet-name>JDOHandlerServlet</servlet-name>
-        <servlet-class>com.appscale.hawkeye.datastore.JDOHandlerServlet</servlet-class>
+        <servlet-class>com.appscale.hawkeye.datastore.jdo.JDOHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>JPAHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.jpa.JPAHandlerServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -96,5 +100,9 @@
     <servlet-mapping>
         <servlet-name>JDOHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/jdo_project</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>JPAHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/jpa_project</url-pattern>
     </servlet-mapping>
 </web-app>

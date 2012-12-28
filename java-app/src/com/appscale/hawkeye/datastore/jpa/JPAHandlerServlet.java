@@ -1,11 +1,10 @@
-package com.appscale.hawkeye.datastore;
+package com.appscale.hawkeye.datastore.jpa;
 
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import javax.jdo.JDOObjectNotFoundException;
-import javax.jdo.PersistenceManager;
+import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,8 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
-public class JDOHandlerServlet extends HttpServlet {
+public class JPAHandlerServlet extends HttpServlet {
 
     protected void doPut(HttpServletRequest request,
                           HttpServletResponse response) throws ServletException, IOException {
@@ -24,18 +22,18 @@ public class JDOHandlerServlet extends HttpServlet {
         String name = request.getParameter("name");
         int rating = Integer.parseInt(request.getParameter("rating"));
         String projectId = UUID.randomUUID().toString();
-        Key key = KeyFactory.createKey(JDOProject.class.getSimpleName(), projectId);
-        JDOProject project = new JDOProject(key, name, rating);
-        PersistenceManager pm = PMF.get().getPersistenceManager();
+        Key key = KeyFactory.createKey(Project.class.getSimpleName(), projectId);
+        Project project = new Project(key, name, rating);
+        EntityManager em = EMF.get().createEntityManager();
         try {
-            pm.makePersistent(project);
+            em.persist(project);
             response.setStatus(HttpServletResponse.SC_CREATED);
             Map<String,Object> map = new HashMap<String, Object>();
             map.put("success", true);
             map.put("project_id", projectId);
             JSONUtils.serialize(map, response);
         } finally {
-            pm.close();
+            em.close();
         }
     }
 
@@ -44,10 +42,10 @@ public class JDOHandlerServlet extends HttpServlet {
 
         String projectId = request.getParameter("project_id");
         int rating = Integer.parseInt(request.getParameter("rating"));
-        Key key = KeyFactory.createKey(JDOProject.class.getSimpleName(), projectId);
-        PersistenceManager pm = PMF.get().getPersistenceManager();
+        Key key = KeyFactory.createKey(Project.class.getSimpleName(), projectId);
+        EntityManager em = EMF.get().createEntityManager();
         try {
-            JDOProject project = pm.getObjectById(JDOProject.class, key);
+            Project project = em.find(Project.class, key);
             if (project != null) {
                 project.setRating(rating);
                 Map<String,Object> map = new HashMap<String, Object>();
@@ -58,10 +56,8 @@ public class JDOHandlerServlet extends HttpServlet {
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             }
-        } catch (JDOObjectNotFoundException e) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } finally {
-            pm.close();
+            em.close();
         }
     }
 
@@ -69,10 +65,10 @@ public class JDOHandlerServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
 
         String projectId = request.getParameter("project_id");
-        Key key = KeyFactory.createKey(JDOProject.class.getSimpleName(), projectId);
-        PersistenceManager pm = PMF.get().getPersistenceManager();
+        Key key = KeyFactory.createKey(Project.class.getSimpleName(), projectId);
+        EntityManager em = EMF.get().createEntityManager();
         try {
-            JDOProject project = pm.getObjectById(JDOProject.class, key);
+            Project project = em.find(Project.class, key);
             if (project != null) {
                 Map<String,Object> map = new HashMap<String, Object>();
                 map.put("project_id", projectId);
@@ -82,32 +78,26 @@ public class JDOHandlerServlet extends HttpServlet {
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             }
-        } catch (JDOObjectNotFoundException e) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } finally {
-            pm.close();
+            em.close();
         }
     }
 
-    @Override
     protected void doDelete(HttpServletRequest request,
-                            HttpServletResponse response) throws ServletException, IOException {
+                         HttpServletResponse response) throws ServletException, IOException {
 
         String projectId = request.getParameter("project_id");
-        Key key = KeyFactory.createKey(JDOProject.class.getSimpleName(), projectId);
-        PersistenceManager pm = PMF.get().getPersistenceManager();
+        Key key = KeyFactory.createKey(Project.class.getSimpleName(), projectId);
+        EntityManager em = EMF.get().createEntityManager();
         try {
-            JDOProject project = pm.getObjectById(JDOProject.class, key);
+            Project project = em.find(Project.class, key);
             if (project != null) {
-                pm.deletePersistent(project);
+                em.remove(project);
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             }
-        } catch (JDOObjectNotFoundException e) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-
         } finally {
-            pm.close();
+            em.close();
         }
     }
 }
