@@ -57,6 +57,24 @@
         <servlet-class>com.appscale.hawkeye.datastore.jpa.JPAHandlerServlet</servlet-class>
     </servlet>
 
+
+    <servlet>
+        <servlet-name>MainHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.blobstore.MainHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UploadHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.blobstore.UploadHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>DownloadHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.blobstore.DownloadHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>BlobQueryHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.blobstore.BlobQueryHandlerServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -104,5 +122,22 @@
     <servlet-mapping>
         <servlet-name>JPAHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/jpa_project</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>MainHandlerServlet</servlet-name>
+        <url-pattern>/java/blobstore/url</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadHandlerServlet</servlet-name>
+        <url-pattern>/java/blobstore/upload</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DownloadHandlerServlet</servlet-name>
+        <url-pattern>/java/blobstore/download/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BlobQueryHandlerServlet</servlet-name>
+        <url-pattern>/java/blobstore/query</url-pattern>
     </servlet-mapping>
 </web-app>

@@ -28,6 +28,12 @@ public class JSONUtils {
         response.getOutputStream().println(json.toString());
     }
 
+    public static void serialize(JSONSerializable json,
+                                 HttpServletResponse response) throws IOException {
+        setContentType(response);
+        response.getOutputStream().println(json.toJSON().toString());
+    }
+
     public static void serialize(List<JSONSerializable> list,
                                  HttpServletResponse response) throws IOException {
         List<JSONObject> jsonObjects = new ArrayList<JSONObject>();
