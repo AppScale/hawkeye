@@ -75,6 +75,11 @@
         <servlet-class>com.appscale.hawkeye.blobstore.BlobQueryHandlerServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>ProjectLogoHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.images.ProjectLogoHandlerServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -139,5 +144,10 @@
     <servlet-mapping>
         <servlet-name>BlobQueryHandlerServlet</servlet-name>
         <url-pattern>/java/blobstore/query</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ProjectLogoHandlerServlet</servlet-name>
+        <url-pattern>/java/images/logo</url-pattern>
     </servlet-mapping>
 </web-app>

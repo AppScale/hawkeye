@@ -22,6 +22,9 @@
             <fileset dir="${sdk.dir}/lib/user">
                 <include name="**/appengine-api-1.0-sdk*.jar" />
             </fileset>
+            <fileset dir="web/WEB-INF/lib">
+                <include name="**/commons-fileupload*.jar" />
+            </fileset>
             <fileset dir="${sdk.dir}/lib/opt/user">
                 <include name="appengine-api-labs/v1/*.jar" />
                 <include name="jsr107/v1/*.jar" />
