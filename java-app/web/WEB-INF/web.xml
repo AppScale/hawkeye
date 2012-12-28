@@ -48,6 +48,10 @@
         <servlet-name>ProjectBrowserHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.ProjectBrowserHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>JDOHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.JDOHandlerServlet</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -88,5 +92,9 @@
     <servlet-mapping>
         <servlet-name>ProjectBrowserHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project_cursor</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>JDOHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/jdo_project</url-pattern>
     </servlet-mapping>
 </web-app>
