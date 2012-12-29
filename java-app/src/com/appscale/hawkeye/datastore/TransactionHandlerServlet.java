@@ -37,8 +37,8 @@ public class TransactionHandlerServlet extends HttpServlet {
                 }
                 map.put("success", false);
             }
-            map.put("counter", getCounterByKey(key).getCounter());
-            map.put("backup", getCounterByKey(key + "_backup").getCounter());
+            map.put("counter", getCounterByKey(key));
+            map.put("backup", getCounterByKey(key + "_backup"));
         } else {
             try {
                 txn = datastore.beginTransaction();
@@ -51,7 +51,7 @@ public class TransactionHandlerServlet extends HttpServlet {
                 }
                 map.put("success", false);
             }
-            map.put("counter", getCounterByKey(key).getCounter());
+            map.put("counter", getCounterByKey(key));
         }
         JSONUtils.serialize(map, response);
     }
@@ -60,7 +60,7 @@ public class TransactionHandlerServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request,
                             HttpServletResponse response) throws ServletException, IOException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query q = new Query(Counter.class.getSimpleName());
+        Query q = new Query(Constants.Counter.class.getSimpleName());
         PreparedQuery preparedQuery = datastore.prepare(q);
         for (Entity result : preparedQuery.asIterable()) {
             datastore.delete(result.getKey());
@@ -68,37 +68,33 @@ public class TransactionHandlerServlet extends HttpServlet {
     }
 
     private void incrementCounter(String key, int amount) {
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Counter counter = getCounterByKey(key);
-        if (counter == null) {
-            counter = new Counter();
-            counter.setCounter(0);
+        long counter = getCounterByKey(key);
+        if (counter == -1) {
+            counter = 0;
         }
 
         for (int i = 0; i < amount; i++) {
-            counter.increment();
-            if (counter.getCounter() == 5) {
+            counter++;
+            if (counter == 5) {
                 throw new RuntimeException("Mock Exception");
             }
-            Entity entity = new Entity(Counter.class.getSimpleName(), key);
-            entity.setProperty(Counter.COUNTER, counter.getCounter());
-            datastore.put(entity);
+            save(key, counter);
         }
     }
 
     private void incrementCounters(String key, int amount) {
         String backupKey = key + "_backup";
-        Counter counter1 = getCounterByKey(key);
-        Counter counter2 = getCounterByKey(backupKey);
-        if (counter1 == null) {
-            counter1 = new Counter();
-            counter2 = new Counter();
+        long counter1 = getCounterByKey(key);
+        long counter2 = getCounterByKey(backupKey);
+        if (counter1 == -1) {
+            counter1 = 0;
+            counter2 = 0;
         }
 
         for (int i = 0; i < amount; i++) {
-            counter1.increment();
-            counter2.increment();
-            if (counter1.getCounter() == 5) {
+            counter1++;
+            counter2++;
+            if (counter1 == 5) {
                 throw new RuntimeException("Mock Exception");
             }
 
@@ -107,22 +103,22 @@ public class TransactionHandlerServlet extends HttpServlet {
         }
     }
 
-    private void save(String key, Counter counter) {
+    private void save(String key, long counter) {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Entity entity = new Entity(Counter.class.getSimpleName(), key);
-        entity.setProperty(Counter.COUNTER, counter.getCounter());
+        Entity entity = new Entity(Constants.Counter.class.getSimpleName(), key);
+        entity.setProperty(Constants.Counter.COUNTER, counter);
+        entity.setProperty(Constants.TYPE, Constants.Counter.TYPE_VALUE);
         datastore.put(entity);
     }
 
-    private Counter getCounterByKey(String key) {
+    private long getCounterByKey(String key) {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
-            Entity entity = datastore.get(KeyFactory.createKey(Counter.class.getSimpleName(), key));
-            Counter counter = new Counter();
-            counter.setCounter((Long) entity.getProperty(Counter.COUNTER));
-            return counter;
+            Entity entity = datastore.get(KeyFactory.createKey(
+                    Constants.Counter.class.getSimpleName(), key));
+            return ((Long) entity.getProperty(Constants.Counter.COUNTER));
         } catch (EntityNotFoundException e) {
-            return null;
+            return -1;
         }
     }
 }

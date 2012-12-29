@@ -22,4 +22,12 @@ public class Constants {
         public static final String TYPE_VALUE = "module";
     }
 
+    public class Counter {
+
+        public static final String COUNTER = "counter_value";
+
+        public static final String TYPE_VALUE = "counter";
+
+    }
+
 }
