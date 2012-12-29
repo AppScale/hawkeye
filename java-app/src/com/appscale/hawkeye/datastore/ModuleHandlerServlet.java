@@ -19,11 +19,11 @@ public class ModuleHandlerServlet extends HttpServlet {
         String id = request.getParameter("id");
         Query q;
         if (id == null || "".equals(id.trim())) {
-            q = new Query("Module");
+            q = new Query(Module.class.getSimpleName());
         } else {
-            Query.FilterPredicate filter = new Query.FilterPredicate("module_id",
+            Query.FilterPredicate filter = new Query.FilterPredicate(Module.MODULE_ID,
                     Query.FilterOperator.EQUAL, id);
-            q = new Query("Module").setFilter(filter);
+            q = new Query(Module.class.getSimpleName()).setFilter(filter);
         }
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -31,9 +31,9 @@ public class ModuleHandlerServlet extends HttpServlet {
         List<JSONSerializable> modules = new ArrayList<JSONSerializable>();
         for (Entity result : preparedQuery.asIterable()) {
             Module module = new Module();
-            module.setModuleId((String) result.getProperty("module_id"));
-            module.setName((String) result.getProperty("name"));
-            module.setDescription((String) result.getProperty("description"));
+            module.setModuleId((String) result.getProperty(Module.MODULE_ID));
+            module.setName((String) result.getProperty(Module.NAME));
+            module.setDescription((String) result.getProperty(Module.DESCRIPTION));
             modules.add(module);
         }
 
@@ -45,18 +45,18 @@ public class ModuleHandlerServlet extends HttpServlet {
                           HttpServletResponse response) throws ServletException, IOException {
         String projectId = request.getParameter("project_id");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
+        Query.FilterPredicate filter = new Query.FilterPredicate(Project.PROJECT_ID,
                 Query.FilterOperator.EQUAL, projectId);
-        Query q = new Query("Project").setFilter(filter);
+        Query q = new Query(Project.class.getSimpleName()).setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(q);
         Entity project = preparedQuery.asSingleEntity();
 
         String moduleId = UUID.randomUUID().toString();
         String moduleName = request.getParameter("name");
-        Entity module = new Entity("Module", moduleName, project.getKey());
-        module.setProperty("module_id", moduleId);
-        module.setProperty("name", moduleName);
-        module.setProperty("description", request.getParameter("description"));
+        Entity module = new Entity(Module.class.getSimpleName(), moduleName, project.getKey());
+        module.setProperty(Module.MODULE_ID, moduleId);
+        module.setProperty(Module.NAME, moduleName);
+        module.setProperty(Module.DESCRIPTION, request.getParameter("description"));
         datastore.put(module);
         response.setStatus(201);
         Map<String,Object> map = new HashMap<String, Object>();
@@ -69,7 +69,7 @@ public class ModuleHandlerServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request,
                             HttpServletResponse response) throws ServletException, IOException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query q = new Query("Module");
+        Query q = new Query(Module.class.getSimpleName());
         PreparedQuery preparedQuery = datastore.prepare(q);
         for (Entity result : preparedQuery.asIterable()) {
             datastore.delete(result.getKey());

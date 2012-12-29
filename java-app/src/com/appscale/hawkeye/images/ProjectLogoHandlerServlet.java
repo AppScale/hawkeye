@@ -24,6 +24,10 @@ import java.util.UUID;
 
 public class ProjectLogoHandlerServlet extends HttpServlet {
 
+    public static final String PROJECT_LOGO = "ProjectLogo";
+    public static final String PROJECT_LOGO_ID = "project_logo_id";
+    public static final String PICTURE = "picture";
+
     private ImagesService imagesService = ImagesServiceFactory.getImagesService();
 
     protected void doPost(HttpServletRequest request,
@@ -51,9 +55,9 @@ public class ProjectLogoHandlerServlet extends HttpServlet {
             Transform resize = ImagesServiceFactory.makeResize(100, 50);
             Image newImage = imagesService.applyTransform(resize, image);
 
-            Entity projectLogo = new Entity("ProjectLogo");
-            projectLogo.setProperty("project_id", projectId);
-            projectLogo.setProperty("picture", new Blob(newImage.getImageData()));
+            Entity projectLogo = new Entity(PROJECT_LOGO);
+            projectLogo.setProperty(PROJECT_LOGO_ID, projectId);
+            projectLogo.setProperty(PICTURE, new Blob(newImage.getImageData()));
             DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
             datastore.put(projectLogo);
 
@@ -76,13 +80,13 @@ public class ProjectLogoHandlerServlet extends HttpServlet {
         String rotate = request.getParameter("rotate");
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate("project_id",
+        Query.FilterPredicate filter = new Query.FilterPredicate(PROJECT_LOGO_ID,
                 Query.FilterOperator.EQUAL, projectId);
-        Query q = new Query("ProjectLogo").setFilter(filter);
+        Query q = new Query(PROJECT_LOGO).setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(q);
         Entity entity = preparedQuery.asSingleEntity();
 
-        Blob imageData = (Blob) entity.getProperty("picture");
+        Blob imageData = (Blob) entity.getProperty(PICTURE);
         Image image = ImagesServiceFactory.makeImage(imageData.getBytes());
         if ("true".equals(metadata)) {
             if (resize != null && !"".equals(resize)) {
@@ -109,7 +113,7 @@ public class ProjectLogoHandlerServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
 
-        Query query = new Query("ProjectLogo");
+        Query query = new Query(PROJECT_LOGO);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery preparedQuery = datastore.prepare(query);
         for (Entity entity : preparedQuery.asIterable()) {

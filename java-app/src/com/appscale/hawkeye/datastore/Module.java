@@ -6,6 +6,10 @@ import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
 public class Module implements JSONSerializable {
 
+    public static final String MODULE_ID = "module_id";
+    public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
+
     private String moduleId;
     private String name;
     private String description;
@@ -37,9 +41,9 @@ public class Module implements JSONSerializable {
     public JSONObject toJSON() {
         try {
             return new JSONObject().
-                    put("module_id", moduleId).
-                    put("name", name).
-                    put("description", description).
+                    put(MODULE_ID, moduleId).
+                    put(NAME, name).
+                    put(DESCRIPTION, description).
                     put("type", "module");
         } catch (JSONException e) {
             throw new RuntimeException("Error constructing JSON", e);

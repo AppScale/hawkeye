@@ -22,11 +22,11 @@ public class ProjectFilterHandlerServlet extends HttpServlet {
         String rateLimit = request.getParameter("rate_limit");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         List<Query.Filter> filters = new ArrayList<Query.Filter>();
-        filters.add(new Query.FilterPredicate("license", Query.FilterOperator.EQUAL, license));
-        filters.add(new Query.FilterPredicate("rating",
+        filters.add(new Query.FilterPredicate(Project.LICENSE, Query.FilterOperator.EQUAL, license));
+        filters.add(new Query.FilterPredicate(Project.RATING,
                 Query.FilterOperator.GREATER_THAN_OR_EQUAL, Long.parseLong(rateLimit)));
-        Query query = new Query("Project").setFilter(new Query.CompositeFilter(
-                Query.CompositeFilterOperator.AND, filters));
+        Query query = new Query(Project.class.getSimpleName()).setFilter(
+                new Query.CompositeFilter(Query.CompositeFilterOperator.AND, filters));
         JSONUtils.serialize(datastore.prepare(query), response);
     }
 }

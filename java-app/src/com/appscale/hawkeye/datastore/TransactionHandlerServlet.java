@@ -60,7 +60,7 @@ public class TransactionHandlerServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request,
                             HttpServletResponse response) throws ServletException, IOException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query q = new Query("Counter");
+        Query q = new Query(Counter.class.getSimpleName());
         PreparedQuery preparedQuery = datastore.prepare(q);
         for (Entity result : preparedQuery.asIterable()) {
             datastore.delete(result.getKey());
@@ -80,7 +80,7 @@ public class TransactionHandlerServlet extends HttpServlet {
             if (counter.getCounter() == 5) {
                 throw new RuntimeException("Mock Exception");
             }
-            Entity entity = new Entity("Counter", key);
+            Entity entity = new Entity(Counter.class.getSimpleName(), key);
             entity.setProperty("counter", counter.getCounter());
             datastore.put(entity);
         }
@@ -102,11 +102,11 @@ public class TransactionHandlerServlet extends HttpServlet {
             if (counter1.getCounter() == 5) {
                 throw new RuntimeException("Mock Exception");
             }
-            Entity entity = new Entity("Counter", key);
+            Entity entity = new Entity(Counter.class.getSimpleName(), key);
             entity.setProperty("counter", counter1.getCounter());
             datastore.put(entity);
 
-            entity = new Entity("Counter", backupKey);
+            entity = new Entity(Counter.class.getSimpleName(), backupKey);
             entity.setProperty("counter", counter2.getCounter());
             datastore.put(entity);
         }
@@ -115,7 +115,7 @@ public class TransactionHandlerServlet extends HttpServlet {
     private Counter getCounterByKey(String key) {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
-            Entity entity = datastore.get(KeyFactory.createKey("Counter", key));
+            Entity entity = datastore.get(KeyFactory.createKey(Counter.class.getSimpleName(), key));
             Counter counter = new Counter();
             counter.setCounter((Long) entity.getProperty("counter"));
             return counter;

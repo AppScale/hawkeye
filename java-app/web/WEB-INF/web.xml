@@ -80,6 +80,19 @@
         <servlet-class>com.appscale.hawkeye.images.ProjectLogoHandlerServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>TaskCounterHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TaskCounterHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TaskCounterWorkerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TaskCounterWorkerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PullTaskHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.PullTaskHandlerServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -149,5 +162,18 @@
     <servlet-mapping>
         <servlet-name>ProjectLogoHandlerServlet</servlet-name>
         <url-pattern>/java/images/logo</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TaskCounterHandlerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/counter</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TaskCounterWorkerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/worker</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PullTaskHandlerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/pull</url-pattern>
     </servlet-mapping>
 </web-app>

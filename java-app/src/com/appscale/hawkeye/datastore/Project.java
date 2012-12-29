@@ -6,6 +6,13 @@ import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
 public class Project implements JSONSerializable {
 
+    public static final String PROJECT_ID = "project_id";
+    public static final String NAME = "name";
+    public static final String DESCRIPTION = "description";
+    public static final String LICENSE = "license";
+    public static final String RATING = "rating";
+
+
     private String projectId;
     private String name;
     private String description;
@@ -55,10 +62,10 @@ public class Project implements JSONSerializable {
     public JSONObject toJSON() {
         try {
             JSONObject json = new JSONObject().
-                    put("project_id", projectId).
-                    put("name", name).
-                    put("description", description).
-                    put("license", license).
+                    put(PROJECT_ID, projectId).
+                    put(NAME, name).
+                    put(DESCRIPTION, description).
+                    put(LICENSE, license).
                     put("type", "project");
             if (rating >= 0) {
                 json.put("rating", rating);

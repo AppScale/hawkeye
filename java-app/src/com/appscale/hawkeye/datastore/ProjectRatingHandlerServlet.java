@@ -19,33 +19,33 @@ public class ProjectRatingHandlerServlet extends HttpServlet {
         String desc = request.getParameter("desc");
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query query = new Query("Project");
+        Query query = new Query(Project.class.getSimpleName());
         if (comparator == null || "".equals(comparator) || "eq".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.EQUAL, rating));
+                    Project.RATING, Query.FilterOperator.EQUAL, rating));
         } else if ("gt".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.GREATER_THAN, rating));
+                    Project.RATING, Query.FilterOperator.GREATER_THAN, rating));
         } else if ("ge".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.GREATER_THAN_OR_EQUAL, rating));
+                    Project.RATING, Query.FilterOperator.GREATER_THAN_OR_EQUAL, rating));
         } else if ("lt".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.LESS_THAN, rating));
+                    Project.RATING, Query.FilterOperator.LESS_THAN, rating));
         } else if ("le".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.LESS_THAN_OR_EQUAL, rating));
+                    Project.RATING, Query.FilterOperator.LESS_THAN_OR_EQUAL, rating));
         } else if ("ne".equals(comparator)) {
             query = query.setFilter(new Query.FilterPredicate(
-                    "rating", Query.FilterOperator.NOT_EQUAL, rating));
+                    Project.RATING, Query.FilterOperator.NOT_EQUAL, rating));
         } else {
             throw new RuntimeException("Unsupported comparator");
         }
 
         if ("true".equals(desc)) {
-            query = query.addSort("rating", Query.SortDirection.DESCENDING);
+            query = query.addSort(Project.RATING, Query.SortDirection.DESCENDING);
         } else {
-            query = query.addSort("rating", Query.SortDirection.ASCENDING);
+            query = query.addSort(Project.RATING, Query.SortDirection.ASCENDING);
         }
 
         PreparedQuery preparedQuery = datastore.prepare(query);

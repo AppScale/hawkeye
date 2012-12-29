@@ -74,7 +74,7 @@
             description="Starts the development server.">
         <dev_appserver war="war">
             <options>
-                <arg value="--jvm_flag=-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=20"/>
+                <arg value="--jvm_flag=-Ddatastore.default_high_rep_job_policy_unapplied_job_pct=1"/>
             </options>
         </dev_appserver>
     </target>

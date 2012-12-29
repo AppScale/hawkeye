@@ -19,17 +19,20 @@ public class EntityNameHandlerServlet extends HttpServlet {
             DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
             Query query;
             if (moduleName != null && !"".equals(moduleName)) {
-                query = new Query("Project").setFilter(new Query.FilterPredicate("name",
+                query = new Query(Project.class.getSimpleName()).setFilter(
+                        new Query.FilterPredicate(Project.NAME,
                         Query.FilterOperator.EQUAL, projectName));
                 PreparedQuery preparedQuery = datastore.prepare(query);
-                query = new Query("Module").setFilter(
+                query = new Query(Module.class.getSimpleName()).setFilter(
                         new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
                         Query.FilterOperator.EQUAL, KeyFactory.createKey(
-                                preparedQuery.asSingleEntity().getKey(), "Module", moduleName)));
+                                preparedQuery.asSingleEntity().getKey(),
+                                Module.class.getSimpleName(), moduleName)));
             } else {
-                query = new Query("Project").setFilter(new Query.FilterPredicate(
-                        Entity.KEY_RESERVED_PROPERTY,
-                        Query.FilterOperator.EQUAL, KeyFactory.createKey("Project", projectName)));
+                query = new Query(Project.class.getSimpleName()).setFilter(
+                        new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
+                        Query.FilterOperator.EQUAL, KeyFactory.createKey(
+                                Project.class.getSimpleName(), projectName)));
             }
 
             PreparedQuery preparedQuery = datastore.prepare(query);

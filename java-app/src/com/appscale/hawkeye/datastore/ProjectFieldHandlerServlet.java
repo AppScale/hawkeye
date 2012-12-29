@@ -21,29 +21,29 @@ public class ProjectFieldHandlerServlet extends HttpServlet {
         String rateLimit = request.getParameter("rate_limit");
         String[] fields = fieldNames.trim().split(",");
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query query = new Query("Project");
+        Query query = new Query(Project.class.getSimpleName());
         for (String field : fields) {
             if ("rating".equals(field)) {
-                query.addProjection(new PropertyProjection("rating", Integer.class));
+                query.addProjection(new PropertyProjection(Project.RATING, Integer.class));
             } else {
                 query.addProjection(new PropertyProjection(field, String.class));
             }
         }
 
         if (rateLimit != null && !"".equals(rateLimit)) {
-            query = query.setFilter(new Query.FilterPredicate("rating",
+            query = query.setFilter(new Query.FilterPredicate(Project.RATING,
                     Query.FilterOperator.GREATER_THAN_OR_EQUAL, Long.parseLong(rateLimit)));
         }
         PreparedQuery preparedQuery = datastore.prepare(query);
         List<JSONSerializable> list = new ArrayList<JSONSerializable>();
         for (Entity result : preparedQuery.asIterable()) {
             Project project = new Project();
-            project.setProjectId((String) result.getProperty("project_id"));
-            project.setName((String) result.getProperty("name"));
-            project.setDescription((String) result.getProperty("description"));
-            project.setLicense((String) result.getProperty("license"));
-            if (result.hasProperty("rating")) {
-                project.setRating((Long) result.getProperty("rating"));
+            project.setProjectId((String) result.getProperty(Project.PROJECT_ID));
+            project.setName((String) result.getProperty(Project.NAME));
+            project.setDescription((String) result.getProperty(Project.DESCRIPTION));
+            project.setLicense((String) result.getProperty(Project.LICENSE));
+            if (result.hasProperty(Project.RATING)) {
+                project.setRating((Long) result.getProperty(Project.RATING));
             } else {
                 project.setRating(-1);
             }
