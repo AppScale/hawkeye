@@ -1,5 +1,6 @@
 package com.appscale.hawkeye.datastore;
 
+import com.appscale.hawkeye.JSONSerializable;
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.*;
 
@@ -8,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProjectKeyHandlerServlet extends HttpServlet {
 
@@ -41,6 +44,13 @@ public class ProjectKeyHandlerServlet extends HttpServlet {
         }
 
         preparedQuery = datastore.prepare(q);
-        JSONUtils.serialize(preparedQuery, response);
+        List<Entity> results = new ArrayList<Entity>();
+        for (Entity entity : preparedQuery.asIterable()) {
+            if (Project.class.getSimpleName().equals(entity.getKind()) ||
+                    Module.class.getSimpleName().equals(entity.getKind())) {
+                results.add(entity);
+            }
+        }
+        JSONUtils.serialize(results, response);
     }
 }

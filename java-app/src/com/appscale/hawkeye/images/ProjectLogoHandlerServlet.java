@@ -25,7 +25,7 @@ import java.util.UUID;
 public class ProjectLogoHandlerServlet extends HttpServlet {
 
     public static final String PROJECT_LOGO = "ProjectLogo";
-    public static final String PROJECT_LOGO_ID = "project_logo_id";
+    public static final String PROJECT_LOGO_ID = "project_id";
     public static final String PICTURE = "picture";
 
     private ImagesService imagesService = ImagesServiceFactory.getImagesService();
