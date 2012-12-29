@@ -75,11 +75,12 @@ class LogoutURLTest(HawkeyeTestCase):
     url_info = json.loads(response.payload)
     self.assertEquals(url_info['type'], 'logout')
 
-def suite():
+def suite(lang):
   suite = HawkeyeTestSuite('User API Test Suite', 'users')
-  suite.addTest(LoginURLTest())
-  suite.addTest(UserLoginTest())
-  suite.addTest(AdminLoginTest())
-  suite.addTest(LogoutURLTest())
+  if lang == 'python':
+    suite.addTest(LoginURLTest())
+    suite.addTest(UserLoginTest())
+    suite.addTest(AdminLoginTest())
+    suite.addTest(LogoutURLTest())
   return suite
 

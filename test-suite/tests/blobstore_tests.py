@@ -55,7 +55,7 @@ class DownloadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertEquals(response.payload, FILE2_DATA)
 
-class QueryBlobMetadataTest(HawkeyeTestCase):
+class QueryBlobByKeyTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/blobstore/query?key={0}'.format(
       FILE_UPLOADS[FILE1]))
@@ -72,7 +72,7 @@ class QueryBlobMetadataTest(HawkeyeTestCase):
     response = self.http_get('/blobstore/query?key=bogus')
     self.assertEquals(response.status, 404)
 
-class BlobstoreGQLTest(HawkeyeTestCase):
+class QueryBlobByPropertyTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/blobstore/query?' \
                              'file=file1.txt'.format(FILE_UPLOADS[FILE1]))
@@ -90,7 +90,6 @@ class BlobstoreGQLTest(HawkeyeTestCase):
                              'size={0}'.format(len(FILE1_DATA)))
     self.assertEquals(response.status, 200)
     blobs = json.loads(response.payload)
-    self.assertTrue(len(blobs) > 0)
     for blob in blobs:
       self.assertNotEquals(blob['file'], FILE1)
 
@@ -107,18 +106,6 @@ class QueryBlobDataTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertEquals(response.payload, 'AppSca')
 
-class AsyncQueryBlobDataTest(HawkeyeTestCase):
-  def run_hawkeye_test(self):
-    response = self.http_get('/blobstore/query?key={0}&data=true&' \
-                    'start=0&end=5&async=true'.format(FILE_UPLOADS[FILE1]))
-    self.assertEquals(response.status, 200)
-    self.assertEquals(response.payload, 'FILE U')
-
-    response = self.http_get('/blobstore/query?key={0}&data=true&' \
-                    'start=0&end=5&async=true'.format(FILE_UPLOADS[FILE2]))
-    self.assertEquals(response.status, 200)
-    self.assertEquals(response.payload, 'AppSca')
-
 class DeleteBlobTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/blobstore/query?key={0}'.format(
@@ -129,7 +116,7 @@ class DeleteBlobTest(HawkeyeTestCase):
 
     response = self.http_get('/blobstore/download/{0}'.format(
       FILE_UPLOADS[FILE1]))
-    self.assertEquals(response.status, 500)
+    self.assertTrue(response.status == 500 or response.status == 404)
 
     response = self.http_delete('/blobstore/query?key={0}'.format(
       FILE_UPLOADS[FILE2]))
@@ -139,7 +126,7 @@ class DeleteBlobTest(HawkeyeTestCase):
 
     response = self.http_get('/blobstore/download/{0}'.format(
       FILE_UPLOADS[FILE2]))
-    self.assertEquals(response.status, 500)
+    self.assertTrue(response.status == 500 or response.status == 404)
 
 class AsyncUploadBlobTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -156,6 +143,13 @@ class AsyncUploadBlobTest(HawkeyeTestCase):
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
     FILE_UPLOADS[FILE3] = blob_key
 
+class AsyncQueryBlobDataTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/blobstore/query?key={0}&data=true&'\
+                             'start=0&end=5&async=true'.format(FILE_UPLOADS[FILE3]))
+    self.assertEquals(response.status, 200)
+    self.assertEquals(response.payload, 'ASYNC ')
+
 class AsyncDeleteBlobTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/blobstore/query?key={0}&' \
@@ -168,15 +162,17 @@ class AsyncDeleteBlobTest(HawkeyeTestCase):
       FILE_UPLOADS[FILE3]))
     self.assertEquals(response.status, 500)
 
-def suite():
+def suite(lang):
   suite = HawkeyeTestSuite('Blobstore Test Suite', 'blobstore')
   suite.addTest(UploadBlobTest())
-  suite.addTest(AsyncUploadBlobTest())
   suite.addTest(DownloadBlobTest())
-  suite.addTest(QueryBlobMetadataTest())
-  suite.addTest(BlobstoreGQLTest())
   suite.addTest(QueryBlobDataTest())
-  suite.addTest(AsyncQueryBlobDataTest())
+  suite.addTest(QueryBlobByKeyTest())
+  suite.addTest(QueryBlobByPropertyTest())
   suite.addTest(DeleteBlobTest())
-  suite.addTest(AsyncDeleteBlobTest())
+
+  if lang == 'python':
+    suite.addTest(AsyncUploadBlobTest())
+    suite.addTest(AsyncQueryBlobDataTest())
+    suite.addTest(AsyncDeleteBlobTest())
   return suite

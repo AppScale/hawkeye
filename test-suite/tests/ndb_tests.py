@@ -320,8 +320,10 @@ class NDBCrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
-def suite():
+def suite(lang):
   suite = HawkeyeTestSuite('NDB Test Suite', 'ndb')
+  if lang != 'python':
+    return suite
   suite.addTest(NDBCleanupTest())
   suite.addTest(SimpleKindAwareNDBInsertTest())
   suite.addTest(KindAwareNDBInsertWithParentTest())

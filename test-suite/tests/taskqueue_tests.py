@@ -142,16 +142,15 @@ class PullQueueTest(HawkeyeTestCase):
       else:
         sleep(2)
 
-def suite():
+def suite(lang):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTest(PushQueueTest())
   suite.addTest(DeferredTaskTest())
+  suite.addTest(QueueStatisticsTest())
+  suite.addTest(PullQueueTest())
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())
-
-  suite.addTest(PullQueueTest())
-  suite.addTest(QueueStatisticsTest())
   return suite
 

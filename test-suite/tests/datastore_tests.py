@@ -16,8 +16,6 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     response = self.http_delete('/datastore/transactions')
     self.assertEquals(response.status, 200)
-    response = self.http_delete('/taskqueue/counter')
-    self.assertEquals(response.status, 200)
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -52,7 +50,7 @@ class SimpleKindAwareInsertTest(HawkeyeTestCase):
     ALL_PROJECTS[HawkeyeConstants.PROJECT_HADOOP] = project_id
 
     # Allow some time to eventual consistency to run its course
-    sleep(2)
+    sleep(5)
 
 class KindAwareInsertWithParentTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -241,18 +239,11 @@ class ProjectionQueryTest(HawkeyeTestCase):
                                            'fields=project_id,name')
     self.assertEquals(len(entity_list), 3)
     for entity in entity_list:
-      self.assertTrue(entity['rating'] is None)
-      self.assertTrue(entity['description'] is None)
+      self.assertTrue(not entity.has_key('rating') or
+                      entity['rating'] is None)
+      self.assertTrue(not entity.has_key('description') or
+                      entity['description'] is None)
       self.assertTrue(entity['project_id'] is not None)
-      self.assertTrue(entity['name'] is not None)
-
-    entity_list = self.assert_and_get_list('/datastore/project_fields?'
-                                           'fields=name,rating&gql=true')
-    self.assertEquals(len(entity_list), 3)
-    for entity in entity_list:
-      self.assertTrue(entity['rating'] is not None)
-      self.assertTrue(entity['description'] is None)
-      self.assertTrue(entity['project_id'] is None)
       self.assertTrue(entity['name'] is not None)
 
     entity_list = self.assert_and_get_list('/datastore/project_fields?'
@@ -260,10 +251,25 @@ class ProjectionQueryTest(HawkeyeTestCase):
     self.assertEquals(len(entity_list), 2)
     for entity in entity_list:
       self.assertTrue(entity['rating'] is not None)
-      self.assertTrue(entity['description'] is None)
-      self.assertTrue(entity['project_id'] is None)
+      self.assertTrue(not entity.has_key('description') or
+                      entity['description'] is None)
+      self.assertTrue(not entity.has_key('project_id') or
+                      entity['project_id'] is None)
       self.assertTrue(entity['name'] is not None)
       self.assertNotEquals(entity['name'], HawkeyeConstants.PROJECT_XERCES)
+
+class GQLProjectionQueryTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    entity_list = self.assert_and_get_list('/datastore/project_fields?'
+                                           'fields=name,rating&gql=true')
+    self.assertEquals(len(entity_list), 3)
+    for entity in entity_list:
+      self.assertTrue(entity['rating'] is not None)
+      self.assertTrue(not entity.has_key('description') or
+                      entity['description'] is None)
+      self.assertTrue(not entity.has_key('project_id') or
+                      entity['project_id'] is None)
+      self.assertTrue(entity['name'] is not None)
 
 class CompositeQueryTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -345,7 +351,68 @@ class QueryCursorTest(HawkeyeTestCase):
     self.assertTrue(project4['project'] is None)
     self.assertTrue(project4['next'] is None)
 
-def suite():
+class JDOIntegrationTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_put('/datastore/jdo_project',
+      'name=Cassandra&rating=10')
+    self.assertEquals(response.status, 201)
+    project_info = json.loads(response.payload)
+    self.assertTrue(project_info['success'])
+    project_id = project_info['project_id']
+
+    response = self.http_get('/datastore/jdo_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    project_info = json.loads(response.payload)
+    self.assertEquals(project_info['name'], 'Cassandra')
+    self.assertEquals(project_info['rating'], 10)
+
+    response = self.http_post('/datastore/jdo_project',
+      'project_id={0}&rating=9'.format(project_id))
+    self.assertEquals(response.status, 200)
+
+    response = self.http_get('/datastore/jdo_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    project_info = json.loads(response.payload)
+    self.assertEquals(project_info['name'], 'Cassandra')
+    self.assertEquals(project_info['rating'], 9)
+
+    response = self.http_delete('/datastore/jdo_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    response = self.http_get('/datastore/jdo_project?project_id=' + project_id)
+    self.assertEquals(response.status, 404)
+
+class JPAIntegrationTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_put('/datastore/jpa_project',
+      'name=Tomcat&rating=10')
+    self.assertEquals(response.status, 201)
+    project_info = json.loads(response.payload)
+    self.assertTrue(project_info['success'])
+    project_id = project_info['project_id']
+
+    response = self.http_get('/datastore/jpa_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    project_info = json.loads(response.payload)
+    self.assertEquals(project_info['name'], 'Tomcat')
+    self.assertEquals(project_info['rating'], 10)
+
+    response = self.http_post('/datastore/jpa_project',
+      'project_id={0}&rating=9'.format(project_id))
+    self.assertEquals(response.status, 200)
+
+    response = self.http_get('/datastore/jpa_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    project_info = json.loads(response.payload)
+    self.assertEquals(project_info['name'], 'Tomcat')
+    self.assertEquals(project_info['rating'], 9)
+
+    response = self.http_delete('/datastore/jpa_project?project_id=' + project_id)
+    self.assertEquals(response.status, 200)
+    response = self.http_get('/datastore/jpa_project?project_id=' + project_id)
+    self.assertEquals(response.status, 404)
+
+
+def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
   suite.addTest(SimpleKindAwareInsertTest())
@@ -363,6 +430,13 @@ def suite():
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
   suite.addTest(QueryCursorTest())
+
+  if lang == 'python':
+    suite.addTest(GQLProjectionQueryTest())
+  elif lang == 'java':
+    suite.addTest(JDOIntegrationTest())
+    suite.addTest(JPAIntegrationTest())
+
   return suite
 
 

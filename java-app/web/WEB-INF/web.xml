@@ -93,6 +93,15 @@
         <servlet-class>com.appscale.hawkeye.taskqueue.PullTaskHandlerServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>MemcacheHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.memcache.MemcacheHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MemcacheMultiKeyHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.memcache.MemcacheMultiKeyHandlerServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -175,5 +184,14 @@
     <servlet-mapping>
         <servlet-name>PullTaskHandlerServlet</servlet-name>
         <url-pattern>/java/taskqueue/pull</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>MemcacheHandlerServlet</servlet-name>
+        <url-pattern>/java/memcache</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MemcacheMultiKeyHandlerServlet</servlet-name>
+        <url-pattern>/java/memcache/multi</url-pattern>
     </servlet-mapping>
 </web-app>

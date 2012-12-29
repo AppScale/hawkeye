@@ -10,15 +10,16 @@ __author__ = 'hiranya'
 
 SUPPORTED_LANGUAGES = [ 'java', 'python' ]
 
-TEST_SUITES = {
-  'datastore' : datastore_tests.suite(),
-  'ndb' : ndb_tests.suite(),
-  'taskqueue' : taskqueue_tests.suite(),
-  'blobstore' : blobstore_tests.suite(),
-  'memcache' : memcache_tests.suite(),
-  'users' : user_tests.suite(),
-  'images' : images_tests.suite()
-}
+def init_test_suites(lang):
+  return {
+    'blobstore' : blobstore_tests.suite(lang),
+    'datastore' : datastore_tests.suite(lang),
+    'images' : images_tests.suite(lang),
+    'memcache' : memcache_tests.suite(lang),
+    'ndb' : ndb_tests.suite(lang),
+    'taskqueue' : taskqueue_tests.suite(lang),
+    'users' : user_tests.suite(lang),
+  }
 
 def print_usage_and_exit(msg, parser):
   print msg
@@ -75,6 +76,7 @@ if __name__ == '__main__':
     hawkeye_utils.CONSOLE_MODE = True
 
   suites = {}
+  TEST_SUITES = init_test_suites(options.lang)
   for suite_name in suite_names:
     suite_name = suite_name.strip()
     if suite_name == 'all':

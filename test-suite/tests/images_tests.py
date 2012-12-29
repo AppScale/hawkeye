@@ -22,7 +22,7 @@ class ImageUploadTest(HawkeyeTestCase):
     self.assertTrue(project_info['success'])
     self.assertTrue(project_info['project_id'] is not None)
     PROJECTS['appscale'] = project_info['project_id']
-    sleep(2)
+    sleep(5)
 
 class ImageLoadTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -48,6 +48,8 @@ class ImageResizeTest(HawkeyeTestCase):
     self.assertEquals(logo_info['width'], 50)
     self.assertEquals(logo_info['format'], 0)
 
+class ImageResizeTransformTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
     response = self.http_get('/images/logo?transform=true&resize=50&'
                              'metadata=true&project_id=' + PROJECTS['appscale'])
     self.assertEquals(response.status, 200)
@@ -64,6 +66,8 @@ class ImageRotateTest(HawkeyeTestCase):
     self.assertEquals(logo_info['height'], 100)
     self.assertEquals(logo_info['format'], 0)
 
+class ImageRotateTransformTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
     response = self.http_get('/images/logo?transform=true&rotate=true&'
                              'metadata=true&project_id=' + PROJECTS['appscale'])
     self.assertEquals(response.status, 200)
@@ -71,7 +75,7 @@ class ImageRotateTest(HawkeyeTestCase):
     self.assertEquals(logo_info['height'], 100)
     self.assertEquals(logo_info['format'], 0)
 
-def suite():
+def suite(lang):
   suite = hawkeye_utils.HawkeyeTestSuite('Images Test Suite', 'images')
   suite.addTest(ImageDeleteTest())
   suite.addTest(ImageUploadTest())
@@ -79,4 +83,8 @@ def suite():
   suite.addTest(ImageMetadataTest())
   suite.addTest(ImageResizeTest())
   suite.addTest(ImageRotateTest())
+
+  if lang == 'python':
+    suite.addTest(ImageResizeTransformTest())
+    suite.addTest(ImageRotateTransformTest())
   return suite

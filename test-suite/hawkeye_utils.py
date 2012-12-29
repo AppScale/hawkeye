@@ -88,9 +88,8 @@ class HawkeyeTestCase(TestCase):
     Perform a HTTP POST request on the specified URL path.
     The hostname and port segments of the URL are inferred from
     the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. This method is best suited for performing
-    HTTP form posts as the method does not provide any control over
-    content type manipulation.
+    hawkeye_utils.PORT. If a content-type header is not set
+    defaults to 'application/x-www-form-urlencoded' content type.
 
     Args:
       path          A URL path fragment (eg: /foo)
@@ -103,7 +102,37 @@ class HawkeyeTestCase(TestCase):
     Returns:
       An instance of ResponseInfo
     """
+    if headers is None:
+      headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
+    elif not headers.has_key('Content-Type'):
+      headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return self.__make_request('POST', path, payload, headers=headers,
+      prepend_lang=prepend_lang)
+
+  def http_put(self, path, payload, headers=None, prepend_lang=True):
+    """
+    Perform a HTTP PUT request on the specified URL path.
+    The hostname and port segments of the URL are inferred from
+    the values of the 2 constants hawkeye_utils.HOST and
+    hawkeye_utils.PORT. If a content-type header is not set
+    defaults to 'application/x-www-form-urlencoded' content type.
+
+    Args:
+      path          A URL path fragment (eg: /foo)
+      payload       A string payload to be sent POSTed
+      headers       A dictionary of headers
+      prepend_lang  If True the value of hawkeye_utils.LANG will be
+                    prepended to the provided URL path. Default is
+                    True
+
+    Returns:
+      An instance of ResponseInfo
+    """
+    if headers is None:
+      headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
+    elif not headers.has_key('Content-Type'):
+      headers['Content-Type'] = 'application/x-www-form-urlencoded'
+    return self.__make_request('PUT', path, payload, headers=headers,
       prepend_lang=prepend_lang)
 
   def http_delete(self, path, prepend_lang=True):
@@ -347,7 +376,10 @@ class HawkeyeTestRunner(TextTestRunner):
     Run the child test suite and print the outcome to console and relevant
     log files.
     """
-    self.run(self.suite)
+    if self.suite.countTestCases() > 0:
+      self.run(self.suite)
+    else:
+      self.stream.writeln('No test cases for {0} API - SKIPPING'.format(LANG))
 
   def _makeResult(self):
     return HawkeyeTestResult(self.stream, self.descriptions,
