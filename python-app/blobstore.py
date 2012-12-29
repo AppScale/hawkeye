@@ -14,7 +14,7 @@ __author__ = 'hiranya'
 
 def serialize(blob_info):
   if isinstance(blob_info, BlobInfo):
-    return { 'file' : blob_info.filename, 'size' : blob_info.size }
+    return { 'filename' : blob_info.filename, 'size' : blob_info.size }
 
 class MainHandler(webapp2.RequestHandler):
   def get(self):

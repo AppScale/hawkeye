@@ -61,13 +61,13 @@ class QueryBlobByKeyTest(HawkeyeTestCase):
       FILE_UPLOADS[FILE1]))
     self.assertEquals(response.status, 200)
     file_info = json.loads(response.payload)
-    self.assertEquals(file_info['file'], FILE1)
+    self.assertEquals(file_info['filename'], FILE1)
 
     response = self.http_get('/blobstore/query?key={0}'.format(
       FILE_UPLOADS[FILE2]))
     self.assertEquals(response.status, 200)
     file_info = json.loads(response.payload)
-    self.assertEquals(file_info['file'], FILE2)
+    self.assertEquals(file_info['filename'], FILE2)
 
     response = self.http_get('/blobstore/query?key=bogus')
     self.assertEquals(response.status, 404)
@@ -78,20 +78,20 @@ class QueryBlobByPropertyTest(HawkeyeTestCase):
                              'file=file1.txt'.format(FILE_UPLOADS[FILE1]))
     self.assertEquals(response.status, 200)
     file_info = json.loads(response.payload)
-    self.assertEquals(file_info['file'], FILE1)
+    self.assertEquals(file_info['filename'], FILE1)
 
     response = self.http_get('/blobstore/query?' \
                              'file=file2.txt'.format(FILE_UPLOADS[FILE2]))
     self.assertEquals(response.status, 200)
     file_info = json.loads(response.payload)
-    self.assertEquals(file_info['file'], FILE2)
+    self.assertEquals(file_info['filename'], FILE2)
 
     response = self.http_get('/blobstore/query?' \
                              'size={0}'.format(len(FILE1_DATA)))
     self.assertEquals(response.status, 200)
     blobs = json.loads(response.payload)
     for blob in blobs:
-      self.assertNotEquals(blob['file'], FILE1)
+      self.assertNotEquals(blob['filename'], FILE1)
 
 
 class QueryBlobDataTest(HawkeyeTestCase):

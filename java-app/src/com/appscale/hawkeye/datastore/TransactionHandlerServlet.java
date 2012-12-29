@@ -81,14 +81,13 @@ public class TransactionHandlerServlet extends HttpServlet {
                 throw new RuntimeException("Mock Exception");
             }
             Entity entity = new Entity(Counter.class.getSimpleName(), key);
-            entity.setProperty("counter", counter.getCounter());
+            entity.setProperty(Counter.COUNTER, counter.getCounter());
             datastore.put(entity);
         }
     }
 
     private void incrementCounters(String key, int amount) {
         String backupKey = key + "_backup";
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Counter counter1 = getCounterByKey(key);
         Counter counter2 = getCounterByKey(backupKey);
         if (counter1 == null) {
@@ -102,14 +101,17 @@ public class TransactionHandlerServlet extends HttpServlet {
             if (counter1.getCounter() == 5) {
                 throw new RuntimeException("Mock Exception");
             }
-            Entity entity = new Entity(Counter.class.getSimpleName(), key);
-            entity.setProperty("counter", counter1.getCounter());
-            datastore.put(entity);
 
-            entity = new Entity(Counter.class.getSimpleName(), backupKey);
-            entity.setProperty("counter", counter2.getCounter());
-            datastore.put(entity);
+            save(key, counter1);
+            save(backupKey, counter2);
         }
+    }
+
+    private void save(String key, Counter counter) {
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        Entity entity = new Entity(Counter.class.getSimpleName(), key);
+        entity.setProperty(Counter.COUNTER, counter.getCounter());
+        datastore.put(entity);
     }
 
     private Counter getCounterByKey(String key) {
@@ -117,7 +119,7 @@ public class TransactionHandlerServlet extends HttpServlet {
         try {
             Entity entity = datastore.get(KeyFactory.createKey(Counter.class.getSimpleName(), key));
             Counter counter = new Counter();
-            counter.setCounter((Long) entity.getProperty("counter"));
+            counter.setCounter((Long) entity.getProperty(Counter.COUNTER));
             return counter;
         } catch (EntityNotFoundException e) {
             return null;

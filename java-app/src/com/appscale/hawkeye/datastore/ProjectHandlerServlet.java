@@ -1,6 +1,5 @@
 package com.appscale.hawkeye.datastore;
 
-import com.appscale.hawkeye.JSONSerializable;
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.*;
 
@@ -18,12 +17,14 @@ public class ProjectHandlerServlet extends HttpServlet {
 
         String projectId = UUID.randomUUID().toString();
         String projectName = request.getParameter("name");
-        Entity project = new Entity(Project.class.getSimpleName(), projectName);
-        project.setProperty(Project.PROJECT_ID, projectId);
-        project.setProperty(Project.NAME, projectName);
-        project.setProperty(Project.DESCRIPTION, request.getParameter("description"));
-        project.setProperty(Project.LICENSE, request.getParameter("license"));
-        project.setProperty(Project.RATING, Integer.parseInt(request.getParameter("rating")));
+        Entity project = new Entity(Constants.Project.class.getSimpleName(), projectName);
+        project.setProperty(Constants.Project.PROJECT_ID, projectId);
+        project.setProperty(Constants.Project.NAME, projectName);
+        project.setProperty(Constants.Project.DESCRIPTION, request.getParameter("description"));
+        project.setProperty(Constants.Project.LICENSE, request.getParameter("license"));
+        project.setProperty(Constants.Project.RATING, Integer.parseInt(
+                request.getParameter("rating")));
+        project.setProperty(Constants.TYPE, Constants.Project.TYPE_VALUE);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         datastore.put(project);
         response.setStatus(201);
@@ -40,32 +41,21 @@ public class ProjectHandlerServlet extends HttpServlet {
         Query q;
         if (id == null || "".equals(id.trim())) {
             if (name != null && name.length() > 0) {
-                Query.FilterPredicate filter = new Query.FilterPredicate(Project.NAME,
+                Query.FilterPredicate filter = new Query.FilterPredicate(Constants.Project.NAME,
                         Query.FilterOperator.EQUAL, name);
-                q = new Query(Project.class.getSimpleName()).setFilter(filter);
+                q = new Query(Constants.Project.class.getSimpleName()).setFilter(filter);
             } else {
-                q = new Query(Project.class.getSimpleName());
+                q = new Query(Constants.Project.class.getSimpleName());
             }
         } else {
-            Query.FilterPredicate filter = new Query.FilterPredicate(Project.PROJECT_ID,
+            Query.FilterPredicate filter = new Query.FilterPredicate(Constants.Project.PROJECT_ID,
                     Query.FilterOperator.EQUAL, id);
-            q = new Query(Project.class.getSimpleName()).setFilter(filter);
+            q = new Query(Constants.Project.class.getSimpleName()).setFilter(filter);
         }
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         PreparedQuery preparedQuery = datastore.prepare(q);
-        List<JSONSerializable> projects = new ArrayList<JSONSerializable>();
-        for (Entity result : preparedQuery.asIterable()) {
-            Project project = new Project();
-            project.setProjectId((String) result.getProperty(Project.PROJECT_ID));
-            project.setName((String) result.getProperty(Project.NAME));
-            project.setDescription((String) result.getProperty(Project.DESCRIPTION));
-            project.setLicense((String) result.getProperty(Project.LICENSE));
-            project.setRating((Long) result.getProperty(Project.RATING));
-            projects.add(project);
-        }
-
-        JSONUtils.serialize(projects, response);
+        JSONUtils.serialize(preparedQuery.asIterable(), response);
     }
 
     @Override
@@ -73,7 +63,7 @@ public class ProjectHandlerServlet extends HttpServlet {
                             HttpServletResponse resp) throws ServletException, IOException {
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query q = new Query(Project.class.getSimpleName());
+        Query q = new Query(Constants.Project.class.getSimpleName());
         PreparedQuery preparedQuery = datastore.prepare(q);
         for (Entity result : preparedQuery.asIterable()) {
             datastore.delete(result.getKey());

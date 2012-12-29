@@ -1,6 +1,5 @@
 package com.appscale.hawkeye.datastore;
 
-import com.appscale.hawkeye.JSONSerializable;
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.*;
 
@@ -22,9 +21,9 @@ public class ProjectKeyHandlerServlet extends HttpServlet {
         String comparator = request.getParameter("comparator");
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query.FilterPredicate filter = new Query.FilterPredicate(Project.PROJECT_ID,
+        Query.FilterPredicate filter = new Query.FilterPredicate(Constants.Project.PROJECT_ID,
                 Query.FilterOperator.EQUAL, projectId);
-        Query projectQuery = new Query(Project.class.getSimpleName()).setFilter(filter);
+        Query projectQuery = new Query(Constants.Project.class.getSimpleName()).setFilter(filter);
         PreparedQuery preparedQuery = datastore.prepare(projectQuery);
         Key projectKey = preparedQuery.asSingleEntity().getKey();
 
@@ -46,8 +45,8 @@ public class ProjectKeyHandlerServlet extends HttpServlet {
         preparedQuery = datastore.prepare(q);
         List<Entity> results = new ArrayList<Entity>();
         for (Entity entity : preparedQuery.asIterable()) {
-            if (Project.class.getSimpleName().equals(entity.getKind()) ||
-                    Module.class.getSimpleName().equals(entity.getKind())) {
+            if (Constants.Project.class.getSimpleName().equals(entity.getKind()) ||
+                    Constants.Module.class.getSimpleName().equals(entity.getKind())) {
                 results.add(entity);
             }
         }

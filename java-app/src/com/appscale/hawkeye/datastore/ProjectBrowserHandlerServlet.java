@@ -22,7 +22,7 @@ public class ProjectBrowserHandlerServlet extends HttpServlet {
             startCursor = Cursor.fromWebSafeString(cursorString);
         }
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Query query = new Query(Project.class.getSimpleName());
+        Query query = new Query(Constants.Project.class.getSimpleName());
         PreparedQuery preparedQuery = datastore.prepare(query);
         FetchOptions options = FetchOptions.Builder.withLimit(1);
         if (startCursor != null) {

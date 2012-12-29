@@ -19,20 +19,28 @@ public class EntityNameHandlerServlet extends HttpServlet {
             DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
             Query query;
             if (moduleName != null && !"".equals(moduleName)) {
-                query = new Query(Project.class.getSimpleName()).setFilter(
-                        new Query.FilterPredicate(Project.NAME,
-                        Query.FilterOperator.EQUAL, projectName));
+                query = new Query(Constants.Project.class.getSimpleName()).
+                        setFilter(new Query.FilterPredicate(
+                                Constants.Project.NAME,
+                                Query.FilterOperator.EQUAL,
+                                projectName));
                 PreparedQuery preparedQuery = datastore.prepare(query);
-                query = new Query(Module.class.getSimpleName()).setFilter(
-                        new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
-                        Query.FilterOperator.EQUAL, KeyFactory.createKey(
-                                preparedQuery.asSingleEntity().getKey(),
-                                Module.class.getSimpleName(), moduleName)));
+                Key projectKey = preparedQuery.asSingleEntity().getKey();
+                Key moduleKey = KeyFactory.createKey(projectKey,
+                        Constants.Module.class.getSimpleName(), moduleName);
+                query = new Query(Constants.Module.class.getSimpleName()).
+                        setFilter(new Query.FilterPredicate(
+                                Entity.KEY_RESERVED_PROPERTY,
+                                Query.FilterOperator.EQUAL,
+                                moduleKey));
             } else {
-                query = new Query(Project.class.getSimpleName()).setFilter(
-                        new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY,
-                        Query.FilterOperator.EQUAL, KeyFactory.createKey(
-                                Project.class.getSimpleName(), projectName)));
+                Key projectKey = KeyFactory.createKey(
+                        Constants.Project.class.getSimpleName(), projectName);
+                query = new Query(Constants.Project.class.getSimpleName()).
+                        setFilter(new Query.FilterPredicate(
+                                Entity.KEY_RESERVED_PROPERTY,
+                                Query.FilterOperator.EQUAL,
+                                projectKey));
             }
 
             PreparedQuery preparedQuery = datastore.prepare(query);

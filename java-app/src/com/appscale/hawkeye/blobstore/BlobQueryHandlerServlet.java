@@ -1,18 +1,14 @@
 package com.appscale.hawkeye.blobstore;
 
-import com.appscale.hawkeye.JSONSerializable;
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.blobstore.*;
 import com.google.appengine.api.datastore.*;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +50,10 @@ public class BlobQueryHandlerServlet extends HttpServlet {
                 BlobKey blobKey = new BlobKey(key);
                 BlobInfo blobInfo = factory.loadBlobInfo(blobKey);
                 if (blobInfo != null) {
-                    JSONUtils.serialize(new JSONSerializableBlobInfo(blobInfo), response);
+                    Map<String,Object> map = new HashMap<String, Object>();
+                    map.put("filename", blobInfo.getFilename());
+                    map.put("size", blobInfo.getSize());
+                    JSONUtils.serialize(map, response);
                 } else {
                     response.setStatus(404);
                 }
@@ -76,39 +75,12 @@ public class BlobQueryHandlerServlet extends HttpServlet {
     private void sendBlobInfo(Query query, HttpServletResponse response,
                               boolean list) throws IOException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        BlobInfoFactory factory = new BlobInfoFactory();
         PreparedQuery pq = datastore.prepare(query);
         List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
         if (list) {
-            List<JSONSerializable> entityList = new ArrayList<JSONSerializable>();
-            for (Entity entity : entities) {
-                BlobInfo blobInfo = factory.createBlobInfo(entity);
-                entityList.add(new JSONSerializableBlobInfo(blobInfo));
-            }
-            JSONUtils.serialize(entityList, response);
+            JSONUtils.serialize(entities, response);
         } else if (entities.size() > 0) {
-            BlobInfo blobInfo = factory.createBlobInfo(entities.get(0));
-            JSONUtils.serialize(new JSONSerializableBlobInfo(blobInfo), response);
-        }
-    }
-
-    private class JSONSerializableBlobInfo implements JSONSerializable {
-
-        private BlobInfo blobInfo;
-
-        private JSONSerializableBlobInfo(BlobInfo blobInfo) {
-            this.blobInfo = blobInfo;
-        }
-
-        @Override
-        public JSONObject toJSON() {
-            try {
-                return new JSONObject().
-                        put("file", blobInfo.getFilename()).
-                        put("size", blobInfo.getSize());
-            } catch (JSONException e) {
-                throw new RuntimeException("Error constructing JSON", e);
-            }
+            JSONUtils.serialize(entities.get(0), response);
         }
     }
 
