@@ -101,6 +101,10 @@
         <servlet-name>MemcacheMultiKeyHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.memcache.MemcacheMultiKeyHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>JCacheHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.memcache.JCacheHandlerServlet</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -193,5 +197,9 @@
     <servlet-mapping>
         <servlet-name>MemcacheMultiKeyHandlerServlet</servlet-name>
         <url-pattern>/java/memcache/multi</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>JCacheHandlerServlet</servlet-name>
+        <url-pattern>/java/memcache/jcache</url-pattern>
     </servlet-mapping>
 </web-app>

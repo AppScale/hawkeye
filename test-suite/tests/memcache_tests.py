@@ -385,6 +385,77 @@ class MemcacheMultiAsyncDeleteTest(HawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(len(entry_info), 0)
 
+class SimpleJCacheTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    value = str(uuid.uuid1())
+    response = self.http_post('/memcache/jcache',
+      'key={0}&value={1}&cache=simple'.format(key, value))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache/jcache?key={0}&cache=simple'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info[key], value)
+
+    response = self.http_get('/memcache/jcache?key=bogus&cache=simple')
+    self.assertEquals(response.status, 404)
+
+    response = self.http_delete('/memcache/jcache?key={0}&cache=simple'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info[key], value)
+
+    response = self.http_delete('/memcache/jcache?key={0}&cache=simple'.format(key))
+    self.assertEquals(response.status, 404)
+
+class JCacheExpiryTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    value = str(uuid.uuid1())
+    response = self.http_post('/memcache/jcache',
+      'key={0}&value={1}&cache=expiring'.format(key, value))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache/jcache?key={0}&cache=expiring'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info[key], value)
+
+    sleep(8)
+    response = self.http_get('/memcache/jcache?key={0}&cache=expiring'.format(key))
+    self.assertEquals(response.status, 404)
+
+class JCacheAddPolicyTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    value = str(uuid.uuid1())
+    response = self.http_post('/memcache/jcache',
+      'key={0}&value={1}&cache=noupdate'.format(key, value))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache/jcache?key={0}&cache=noupdate'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info[key], value)
+
+    response = self.http_post('/memcache/jcache',
+      'key={0}&value=foo&cache=noupdate'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache/jcache?key={0}&cache=noupdate'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info[key], value)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Memcache Test Suite', 'memcache')
   suite.addTest(MemcacheAddTest())
@@ -403,4 +474,6 @@ def suite(lang):
     suite.addTest(MemcacheMultiAsyncAddTest())
     suite.addTest(MemcacheMultiAsyncSetTest())
     suite.addTest(MemcacheMultiAsyncDeleteTest())
+    suite.addTest(SimpleJCacheTest())
+    suite.addTest(JCacheExpiryTest())
   return suite
