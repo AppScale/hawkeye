@@ -1,10 +1,13 @@
 import json
 import urlparse
-from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite, USER_EMAIL, USER_PASSWORD
+from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
 
 __author__ = 'hiranya'
 
 LOGIN_COOKIES = {}
+
+USER_EMAIL = 'a@a.a'
+USER_PASSWORD = 'aaaaaa'
 
 class LoginURLTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -48,7 +51,7 @@ class AdminLoginTest(HawkeyeTestCase):
 
     parser = urlparse.urlparse(response.headers['location'])
     login_url = parser.path + '?' + parser.query
-    payload = 'email={0}&password={1}&action=Login&admin=True'.format(
+    payload = 'email={0}&password={1}&action=Login&admin=True&isAdmin=on'.format(
       USER_EMAIL, USER_PASSWORD)
     response = self.http_post(login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
@@ -77,10 +80,9 @@ class LogoutURLTest(HawkeyeTestCase):
 
 def suite(lang):
   suite = HawkeyeTestSuite('User API Test Suite', 'users')
-  if lang == 'python':
-    suite.addTest(LoginURLTest())
-    suite.addTest(UserLoginTest())
-    suite.addTest(AdminLoginTest())
-    suite.addTest(LogoutURLTest())
+  suite.addTest(LoginURLTest())
+  suite.addTest(UserLoginTest())
+  suite.addTest(AdminLoginTest())
+  suite.addTest(LogoutURLTest())
   return suite
 

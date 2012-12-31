@@ -64,9 +64,9 @@ if __name__ == '__main__':
     exclude_suites = options.exclude_suites.split(',')
 
   if options.user is not None:
-    hawkeye_utils.USER_EMAIL = options.user
+    user_tests.USER_EMAIL = options.user
   if options.password is not None:
-    hawkeye_utils.USER_PASSWORD = options.password
+    user_tests.USER_PASSWORD = options.password
 
   hawkeye_utils.HOST = options.server
   hawkeye_utils.PORT = options.port

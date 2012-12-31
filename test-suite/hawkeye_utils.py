@@ -12,8 +12,6 @@ HOST = None
 PORT = -1
 LANG = None
 CONSOLE_MODE = False
-USER_EMAIL = 'a@a.a'
-USER_PASSWORD = 'aaaaaa'
 
 class ResponseInfo:
   """

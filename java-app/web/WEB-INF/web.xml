@@ -106,6 +106,15 @@
         <servlet-class>com.appscale.hawkeye.memcache.JCacheHandlerServlet</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>AuthorizedAccessHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.users.AuthorizedAccessHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginURLHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.users.LoginURLHandlerServlet</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -202,4 +211,22 @@
         <servlet-name>JCacheHandlerServlet</servlet-name>
         <url-pattern>/java/memcache/jcache</url-pattern>
     </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AuthorizedAccessHandlerServlet</servlet-name>
+        <url-pattern>/java/users/secure</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginURLHandlerServlet</servlet-name>
+        <url-pattern>/java/users/home</url-pattern>
+    </servlet-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/java/users/secure/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+    </security-constraint>
 </web-app>
