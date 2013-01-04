@@ -13,6 +13,8 @@ PORT = -1
 LANG = None
 CONSOLE_MODE = False
 
+SSL_PORT_OFFSET = 3700
+
 class ResponseInfo:
   """
   Contains the metadata and data related to a HTTP response. In
@@ -61,7 +63,7 @@ class HawkeyeTestCase(TestCase):
     """
     raise NotImplementedError
 
-  def http_get(self, path, headers=None, prepend_lang=True):
+  def http_get(self, path, headers=None, prepend_lang=True, ssl=False):
     """
     Perform a HTTP GET request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -73,13 +75,15 @@ class HawkeyeTestCase(TestCase):
       headers       A dictionary to be sent as HTTP headers
       prepend_lang  If True the value of hawkeye_utils.LANG will be
                     prepended to the provided URL path. Default is
-                    True
+                    True.
+      ssl           If True use HTTPS to make the connection. Defaults
+                    to False.
 
     Returns:
       An instance of ResponseInfo
     """
     return self.__make_request('GET', path, headers=headers,
-      prepend_lang=prepend_lang)
+      prepend_lang=prepend_lang, ssl=ssl)
 
   def http_post(self, path, payload, headers=None, prepend_lang=True):
     """
@@ -196,7 +200,7 @@ class HawkeyeTestCase(TestCase):
     return list
 
   def __make_request(self, method, path, payload=None, headers=None,
-                     prepend_lang=True):
+                     prepend_lang=True, ssl=False):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
     are traced and logged to logs/http.log.
@@ -208,6 +212,7 @@ class HawkeyeTestCase(TestCase):
       headers Any HTTP headers to be sent as a dictionary
       prepend_lang If True the value of hawkeye_utils.LANG will be prepended
                     to the URL
+      ssl     If True use HTTPS to make the connection. Defaults to False.
 
     Returns:
       An instance of ResponseInfo
@@ -224,7 +229,10 @@ class HawkeyeTestCase(TestCase):
       print
       if prepend_lang:
         path = "/" + LANG + path
-      conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
+      if ssl:
+        conn = httplib.HTTPSConnection(HOST + ':' + str(PORT - SSL_PORT_OFFSET))
+      else:
+        conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
       conn.set_debuglevel(1)
       if method == 'POST' or method == 'PUT':
         if headers is not None:
