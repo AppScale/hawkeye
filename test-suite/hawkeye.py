@@ -4,7 +4,7 @@ import hawkeye_utils
 import optparse
 import os
 import sys
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests
+from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests
 
 __author__ = 'hiranya'
 
@@ -17,6 +17,7 @@ def init_test_suites(lang):
     'images' : images_tests.suite(lang),
     'memcache' : memcache_tests.suite(lang),
     'ndb' : ndb_tests.suite(lang),
+    'secure_url' : secure_url_tests.suite(lang),
     'taskqueue' : taskqueue_tests.suite(lang),
     'users' : user_tests.suite(lang),
   }
@@ -33,7 +34,7 @@ if __name__ == '__main__':
   parser.add_option('-p', '--port', action='store',
     type='int', dest='port', help='Port of the target AppEngine server')
   parser.add_option('-l', '--lang', action='store',
-    type='string', dest='lang', help='Language binding to test (eg: python, java')
+    type='string', dest='lang', help='Language binding to test (eg: python, java)')
   parser.add_option('--user', action='store',
     type='string', dest='user', help='Admin username (defaults to a@a.a)')
   parser.add_option('--pass', action='store',

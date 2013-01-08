@@ -36,3 +36,11 @@ handlers:
 
 - url: /python/images/(.*)
   script: images.py
+
+- url: /python/secure/always
+  script: secure_url.py
+  secure: always
+
+- url: /python/secure/never
+  script: secure_url.py
+  secure: never
