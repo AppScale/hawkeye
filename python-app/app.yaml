@@ -45,5 +45,11 @@ handlers:
   script: secure_url.py
   secure: never
 
+- url: /python/xmpp/?
+  script: xmpp.py
+
+- url: /_ah/xmpp/message/chat/?
+  script: xmpp.py
+
 inbound_services:
 - xmpp_message
