@@ -16,10 +16,19 @@ __author__ = 'chris'
 # own hostname. For App Engine, it's always a constant,
 # but for AppScale, it can vary based on what IP address
 # runs the XMPP receiver.
-if 'NGINX_HOST' in os.environ:
+# Also, in App Engine, getting your application ID from
+# the environment includes a s~ at the beginning (or
+# a dev~ on the dev_appserver, while in AppScale it
+# does not, so remove that off the front so that we get
+# the right host to send our messages to.
+if 'NGINX_HOST' in os.environ:  # AppScale
   HOST = os.environ['NGINX_HOST']
-else:
+  APP_ID = os.environ['APPLICATION_ID']
+else:  # Google App Engine
   HOST = "appspot.com"
+  APP_ID = os.environ['APPLICATION_ID'].split("~")[1]
+MY_JABBER_ID = APP_ID + "@" + HOST
+
 
 class XmppMetadata(db.Model):
   """XmppMetadata tracks state about XMPP messages sent
@@ -54,8 +63,6 @@ class XmppGetHandler(webapp.RequestHandler):
 
   TEST_KEYNAME = "test"
 
-  MY_JABBER_ID = os.environ['APPLICATION_ID'] + "@" + HOST + "/bot"
-
   def get(self):
     """Returns info on the state of the XMPP message we've
     sent for testing.
@@ -80,8 +87,7 @@ class XmppGetHandler(webapp.RequestHandler):
     """Sends an XMPP from this app to itself.
     """
     # send the message
-    # TODO(cgb): how do we get our jabber id in AppScale?
-    xmpp.send_message(self.MY_JABBER_ID, self.MESSAGE)
+    xmpp.send_message(MY_JABBER_ID, self.MESSAGE)
 
     # update our metadata
     # TODO(cgb): Add a try/except on this and return
