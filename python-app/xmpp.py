@@ -12,7 +12,7 @@ import webapp2
 
 __author__ = 'chris'
 
-class XmppHandler(webapp2.RequestHandler):
+class XmppHandler(xmpp_handlers.CommandHandler):
   """XmppHandler sets up routes for testing the XMPP API.
 
   Specifically, it sets up a route to (1) send XMPP
@@ -30,30 +30,74 @@ class XmppHandler(webapp2.RequestHandler):
     """Sends an XMPP from this app to itself.
     """
     # send the message
+    xmpp.send_message(our_address, MESSAGE)
 
     # update our metadata
+    # TODO(cgb): Add a try/except on this and return
+    # success=False if we run into a Datastore exception
+    metadata = XmppMetadata(key_name = TEST_KEYNAME)
+    metadata.state = MESSAGE_SENT
+    metadata.put()
 
     # write out the result, in json
-    pass
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps({
+      'success' : True,
+      'exists' : True,
+      'state': metadata.state
+    })
 
-  def post(self):
+
+  def text_message(self, message=None):
     """Receives an XMPP message previously sent to this app.
     """
-    # try to receive the message
+    # make sure the payload is what we're expecting
+    if message_arg != MESSAGE:
+      self.response.headers['Content-Type'] = "application/json"
+      self.response.out.write(json.dumps({
+        'success' : False,
+        'reason' : 'payload mismatch'
+        'state': 'unknown'
+      })
 
-    # if no message, return failure
+    # TODO(cgb): Put a try/except on this and return
+    # success = False if a Datastore exception is thrown.
+    metadata = XmppMetadata.get_by_keyname(TEST_KEYNAME)
+    metadata.state = MESSAGE_RECEIVED
+    metadata.put()
 
-    # if message, update our metadata and send success
-    pass
+    self.response.out.write(json.dumps({
+      'success' : True,
+      'exists' : True,
+      'state': metadata.state
+    })
 
   def delete(self):
     """Cleans up Datastore state concerning XMPP messages.
     """
     # if the metadata exists, delete it
-    pass
+    metadata = XmppMetadata.get_by_keyname(TEST_KEYNAME)
+    if not metadata:
+      self.response.headers['Content-Type'] = "application/json"
+      self.response.out.write(json.dumps({
+        'success' : True,
+        'deleted' : False,
+        'exists' : False
+      })
+
+    # TODO(cgb): Put a try/except on this and return
+    # success = False if a Datastore exception is thrown.
+    metadata.delete()
+
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps({
+      'success' : True,
+      'deleted' : True,
+      'exists' : False
+    })
 
 application = webapp.WSGIApplication([
-  (r'/python/xmpp/?', XmppHandler),
+  ('/_ah/xmpp/message/chat/', XmppHandler),
 ], debug=True)
 
 if __name__ == '__main__':
