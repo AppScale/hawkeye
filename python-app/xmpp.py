@@ -1,18 +1,19 @@
-import wgsiref
+import wsgiref
 from google.appengine.api import users
 import utils
 
 try:
-  import json:
+  import json
 except ImportError:
   import simplejson as json
 
+from google.appengine.ext import db, webapp
 import webapp2
 
 __author__ = 'chris'
 
-class XMPPHandler(webapp2.RequestHandler):
-  """XMPPHandler sets up routes for testing the XMPP API.
+class XmppHandler(webapp2.RequestHandler):
+  """XmppHandler sets up routes for testing the XMPP API.
 
   Specifically, it sets up a route to (1) send XMPP
   messages, and (2) receive them. The intention is that
@@ -37,3 +38,10 @@ class XMPPHandler(webapp2.RequestHandler):
     """Cleans up Datastore state concerning XMPP messages.
     """
     pass
+
+application = webapp.WSGIApplication([
+  (r'/python/xmpp/?', XmppHandler),
+], debug=True)
+
+if __name__ == '__main__':
+  wsgiref.handlers.CGIHandler().run(application)

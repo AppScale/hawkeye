@@ -37,6 +37,9 @@ handlers:
 - url: /python/images/(.*)
   script: images.py
 
+- url: /python/xmpp.*
+  script: xmpp.py
+
 - url: /python/secure/always
   script: secure_url.py
   secure: always
