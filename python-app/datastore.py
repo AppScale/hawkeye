@@ -309,6 +309,83 @@ class TransactionHandler(webapp2.RequestHandler):
   def delete(self):
     db.delete(Counter.all())
 
+"""
+  This test will create Company, Employee and PhoneNumber
+Entities where each employee has the same parent Company 
+and each Employee is the parent of a unique PhoneNumber.
+  We query all Employees, in increments of 1 result using cursors, 
+and make sure it is the correct type, hasn't been seen already and
+that the total number of results is correct.
+"""
+class ComplexCursorHandler(webapp2.RequestHandler):
+  def get(self):
+    status = {'success' : True }
+    self.response.headers['Content-Type'] = "application/json"
+    try:
+      num_employees = 4
+      seen_entities = set() 
+      self.set_up_data()
+      query = Employee.all()
+      result_list = query.fetch(1)
+      ctr = 0
+      while len(result_list) == 1:
+        result = result_list[0]
+        if result.__class__.__name__ != "Employee":
+          raise Exception('Unexpected kind from query')
+        if result.key().id() in seen_entities:
+          raise Exception('Saw same result twice')
+        seen_entities.add(result.key().id()) 
+        ctr = ctr + 1
+        cursor = query.cursor()
+        query.with_cursor(cursor)
+        result_list = query.fetch(1)
+      if ctr != num_employees: 
+        raise Exception('Did not retrieve ' + num_employees + ' Employees')
+    except Exception:
+      status = {'success' : False}  
+      self.response.out.write(json.dumps(status))
+      raise
+    finally:
+      self.clean_up_data()
+    
+    self.response.out.write(json.dumps(status))
+
+  def set_up_data(self):
+    company = Company(name = "AppScale")
+    company.put()  
+    
+    employee1 = Employee(name = "A", parent = company)
+    employee1.put()
+    employee2 = Employee(name = "B", parent = company)
+    employee2.put()
+    employee3 = Employee(name = "C", parent = company)
+    employee3.put()
+    employee4 = Employee(name = "D", parent = company)
+    employee4.put()
+
+    pn1 = PhoneNumber(work = "1111111111", parent = employee1)
+    pn1.put()
+    pn2 = PhoneNumber(work = "2222222222", parent = employee2)
+    pn2.put()
+    pn3 = PhoneNumber(work = "3333333333", parent = employee3)
+    pn3.put()
+    pn4 = PhoneNumber(work = "4444444444", parent = employee4)
+    pn4.put()
+    
+  def clean_up_data(self):
+    db.delete(Company.all())
+    db.delete(Employee.all())
+    db.delete(PhoneNumber.all())
+
+class Employee(db.Model):
+  name = db.StringProperty(required=True)
+
+class Company(db.Model):
+  name = db.StringProperty(required=True)
+
+class PhoneNumber(db.Model):
+  work = db.StringProperty(required=True)
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -319,6 +396,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/project_fields', ProjectFieldHandler),
   ('/python/datastore/project_filter', ProjectFilterHandler),
   ('/python/datastore/project_cursor', ProjectBrowserHandler),
+  ('/python/datastore/complex_cursor', ComplexCursorHandler),
   ('/python/datastore/transactions', TransactionHandler),
 ], debug=True)
 

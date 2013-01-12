@@ -411,6 +411,10 @@ class JPAIntegrationTest(HawkeyeTestCase):
     response = self.http_get('/datastore/jpa_project?project_id=' + project_id)
     self.assertEquals(response.status, 404)
 
+class ComplexQueryCursorTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/complex_cursor')
+    self.assertEquals(response.status, 200)
 
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -429,7 +433,8 @@ def suite(lang):
   suite.addTest(CompositeQueryTest())
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
-  suite.addTest(QueryCursorTest())
+  suite.addTest(QueryCursorTest())  
+  suite.addTest(ComplexQueryCursorTest())
 
   if lang == 'python':
     suite.addTest(GQLProjectionQueryTest())
