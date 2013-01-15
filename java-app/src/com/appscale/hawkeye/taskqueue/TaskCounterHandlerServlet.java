@@ -22,6 +22,7 @@ public class TaskCounterHandlerServlet extends HttpServlet {
         String key = request.getParameter("key");
         String getMethod = request.getParameter("get");
         String defer = request.getParameter("defer");
+        String retry = request.getParameter("retry");
 
         Queue queue = QueueFactory.getDefaultQueue();
         if ("defer".equals(defer)) {
