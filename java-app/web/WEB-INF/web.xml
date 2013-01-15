@@ -49,6 +49,10 @@
         <servlet-class>com.appscale.hawkeye.datastore.ProjectBrowserHandlerServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>ComplexCursorHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.ComplexCursorHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>JDOHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.jdo.JDOHandlerServlet</servlet-class>
     </servlet>
@@ -154,6 +158,10 @@
     <servlet-mapping>
         <servlet-name>ProjectBrowserHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project_cursor</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ComplexCursorHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/complex_cursor</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>JDOHandlerServlet</servlet-name>
