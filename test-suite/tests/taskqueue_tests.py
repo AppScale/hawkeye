@@ -88,6 +88,16 @@ class DeferredTaskTest(PushQueueTest):
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
+class TaskRetryTest(PushQueueTest):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    response = self.http_post('/taskqueue/counter',
+      'key={0}&retry=true'.format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['status'])
+    self.get_and_assert_counter(key, 1)
+
 class BackendTaskTest(PushQueueTest):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())

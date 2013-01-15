@@ -31,7 +31,7 @@ public class TaskCounterHandlerServlet extends HttpServlet {
             queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker?key=" + key).
                     method(TaskOptions.Method.GET));
         } else {
-            queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key));
+            queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key).param("retry", retry));
         }
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("status", true);
