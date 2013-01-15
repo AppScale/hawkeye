@@ -322,7 +322,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     status = {'success' : True }
     self.response.headers['Content-Type'] = "application/json"
     try:
-      num_employees = 4
+      num_employees = "4"
       seen_entities = set() 
       self.set_up_data()
       query = Employee.all()
