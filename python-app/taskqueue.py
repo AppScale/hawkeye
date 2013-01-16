@@ -39,6 +39,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
     key = self.request.get('key')
     get_method = self.request.get('get')
     defer = self.request.get('defer')
+    retry = self.request.get('retry')
     backend = self.request.get('backend')
 
     if backend is not None and backend == 'true':
@@ -49,7 +50,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
     elif get_method is not None and get_method == 'true':
       taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET')
     else:
-      taskqueue.add(url='/python/taskqueue/worker', params={'key': key})
+      taskqueue.add(url='/python/taskqueue/worker', params={'key': key, 'retry': retry})
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
@@ -79,6 +80,11 @@ class TaskCounterWorker(webapp2.RequestHandler):
     utils.process(self.request.get('key'))
 
   def post(self):
+    retry = self.request.get('retry')
+    failures = self.request.headers.get("X-AppEngine-TaskRetryCount")
+    if retry == 'true' and failures == "0":
+      raise Exception
+
     utils.process(self.request.get('key'))
 
 application = webapp.WSGIApplication([

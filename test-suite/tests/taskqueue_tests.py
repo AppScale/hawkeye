@@ -49,7 +49,7 @@ class PushQueueTest(HawkeyeTestCase):
     """
 
     start = datetime.datetime.now()
-    end = start + datetime.timedelta(0, 60)
+    end = start + datetime.timedelta(0, 30)
     while True:
       response = self.http_get('/taskqueue/counter?key={0}'.format(key))
       self.assertTrue(response.status == 200 or response.status == 404)
@@ -87,6 +87,16 @@ class DeferredTaskTest(PushQueueTest):
       self.assertEquals(response.status, 200)
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
+
+class TaskRetryTest(PushQueueTest):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    response = self.http_post('/taskqueue/counter',
+      'key={0}&retry=true'.format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['status'])
+    self.get_and_assert_counter(key, 1)
 
 class BackendTaskTest(PushQueueTest):
   def run_hawkeye_test(self):
@@ -130,7 +140,7 @@ class PullQueueTest(HawkeyeTestCase):
     self.assertTrue(task_info['status'])
 
     start = datetime.datetime.now()
-    end = start + datetime.timedelta(0, 60)
+    end = start + datetime.timedelta(0, 30)
     while True:
       response = self.http_get('/taskqueue/pull')
       self.assertEquals(response.status, 200)
