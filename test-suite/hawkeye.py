@@ -4,7 +4,7 @@ import hawkeye_utils
 import optparse
 import os
 import sys
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests
+from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests, xmpp_tests
 
 __author__ = 'hiranya'
 
@@ -20,6 +20,7 @@ def init_test_suites(lang):
     'secure_url' : secure_url_tests.suite(lang),
     'taskqueue' : taskqueue_tests.suite(lang),
     'users' : user_tests.suite(lang),
+    'xmpp' : xmpp_tests.suite(lang),
   }
 
 def print_usage_and_exit(msg, parser):
