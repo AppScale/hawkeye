@@ -322,7 +322,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     status = {'success' : True }
     self.response.headers['Content-Type'] = "application/json"
     try:
-      num_employees = "4"
+      num_employees = 4
       seen_entities = set() 
       self.set_up_data()
       query = Employee.all()
@@ -340,7 +340,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
         query.with_cursor(cursor)
         result_list = query.fetch(1)
       if ctr != num_employees: 
-        raise Exception('Did not retrieve ' + num_employees + ' Employees')
+        raise Exception('Did not retrieve ' + str(num_employees) + ' Employees')
     except Exception:
       status = {'success' : False}  
       self.response.out.write(json.dumps(status))
