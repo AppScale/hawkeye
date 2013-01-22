@@ -1,0 +1,4 @@
+backends:
+- name: hawkeyepython
+  instances: 1
+  options: dynamic
