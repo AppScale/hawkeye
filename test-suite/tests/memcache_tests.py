@@ -1,6 +1,7 @@
 import json
 from time import sleep
 import uuid
+import urllib
 from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
 
 __author__ = 'hiranya'
@@ -8,6 +9,32 @@ __author__ = 'hiranya'
 class MemcacheAddTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
+    value = str(uuid.uuid1())
+    response = self.http_post('/memcache',
+      'key={0}&value={1}'.format(key, value))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache?key={0}'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info['value'], value)
+
+    response = self.http_post('/memcache',
+      'key={0}&value=foo'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertFalse(entry_info['success'])
+
+    response = self.http_get('/memcache?key={0}'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(entry_info['value'], value)
+
+class MemcacheKeyTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = urllib.quote(str(uuid.uuid1()) + " /.,';l][/!@#$%^\n&*()_+-=")
     value = str(uuid.uuid1())
     response = self.http_post('/memcache',
       'key={0}&value={1}'.format(key, value))
@@ -459,6 +486,7 @@ class JCacheAddPolicyTest(HawkeyeTestCase):
 def suite(lang):
   suite = HawkeyeTestSuite('Memcache Test Suite', 'memcache')
   suite.addTest(MemcacheAddTest())
+  suite.addTest(MemcacheKeyTest())
   suite.addTest(MemcacheSetTest())
   suite.addTest(MemcacheKeyExpiryTest())
   suite.addTest(MemcacheDeleteTest())
