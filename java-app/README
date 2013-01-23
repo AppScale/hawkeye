@@ -1,0 +1,1 @@
+To compile the java app, run "ant compile", then "ant datanucleusenhance"
