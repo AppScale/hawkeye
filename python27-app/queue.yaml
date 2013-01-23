@@ -1,0 +1,3 @@
+queue:
+- name: hawkeyepython-pull-queue
+  mode: pull
