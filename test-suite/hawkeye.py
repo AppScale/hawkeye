@@ -1,14 +1,19 @@
-#!/usr/bin/python
+#!/usr/local/Python-2.7.3/python
+
+#this used to be: #!/usr/bin/python
+#but we need v2.7 to run correctly
 
 import hawkeye_utils
 import optparse
 import os
 import sys
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests, xmpp_tests
+import csv
+import StringIO
 
 __author__ = 'hiranya'
 
-SUPPORTED_LANGUAGES = [ 'java', 'python' ]
+SUPPORTED_LANGUAGES = [ 'java', 'python', 'python27' ]
 
 def init_test_suites(lang):
   return {
@@ -35,7 +40,7 @@ if __name__ == '__main__':
   parser.add_option('-p', '--port', action='store',
     type='int', dest='port', help='Port of the target AppEngine server')
   parser.add_option('-l', '--lang', action='store',
-    type='string', dest='lang', help='Language binding to test (eg: python, java)')
+    type='string', dest='lang', help='Language binding to test (eg: python, python27, java)')
   parser.add_option('--user', action='store',
     type='string', dest='user', help='Admin username (defaults to a@a.a)')
   parser.add_option('--pass', action='store',
@@ -109,6 +114,23 @@ if __name__ == '__main__':
     if os.path.isfile(file_path):
       os.unlink(file_path)
 
+  i=1;
+  ran_suites={}
   for suite in suites.values():
     runner = hawkeye_utils.HawkeyeTestRunner(suite)
+    print "suite "+str(i)+" "+suite.name
+    i+=1
+    # we are gong to capture stout to a string, print it out and then parse it for comparison/saving
+    #  in the CSV file for the baseline
+    old_stdout = sys.stderr
+    sys.stderr = StringIO.StringIO()
     runner.run_suite()
+    output = sys.stderr.getvalue()
+    sys.stderr = old_stdout  #restore stdout
+    print "BLERGBLERG:"+output,
+    print "BLERGBLERG:"
+    ran_suites[suite.name]=output.strip()
+  
+  w = csv.writer(open("output.csv", "w"))
+  for key, val in ran_suites.items():
+    w.writerow([key, val])
