@@ -11,7 +11,7 @@ from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, b
 import csv
 import StringIO
 
-__author__ = 'hiranya'
+__author__ = 'hiranya' #and Brian
 
 SUPPORTED_LANGUAGES = [ 'java', 'python', 'python27' ]
 
@@ -34,6 +34,7 @@ def print_usage_and_exit(msg, parser):
   exit(1)
 
 if __name__ == '__main__':
+
   parser = optparse.OptionParser()
   parser.add_option('-s', '--server', action='store',
     type='string', dest='server', help='Hostname of the target AppEngine server')
@@ -114,23 +115,67 @@ if __name__ == '__main__':
     if os.path.isfile(file_path):
       os.unlink(file_path)
 
-  i=1;
   ran_suites={}
   for suite in suites.values():
-    runner = hawkeye_utils.HawkeyeTestRunner(suite)
-    print "suite "+str(i)+" "+suite.name
-    i+=1
-    # we are gong to capture stout to a string, print it out and then parse it for comparison/saving
+    # we capture output to a string, print it out and then parse it for comparison/saving
     #  in the CSV file for the baseline
-    old_stdout = sys.stderr
-    sys.stderr = StringIO.StringIO()
+    buff =  StringIO.StringIO()
+    runner = hawkeye_utils.HawkeyeTestRunner(suite)
+    runner.set_stream(buff)
     runner.run_suite()
-    output = sys.stderr.getvalue()
-    sys.stderr = old_stdout  #restore stdout
-    print "BLERGBLERG:"+output,
-    print "BLERGBLERG:"
-    ran_suites[suite.name]=output.strip()
-  
-  w = csv.writer(open("output.csv", "w"))
-  for key, val in ran_suites.items():
+    output = buff.getvalue()
+    buff.close()
+    print output
+    #
+    #i=1;
+    for line in output.splitlines():
+      if line.startswith('runTest ('):
+        #print str(i)+" "+line[9:line.index(')')]+" = "+line[line.rfind(' '):]
+        #i+=1;
+	key=line[9:line.index(')')]
+	val = line[line.rfind(' '):]
+    	ran_suites[key]=val
+ 
+  # write the test results to a file in CSV format
+  w = csv.writer(open("hawkeye_output.csv", "w"))
+  for key, val in sorted(ran_suites.items()):
     w.writerow([key, val])
+
+  # read in the baseline file (if found)
+  baseline_results={}
+  try:
+    for key, val in csv.reader(open("hawkeye_baseline.csv")):
+      baseline_results[key]=val
+  except:
+    print "ERROR: Could not open baseline file for comparison"
+
+  # compare 'ran_suites' with 'baseline_results'
+  tests_matched=0;
+  tests_no_match=0;
+  tests_added=0;
+  tests_ommitted=0;
+  test_results = {} #dict to count the various result values
+  for key in ran_suites.keys():
+    # add to the count (i.e. how many 'ok', how many 'FAIL'...)
+    value = ran_suites[key]
+    if(value in test_results): test_results[value]+=1
+    else:  test_results[value]=1
+    # compare to baseline
+    if(key in baseline_results):
+      if(baseline_results[key]==ran_suites[key]):
+      	tests_matched+=1
+      else:
+        tests_no_match+=1
+      del baseline_results[key]
+    else:
+      tests_added+=1
+    # how many ommited (how many are left in the baseline list)
+    test_ommitted = len(baseline_results)
+
+  print "Comparison to baseline"
+  print str(tests_matched)+" tests match baseline result"
+  print str(tests_no_match)+" tests did not match baseline result"
+  print str(tests_added)+" tests run, but not found in baseline"
+  print str(tests_ommitted)+" tests in baseline, but not run"
+  for status in sorted(test_results.keys()):
+    print str(test_results[status])+" test with value: "+status

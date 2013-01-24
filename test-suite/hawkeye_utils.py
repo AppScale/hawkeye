@@ -391,6 +391,13 @@ class HawkeyeTestRunner(TextTestRunner):
     return HawkeyeTestResult(self.stream, self.descriptions,
       self.verbosity, self.suite.short_name)
 
+  def set_stream(self,stream):
+    """
+    Allow calling interface to replace the steam with another file-like object.
+    uses _HawkeyeWritelnDecorator class to expose the writeln() function
+    """
+    self.stream=_HawkeyeWritelnDecorator(stream)
+
 class HawkeyeConstants:
   PROJECT_SYNAPSE = 'Synapse'
   PROJECT_XERCES = 'Xerces'
@@ -436,3 +443,20 @@ def encode_file(file_path):
   content = file_data.read()
   file_data.close()
   return encode(os.path.basename(file_path), content)
+
+class _HawkeyeWritelnDecorator:
+    """Used to decorate file-like objects with a handy 'writeln' method
+       This is for compatability with unittest.TextTestRunner() and it's
+       use of _WritelnDecorator()
+    """
+    def __init__(self,stream):
+        self.stream = stream
+
+    def __getattr__(self, attr):
+        return getattr(self.stream,attr)
+
+    def writeln(self, arg=None):
+        if arg: self.write(arg)
+        self.write('\n') # text-mode streams translate to \r\n if needed
+
+
