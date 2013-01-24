@@ -1,7 +1,4 @@
-#!/usr/local/Python-2.7.3/python
-
-#this used to be: #!/usr/bin/python
-#but we need v2.7 to run correctly
+#!/usr/bin/python
 
 import hawkeye_utils
 import optparse
