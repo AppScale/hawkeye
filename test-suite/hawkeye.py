@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-hawkeye.py: run API fidelity tests on AppScale
+hawkeye.py: Run API fidelity tests on AppScale.
 """
 
 import hawkeye_utils
@@ -12,14 +12,20 @@ from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests
 import csv
 import StringIO
-# we want to fail nicely since all systems don't have terminal colors
+# We want to fail nicely on systems that don't have terminal colors installed.
 try:
   from termcolor import cprint
 except ImportError:
   sys.stderr.write('termcolor module not found\n')
   def cprint(msg, color, end='\n'):
     """
-    Fallback definition of cprint in case the termcolor module is not available
+    Fallback definition of cprint in case the termcolor module is not available.
+
+    Args:
+      msg: string to be printed stdout.
+      color: this argument is ignored, inclued for compatability with
+        termcolor.cprint().
+      end: line-ending charcter, typically a new-line or empty string.
     """
     sys.stdout.write(msg)
     if end is not '':
@@ -27,11 +33,17 @@ except ImportError:
 
 __author__ = 'hiranya,Brian'
 
-SUPPORTED_LANGUAGES = [ 'java', 'python', 'python27' ]
+SUPPORTED_LANGUAGES = [ 'java', 'python' ]
 
 def init_test_suites(lang):
   """
-  initialize test suites
+  Initialize the hawkeye test suites.
+
+  Args:
+    lang: language to test, either 'python' or 'java'.
+
+  Returns:
+    A dict of hawkeye test suites.
   """
   return {
     'blobstore' : blobstore_tests.suite(lang),
@@ -47,7 +59,11 @@ def init_test_suites(lang):
 
 def print_usage_and_exit(msg, myparser):
   """
-  Print out usage line and exit
+  Print out usage for this program and  and exit.
+
+  Args:
+    msg: error message to print out.
+    myparser: parser object.
   """
   print msg
   myparser.print_help()
@@ -142,8 +158,7 @@ if __name__ == '__main__':
 
   ran_suites = {}
   for suite in suites.values():
-    # we capture output to a string, print it out and then parse it for
-    # comparison/saving in the CSV file for the baseline
+    # Capture output from the test suites to a string.
     buff =  StringIO.StringIO()
     runner = hawkeye_utils.HawkeyeTestRunner(suite)
     runner.set_stream(buff)
@@ -151,19 +166,19 @@ if __name__ == '__main__':
     output = buff.getvalue()
     buff.close()
     print output
-    #
+    # Parse the output for comparison against the baseline.
     for line in output.splitlines():
       if line.startswith('runTest ('):
         key = line[9:line.index(')')]
         val = line[line.rfind(' '):]
         ran_suites[key] = val
  
-  # write the test results to a file in CSV format
+  # Write the test results to a file in CSV format.
   csv_writer = csv.writer(open("hawkeye_output.csv", "w"))
   for key, val in sorted(ran_suites.items()):
     csv_writer.writerow([key, val])
 
-  # read in the baseline file (if found)
+  # Read in the baseline file (if found).
   baseline_results = {}
   try:
     for key, val in csv.reader(open("hawkeye_baseline_"+options.lang+".csv")):
@@ -171,7 +186,7 @@ if __name__ == '__main__':
   except IOError:
     print "ERROR: Could not open baseline file for comparison"
 
-  # compare 'ran_suites' with 'baseline_results'
+  # Compare 'ran_suites' with 'baseline_results'.
   tests_matched = 0
   tests_no_match = 0
   test_no_match_buffer = ''
@@ -179,14 +194,14 @@ if __name__ == '__main__':
   test_added_buffer = ''
   tests_ommitted = 0
   test_ommitted_buffer = ''
-  test_results = {} #dict to count the various result values
+  test_results = {} #Dict to count the various result values.
   for key in ran_suites.keys():
-    # add to the count (i.e. how many 'ok', how many 'FAIL'...)
+    # Add to the count (i.e. how many 'ok', how many 'FAIL'...).
     value = ran_suites[key]
     if(value in test_results):
       test_results[value] += 1
     else:  test_results[value] = 1
-    # compare to baseline
+    # Compare baseline and results.
     if(key in baseline_results):
       if(baseline_results[key]==ran_suites[key]):
         tests_matched += 1
@@ -198,7 +213,7 @@ if __name__ == '__main__':
     else:
       tests_added += 1
       test_added_buffer += "\t"+key+" ="+value+"\n"
-  # how many ommited (how many are left in the baseline list)
+  # How many tests were ommited (how many are left in the baseline list).
   tests_ommitted = len(baseline_results)
   for key in baseline_results.keys():
     test_ommitted_buffer += "\t"+key+" ="+value+"\n"
