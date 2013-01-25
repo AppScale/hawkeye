@@ -7,8 +7,18 @@ import sys
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests, xmpp_tests
 import csv
 import StringIO
+# we want to fail nicely since all systems don't have terminal colors
+try:
+  from termcolor import cprint
+except ImportError:
+  sys.stderr.write('termcolor module not found\n');
+  # defining the cprint function as 
+  def cprint(msg,color,end='\n'):
+    sys.stdout.write(msg)
+    if end is not '':
+      sys.stdout.write(end)
 
-__author__ = 'hiranya' #and Brian
+__author__ = 'hiranya,Brian'
 
 SUPPORTED_LANGUAGES = [ 'java', 'python', 'python27' ]
 
@@ -49,7 +59,7 @@ if __name__ == '__main__':
     dest='suites', help='A comma separated list of suites to run')
   parser.add_option('--exclude-suites', action='store', type='string',
     dest='exclude_suites', help='A comma separated list of suites to exclude')
-  parser.add_option('--verbose_baseline', action='store_true',
+  parser.add_option('--baseline', action='store_true',
     dest='verbose_baseline', help='Turn on verbose reporting for baseline comparison')
   (options, args) = parser.parse_args(sys.argv[1:])
 
@@ -182,7 +192,8 @@ if __name__ == '__main__':
   print str(tests_matched)+" tests match baseline result"
   print str(tests_no_match)+" tests did not match baseline result"
   if options.verbose_baseline and tests_no_match>0:
-    print test_no_match_buffer,
+    #print test_no_match_buffer,
+    cprint(test_no_match_buffer,'red',end='')
   print str(tests_added)+" tests run, but not found in baseline"
   if options.verbose_baseline and tests_added>0:
     print test_added_buffer,
