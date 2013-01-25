@@ -1,4 +1,4 @@
-tests.blobstore_tests.AsyncDeleteBlobTest2, ERROR
+tests.blobstore_tests.AsyncDeleteBlobTest, ERROR
 tests.blobstore_tests.AsyncQueryBlobDataTest, ERROR
 tests.blobstore_tests.AsyncUploadBlobTest, FAIL
 tests.blobstore_tests.DeleteBlobTest, ERROR
