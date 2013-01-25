@@ -49,6 +49,8 @@ if __name__ == '__main__':
     dest='suites', help='A comma separated list of suites to run')
   parser.add_option('--exclude-suites', action='store', type='string',
     dest='exclude_suites', help='A comma separated list of suites to exclude')
+  parser.add_option('--verbose_baseline', action='store_true',
+    dest='verbose_baseline', help='Turn on verbose reporting for baseline comparison')
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
@@ -141,7 +143,7 @@ if __name__ == '__main__':
   # read in the baseline file (if found)
   baseline_results={}
   try:
-    for key, val in csv.reader(open("hawkeye_baseline.csv")):
+    for key, val in csv.reader(open("hawkeye_baseline_"+options.lang+".csv")):
       baseline_results[key]=val
   except:
     print "ERROR: Could not open baseline file for comparison"
@@ -149,8 +151,11 @@ if __name__ == '__main__':
   # compare 'ran_suites' with 'baseline_results'
   tests_matched=0;
   tests_no_match=0;
-  tests_added=0;
-  tests_ommitted=0;
+  test_no_match_buffer=''
+  tests_added=0
+  test_added_buffer=''
+  tests_ommitted=0
+  test_ommitted_buffer=''
   test_results = {} #dict to count the various result values
   for key in ran_suites.keys():
     # add to the count (i.e. how many 'ok', how many 'FAIL'...)
@@ -163,16 +168,26 @@ if __name__ == '__main__':
       	tests_matched+=1
       else:
         tests_no_match+=1
+	test_no_match_buffer += "\t"+key+" ="+value+" (baseline ="+baseline_results[key]+")\n"
       del baseline_results[key]
     else:
       tests_added+=1
-    # how many ommited (how many are left in the baseline list)
-    test_ommitted = len(baseline_results)
+      test_added_buffer += "\t"+key+" ="+value+"\n"
+  # how many ommited (how many are left in the baseline list)
+  tests_ommitted = len(baseline_results)
+  for key in baseline_results.keys():
+    test_ommitted_buffer += "\t"+key+" ="+value+"\n"
 
   print "Comparison to baseline"
   print str(tests_matched)+" tests match baseline result"
   print str(tests_no_match)+" tests did not match baseline result"
+  if options.verbose_baseline and tests_no_match>0:
+    print test_no_match_buffer,
   print str(tests_added)+" tests run, but not found in baseline"
+  if options.verbose_baseline and tests_added>0:
+    print test_added_buffer,
   print str(tests_ommitted)+" tests in baseline, but not run"
+  if options.verbose_baseline and tests_ommitted>0:
+    print test_ommitted_buffer,
   for status in sorted(test_results.keys()):
     print str(test_results[status])+" test with value: "+status
