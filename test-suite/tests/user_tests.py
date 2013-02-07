@@ -6,7 +6,7 @@ __author__ = 'hiranya'
 
 LOGIN_COOKIES = {}
 
-USER_EMAIL = 'a@a.a'
+USER_EMAIL = 'a@a.com'
 USER_PASSWORD = 'aaaaaa'
 
 class LoginURLTest(HawkeyeTestCase):
