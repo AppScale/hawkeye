@@ -23,6 +23,8 @@ class NeverSecureHandler(webapp2.RequestHandler):
 application = webapp.WSGIApplication([
   ('/python/secure/always', AlwaysSecureHandler),
   ('/python/secure/never', NeverSecureHandler),
+  ('/python/secure/always/regex1/regex2', AlwaysSecureHandler),
+  ('/python/secure/never/regex1/regex2', NeverSecureHandler),
 ], debug=True)
 
 if __name__ == '__main__':
