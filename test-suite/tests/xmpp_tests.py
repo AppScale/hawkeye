@@ -37,7 +37,7 @@ class SendAndReceiveTest(HawkeyeTestCase):
 
     # wait a moment for the message to be sent and the
     # datastore operation to occur
-    time.sleep(1)
+    time.sleep(5)
 
     # the sending of the XMPP message should have been
     # received by the app, which then causes the datastore
