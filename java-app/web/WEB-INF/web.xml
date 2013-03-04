@@ -53,6 +53,10 @@
         <servlet-class>com.appscale.hawkeye.datastore.ComplexCursorHandlerServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>CountQueryHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.CountQueryHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>JDOHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.jdo.JDOHandlerServlet</servlet-class>
     </servlet>
@@ -162,6 +166,10 @@
     <servlet-mapping>
         <servlet-name>ComplexCursorHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/complex_cursor</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CountQueryHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/count_query</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>JDOHandlerServlet</servlet-name>
