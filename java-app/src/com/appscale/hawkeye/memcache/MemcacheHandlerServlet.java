@@ -32,13 +32,13 @@ public class MemcacheHandlerServlet extends HttpServlet {
 
         boolean success;
         if ("true".equals(async)) {
-            AsyncMemcacheService syncCache = MemcacheServiceFactory.getAsyncMemcacheService();
+            AsyncMemcacheService asyncCache = MemcacheServiceFactory.getAsyncMemcacheService();
             Future<Boolean> future;
             if ("true".equals(update)) {
-                future = syncCache.put(key, value, Expiration.byDeltaSeconds(timeout),
+                future = asyncCache.put(key, value, Expiration.byDeltaSeconds(timeout),
                         MemcacheService.SetPolicy.SET_ALWAYS);
             } else {
-                future = syncCache.put(key, value, Expiration.byDeltaSeconds(timeout),
+                future = asyncCache.put(key, value, Expiration.byDeltaSeconds(timeout),
                         MemcacheService.SetPolicy.ADD_ONLY_IF_NOT_PRESENT);
             }
             try {

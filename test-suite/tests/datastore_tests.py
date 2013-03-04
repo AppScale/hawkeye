@@ -416,6 +416,11 @@ class ComplexQueryCursorTest(HawkeyeTestCase):
     response = self.http_get('/datastore/complex_cursor')
     self.assertEquals(response.status, 200)
 
+class CountQueryTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response=self.http_get('/datastore/count_query')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -435,12 +440,14 @@ def suite(lang):
   suite.addTest(CrossGroupTransactionTest())
   suite.addTest(QueryCursorTest())  
   suite.addTest(ComplexQueryCursorTest())
-
+  suite.addTest(CountQueryTest())
+  
   if lang == 'python':
     suite.addTest(GQLProjectionQueryTest())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
+    
 
   return suite
 
