@@ -15,6 +15,7 @@ tests.datastore_tests.SimpleKindAwareInsertTest, ok
 tests.datastore_tests.SimpleKindAwareQueryTest, ok
 tests.datastore_tests.SimpleTransactionTest, ok
 tests.datastore_tests.SinglePropertyBasedQueryTest, ok
+tests.datastore_tests.CountQueryTest, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok
