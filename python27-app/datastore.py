@@ -38,41 +38,41 @@ def serialize(entity):
   return dict
 
 class ProjectHandler(webapp2.RequestHandler):
-    def get(self):
-      id = self.request.get('id')
-      name = self.request.get('name')
-      if id is None or id.strip() == '':
-        if name is not None and len(name) > 0:
-          query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % name)
-        else:
-          query = db.GqlQuery("SELECT * FROM Project")
+  def get(self):
+    id = self.request.get('id')
+    name = self.request.get('name')
+    if id is None or id.strip() == '':
+      if name is not None and len(name) > 0:
+        query = db.GqlQuery("SELECT * FROM Project WHERE name = '%s'" % name)
       else:
-        query = db.GqlQuery("SELECT * FROM Project WHERE "
-                            "project_id = '%s'" % str(id))
+        query = db.GqlQuery("SELECT * FROM Project")
+    else:
+      query = db.GqlQuery("SELECT * FROM Project WHERE "
+                          "project_id = '%s'" % str(id))
 
-      data = []
-      for result in query:
-        data.append(result)
-      self.response.headers['Content-Type'] = "application/json"
-      self.response.out.write(json.dumps(data, default=serialize))
+    data = []
+    for result in query:
+      data.append(result)
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps(data, default=serialize))
 
-    def post(self):
-      project_id = str(uuid.uuid1())
-      project_name = self.request.get('name')
-      project = Project(project_id=project_id,
-        name=project_name,
-        rating=int(self.request.get('rating')),
-        description=self.request.get('description'),
-        license=self.request.get('license'),
-        key_name=project_name)
-      project.put()
-      self.response.headers['Content-Type'] = "application/json"
-      self.response.set_status(201)
-      self.response.out.write(
-        json.dumps({ 'success' : True, 'project_id' : project_id }))
+  def post(self):
+    project_id = str(uuid.uuid1())
+    project_name = self.request.get('name')
+    project = Project(project_id=project_id,
+      name=project_name,
+      rating=int(self.request.get('rating')),
+      description=self.request.get('description'),
+      license=self.request.get('license'),
+      key_name=project_name)
+    project.put()
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.set_status(201)
+    self.response.out.write(
+      json.dumps({ 'success' : True, 'project_id' : project_id }))
 
-    def delete(self):
-      db.delete(Project.all())
+  def delete(self):
+    db.delete(Project.all())
 
 class ModuleHandler(webapp2.RequestHandler):
   def get(self):
@@ -112,10 +112,22 @@ class ModuleHandler(webapp2.RequestHandler):
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
-    project_query = db.GqlQuery("SELECT * FROM Project WHERE "
+    order = self.request.get('order')
+    q = []
+
+    if order:
+      project_query = db.GqlQuery("SELECT * FROM Project WHERE "
                                 "project_id = '%s'" % project_id)
-    q = db.Query()
-    q.ancestor(project_query[0])
+      # Create kind query with an ancestor and ordering.
+      q = db.Query(Module)
+      q.ancestor(project_query[0])
+      q.order("-" + order)
+    else:
+      project_query = db.GqlQuery("SELECT * FROM Project WHERE "
+                                "project_id = '%s'" % project_id)
+      q = db.Query()
+      q.ancestor(project_query[0])
+
     data = []
     for entity in q:
       data.append(entity)

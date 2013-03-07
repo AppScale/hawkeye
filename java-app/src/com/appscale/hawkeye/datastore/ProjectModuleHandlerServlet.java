@@ -16,6 +16,8 @@ public class ProjectModuleHandlerServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
 
         String projectId = request.getParameter("project_id");
+        String order = request.getParameter("order");
+
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Query.FilterPredicate filter = new Query.FilterPredicate(Constants.Project.PROJECT_ID,
                 Query.FilterOperator.EQUAL, projectId);
@@ -25,6 +27,9 @@ public class ProjectModuleHandlerServlet extends HttpServlet {
 
         q = new Query(Constants.Module.class.getSimpleName()).setAncestor(project.getKey());
         preparedQuery = datastore.prepare(q);
+        if (order != null){
+          q.addSort(order, Query.SortDirection.DESCENDING); 
+        }
         JSONUtils.serialize(preparedQuery.asIterable(), response);
     }
 }

@@ -55,7 +55,7 @@ class SimpleKindAwareInsertTest(HawkeyeTestCase):
 class KindAwareInsertWithParentTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/datastore/module',
-      'name={0}&description=Mediation Core&project_id={1}'.format(
+      'name={0}&description=A Mediation Core&project_id={1}'.format(
         HawkeyeConstants.MOD_CORE,
         ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
     mod_info = json.loads(response.payload)
@@ -66,7 +66,7 @@ class KindAwareInsertWithParentTest(HawkeyeTestCase):
     SYNAPSE_MODULES[HawkeyeConstants.MOD_CORE] = module_id
 
     response = self.http_post('/datastore/module',
-      'name={0}&description=NIO HTTP transport&project_id={1}'.format(
+      'name={0}&description=Z NIO HTTP transport&project_id={1}'.format(
         HawkeyeConstants.MOD_NHTTP,
         ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
     mod_info = json.loads(response.payload)
@@ -108,6 +108,36 @@ class AncestorQueryTest(HawkeyeTestCase):
     self.assertEquals(len(modules), 2)
     self.assertTrue(modules.index(HawkeyeConstants.MOD_CORE) != -1)
     self.assertTrue(modules.index(HawkeyeConstants.MOD_NHTTP) != -1)
+
+class OrderedKindAncestorQueryTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    entity_list = self.assert_and_get_list('/datastore/project_modules?' \
+      'project_id={0}&order=module_id'.format(\
+                    ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
+    modules = []
+    for entity in entity_list:
+      if entity['type'] == 'module':
+        modules.append(entity['name'])
+
+    entity_list = self.assert_and_get_list('/datastore/project_modules?' \
+      'project_id={0}&order=description'.format(\
+                    ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
+    modules = []
+    for entity in entity_list:
+      if entity['type'] == 'module':
+        modules.append(entity['name'])
+
+    entity_list = self.assert_and_get_list('/datastore/project_modules?' \
+      'project_id={0}&order=name'.format(\
+                    ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
+    modules = []
+    for entity in entity_list:
+      if entity['type'] == 'module':
+        modules.append(entity['name'])
+    self.assertEquals(len(modules), 2)
+    self.assertTrue(modules.index(HawkeyeConstants.MOD_CORE) != -1)
+    self.assertTrue(modules.index(HawkeyeConstants.MOD_NHTTP) != -1)
+
 
 class KindlessQueryTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -423,6 +453,7 @@ def suite(lang):
   suite.addTest(KindAwareInsertWithParentTest())
   suite.addTest(SimpleKindAwareQueryTest())
   suite.addTest(AncestorQueryTest())
+  suite.addTest(OrderedKindAncestorQueryTest())
   suite.addTest(KindlessQueryTest())
   suite.addTest(KindlessAncestorQueryTest())
   suite.addTest(QueryByKeyNameTest())
@@ -435,7 +466,6 @@ def suite(lang):
   suite.addTest(CrossGroupTransactionTest())
   suite.addTest(QueryCursorTest())  
   suite.addTest(ComplexQueryCursorTest())
-
   if lang == 'python':
     suite.addTest(GQLProjectionQueryTest())
   elif lang == 'java':
