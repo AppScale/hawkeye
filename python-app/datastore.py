@@ -389,6 +389,30 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     db.delete(Employee.all())
     db.delete(PhoneNumber.all())
 
+class CountQueryHandler(webapp2.RequestHandler):
+  def get(self):
+    status = {'success' : True}
+    self.response.headers['Content-Type'] = "application/json"
+    try:
+      employee1 = Employee(name = "Raj")
+      employee1.put()
+      employee2 = Employee(name = "Tyler")
+      employee2.put()
+      count1 = Employee.all().count(limit=5, deadline=60)
+      if count1 != 2:
+        raise Exception('Did not retrieve 2 Employees, got ' + count1)
+      employee3 = Employee(name = "Brian")
+      employee3.put()
+      count2 = Employee.all().count(limit=5, deadline=60)
+      if count2 != 3:
+        raise Exception('Did not retrieve 3 Employees, got ' + count2)
+    except Exception:
+      status = {'success' : False}
+      self.response.out.write(json.dumps(status))
+      raise
+    finally:
+      db.delete(Employee.all())
+
 class Employee(db.Model):
   name = db.StringProperty(required=True)
 
@@ -409,6 +433,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/project_filter', ProjectFilterHandler),
   ('/python/datastore/project_cursor', ProjectBrowserHandler),
   ('/python/datastore/complex_cursor', ComplexCursorHandler),
+  ('/python/datastore/count_query', CountQueryHandler),
   ('/python/datastore/transactions', TransactionHandler),
 ], debug=True)
 

@@ -13,6 +13,7 @@ tests.datastore_tests.SimpleKindAwareInsertTest, ok
 tests.datastore_tests.SimpleKindAwareQueryTest, ok
 tests.datastore_tests.SimpleTransactionTest, ok
 tests.datastore_tests.SinglePropertyBasedQueryTest, ok
+tests.datastore_tests.CountQueryTest, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok
@@ -43,6 +44,8 @@ tests.ndb_tests.SimpleKindAwareNDBInsertTest, ok
 tests.ndb_tests.SimpleKindAwareNDBQueryTest, ok
 tests.secure_url_tests.AlwaysSecureTest, ok
 tests.secure_url_tests.NeverSecureTest, ok
+tests.secure_url_tests.NeverSecureRegexTest, ok
+tests.secure_url_tests.AlwaysSecureRegexTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
 tests.user_tests.LoginURLTest, ok
 tests.xmpp_tests.SendAndReceiveTest, ok
