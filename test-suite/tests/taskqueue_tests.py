@@ -27,6 +27,7 @@ class PushQueueTest(HawkeyeTestCase):
     self.get_and_assert_counter(key, 2)
 
     for _ in range(10):
+      sleep(.25)
       response = self.http_post('/taskqueue/counter',
         'key={0}'.format(key))
       task_info = json.loads(response.payload)
@@ -81,6 +82,7 @@ class DeferredTaskTest(PushQueueTest):
     self.get_and_assert_counter(key, 2)
 
     for _ in range(10):
+      sleep(.25)
       response = self.http_post('/taskqueue/counter',
         'key={0}&defer=true'.format(key))
       task_info = json.loads(response.payload)

@@ -23,7 +23,6 @@ public class TaskCounterHandlerServlet extends HttpServlet {
         String getMethod = request.getParameter("get");
         String defer = request.getParameter("defer");
         String retry = request.getParameter("retry");
-
         Queue queue = QueueFactory.getDefaultQueue();
         if ("defer".equals(defer)) {
             DeferredCounterTask deferredCounterTask = new DeferredCounterTask(key);
@@ -32,7 +31,7 @@ public class TaskCounterHandlerServlet extends HttpServlet {
             queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker?key=" + key).
                     method(TaskOptions.Method.GET));
         } else {
-            queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key).param("retry", retry));
+            queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key));
         }
         Map<String,Object> map = new HashMap<String, Object>();
         map.put("status", true);
