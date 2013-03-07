@@ -81,9 +81,9 @@ if __name__ == '__main__':
     type='string', dest='lang', 
     help='Language binding to test (eg: python, python27, java)')
   parser.add_option('--user', action='store',
-    type='string', dest='user', help='Admin username (defaults to a@a.a)')
+    type='string', dest='user', help='Admin username (defaults to a@a.com)')
   parser.add_option('--pass', action='store',
-    type='string', dest='password', help='Admin password (defaults to aaaaaa')
+    type='string', dest='password', help='Admin password (defaults to aaaaaa)')
   parser.add_option('-c', '--console', action='store_true',
     dest='console', help='Log errors and failures to console')
   parser.add_option('--suites', action='store', type='string',
