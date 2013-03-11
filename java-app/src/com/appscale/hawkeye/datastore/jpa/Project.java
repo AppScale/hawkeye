@@ -6,8 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Cacheable;
 
 @Entity
+@Cacheable(false)
 public class Project {
 
     @Id
@@ -15,7 +17,7 @@ public class Project {
     private Key key;
 
     private String name;
-
+    
     private int rating;
 
     public Project(Key key, String name, int rating) {

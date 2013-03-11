@@ -5,6 +5,7 @@ import com.google.appengine.api.datastore.Key;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Cacheable;
 
 @PersistenceCapable
 public class Project {
@@ -17,6 +18,7 @@ public class Project {
     private String name;
 
     @Persistent
+    @Cacheable("false")
     private int rating;
 
     public Project(Key key, String name, int rating) {
