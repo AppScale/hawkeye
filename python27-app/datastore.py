@@ -400,12 +400,12 @@ class CountQueryHandler(webapp2.RequestHandler):
       employee2.put()
       count1 = Employee.all().count(limit=5, deadline=60)
       if count1 != 2:
-        raise Exception('Did not retrieve 2 Employees, got ' + count1)
+        raise Exception('Did not retrieve 2 Employees, got ' + str(count1))
       employee3 = Employee(name = "Brian")
       employee3.put()
       count2 = Employee.all().count(limit=5, deadline=60)
       if count2 != 3:
-        raise Exception('Did not retrieve 3 Employees, got ' + count2)
+        raise Exception('Did not retrieve 3 Employees, got ' + str(count2))
     except Exception:
       status = {'success' : False}
       self.response.out.write(json.dumps(status))
