@@ -7,7 +7,6 @@ from google.appengine.api import memcache
 from google.appengine.ext import webapp
 import webapp2
 import wsgiref
-
 __author__ = 'hiranya'
 
 class MemcacheHandler(webapp2.RequestHandler):
@@ -46,6 +45,32 @@ class MemcacheHandler(webapp2.RequestHandler):
       self.response.out.write(json.dumps({ 'success' : True }))
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
+
+class MemcacheIncrHandler(webapp2.RequestHandler):
+
+  def post(self):
+    key = self.request.get('key')
+    delta = self.request.get('delta')
+    initval = self.request.get('initial')
+    postincrval = -1000
+    if not initval:
+      initval = 0
+    postincrval = memcache.incr(key, long(delta), None, long(initval))
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.set_status(200)
+    self.response.out.write(
+      json.dumps({ 'success' : True, 'value' : postincrval }))
+
+  def get(self):
+    key = self.request.get('key')
+    value = self.request.get('value')
+    response = memcache.set(key, long(value), 3600)
+    self.response.headers['Content-Type'] = "application/json"
+    if response:
+      self.response.out.write(json.dumps({ 'success' : True }))
+    else:
+      self.response.out.write(json.dumps({ 'success' : False }))
+
 
 class MemcacheMultiKeyHandler(webapp2.RequestHandler):
 
@@ -87,6 +112,7 @@ class MemcacheMultiKeyHandler(webapp2.RequestHandler):
 application = webapp.WSGIApplication([
   ('/python/memcache', MemcacheHandler),
   ('/python/memcache/multi', MemcacheMultiKeyHandler),
+  ('/python/memcache/incr', MemcacheIncrHandler),
 ], debug=True)
 
 if __name__ == '__main__':
