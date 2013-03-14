@@ -560,7 +560,6 @@ class MemcacheAsyncIncrTest(HawkeyeTestCase):
 class MemcacheIncrInitTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    value = 0
     response = self.http_post('/memcache/incr',
       'delta=1&key={0}&initial=7'.format(key))
     self.assertEquals(response.status, 200)
@@ -575,7 +574,6 @@ class MemcacheIncrInitTest(HawkeyeTestCase):
 class MemcacheAsyncIncrInitTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    value = 0
     response = self.http_post('/memcache/incr',
       'delta=1&key={0}&initial=7&async=true'.format(key))
     self.assertEquals(response.status, 200)
