@@ -7,7 +7,6 @@ from google.appengine.api import memcache
 from google.appengine.ext import webapp
 import webapp2
 import wsgiref
-import logging
 __author__ = 'hiranya'
 
 class MemcacheHandler(webapp2.RequestHandler):
@@ -53,7 +52,6 @@ class MemcacheIncrHandler(webapp2.RequestHandler):
     key = self.request.get('key')
     delta = self.request.get('delta')
     initval = self.request.get('initial')
-    logging.info('key: ' + key + ' delta: ' + delta + ' initval: ' + initval)
     postincrval = -1000
     if not initval:
       initval = 0
@@ -66,7 +64,6 @@ class MemcacheIncrHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key')
     value = self.request.get('value')
-    logging.info('key: ' + key + ' value: ' + value)
     response = memcache.set(key, long(value), 3600)
     self.response.headers['Content-Type'] = "application/json"
     if response:
