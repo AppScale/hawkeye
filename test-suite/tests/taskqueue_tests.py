@@ -160,7 +160,7 @@ def suite(lang):
   suite.addTest(DeferredTaskTest())
   suite.addTest(QueueStatisticsTest())
   suite.addTest(PullQueueTest())
-
+  suite.addTest(TaskRetryTest())
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())
