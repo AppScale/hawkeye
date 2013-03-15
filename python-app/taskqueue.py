@@ -51,7 +51,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
       taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET')
-    elif eta is not None:
+    elif eta is not None and eta != '':
       time_now = datetime.datetime.now()
       eta = time_now + datetime.timedelta(0, long(eta))
       taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key, 'eta': 'true'})
@@ -93,7 +93,7 @@ class TaskCounterWorker(webapp2.RequestHandler):
     if retry == 'true' and failures == "0":
       raise Exception
     elif eta_test == 'true':
-      utils.process(self.request.get('key'), eta)
+      utils.processEta(self.request.get('key'), eta)
     else:
       utils.process(self.request.get('key'))
 

@@ -15,7 +15,7 @@ def process(key):
     counter.count += 1
   counter.put()
 
-def process(key, eta):
+def processEta(key, eta):
   actual = time.time()
   difference = float(actual) - float(eta)
   if difference < 0:
