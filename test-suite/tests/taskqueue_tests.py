@@ -90,6 +90,16 @@ class DeferredTaskTest(PushQueueTest):
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
+class TaskEtaTest(PushQueueTest):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    #eta should be less than 30 because of get_and_assert_counter method
+    eta = 10
+    response = self.http_post('/taskqueue/counter',
+      'key={0}&eta={1}'.format(key,eta))
+    task_info = json.loads(response.payload)
+    self.get_and_assert_counter(key, 1)
+
 class TaskRetryTest(PushQueueTest):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -161,6 +171,7 @@ def suite(lang):
   suite.addTest(QueueStatisticsTest())
   suite.addTest(PullQueueTest())
   suite.addTest(TaskRetryTest())
+  suite.addTest(TaskEtaTest())
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())

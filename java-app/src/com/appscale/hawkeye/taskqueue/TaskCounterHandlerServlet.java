@@ -23,7 +23,8 @@ public class TaskCounterHandlerServlet extends HttpServlet {
         String getMethod = request.getParameter("get");
         String defer = request.getParameter("defer");
         String retry = request.getParameter("retry");
-        Queue queue = QueueFactory.getDefaultQueue();
+        String eta = request.getParameter("eta");
+	Queue queue = QueueFactory.getDefaultQueue();
         if ("defer".equals(defer)) {
             DeferredCounterTask deferredCounterTask = new DeferredCounterTask(key);
             queue.add(TaskOptions.Builder.withPayload(deferredCounterTask));
@@ -34,6 +35,10 @@ public class TaskCounterHandlerServlet extends HttpServlet {
 	    if(retry != null) {
                 queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key).param("retry", retry));
             }
+	    else if(eta != null){
+		long adjustedEta = System.currentTimeMillis() + Long.parseLong(eta) * 1000;
+	        queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key).param("eta", "true").etaMillis(adjustedEta));
+	    }
 	    else {
 	        queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/worker").param("key", key));
 	    }

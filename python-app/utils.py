@@ -1,4 +1,6 @@
 from google.appengine.ext import db
+import logging
+import time, datetime
 
 __author__ = 'hiranya'
 
@@ -11,4 +13,16 @@ def process(key):
     counter = TaskCounter(key_name=key, count=1)
   else:
     counter.count += 1
+  counter.put()
+
+def process(key, eta):
+  actual = time.time()
+  difference = float(actual) - float(eta)
+  if difference < 0:
+    difference = difference * -1
+  success = 1
+  #allow a buffer of 2 seconds
+  if difference > 2:
+    success = 0
+  counter = TaskCounter(key_name=key, count=success)
   counter.put()

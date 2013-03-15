@@ -1,6 +1,7 @@
 import wsgiref
 from google.appengine.api import taskqueue
 import utils
+import datetime
 
 try:
   import json
@@ -41,6 +42,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
     defer = self.request.get('defer')
     retry = self.request.get('retry')
     backend = self.request.get('backend')
+    eta = self.request.get('eta')
 
     if backend is not None and backend == 'true':
       taskqueue.add(url='/python/taskqueue/worker',
@@ -49,6 +51,10 @@ class TaskCounterHandler(webapp2.RequestHandler):
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
       taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET')
+    elif eta is not None:
+      time_now = datetime.datetime.now()
+      eta = time_now + datetime.timedelta(0, long(eta))
+      taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key, 'eta': 'true'})
     else:
       taskqueue.add(url='/python/taskqueue/worker', params={'key': key, 'retry': retry})
     self.response.headers['Content-Type'] = "application/json"
@@ -82,10 +88,14 @@ class TaskCounterWorker(webapp2.RequestHandler):
   def post(self):
     retry = self.request.get('retry')
     failures = self.request.headers.get("X-AppEngine-TaskRetryCount")
+    eta_test = self.request.get('eta')
+    eta = self.request.headers.get("X-AppEngine-TaskETA")
     if retry == 'true' and failures == "0":
       raise Exception
-
-    utils.process(self.request.get('key'))
+    elif eta_test == 'true':
+      utils.process(self.request.get('key'), eta)
+    else:
+      utils.process(self.request.get('key'))
 
 application = webapp.WSGIApplication([
   ('/python/taskqueue/counter', TaskCounterHandler),
