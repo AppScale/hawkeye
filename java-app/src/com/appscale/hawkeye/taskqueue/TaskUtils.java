@@ -30,6 +30,25 @@ public class TaskUtils {
         datastore.put(entity);
     }
 
+    public synchronized static void process(String keyString, String eta) {
+	long actual = System.currentTimeMillis();
+	//Get eta as a double then cast to long since it is in seconds and has decimals.
+        double expectedAsDouble = Double.parseDouble(eta);
+	expectedAsDouble = expectedAsDouble * 1000;
+	long expected = (long)expectedAsDouble;
+	long difference = actual - expected;
+	long success = 1l;
+	if(difference < 0) difference = difference * -1;
+	//Allow a 2 second grace period
+	if(difference > 2000) {
+            success = 0;
+	}
+	DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+	Entity entity = new Entity(TASK_COUNTER, keyString);
+	entity.setProperty(COUNT, success);
+	datastore.put(entity);
+    }
+
     public static void deleteCounters() {
         Query query = new Query(TASK_COUNTER);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
