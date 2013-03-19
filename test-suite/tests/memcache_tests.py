@@ -524,8 +524,8 @@ class MemcacheAsyncIncrTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     value = 10
-    response = self.http_get('/memcache/incr?async=true&\
-                              key={0}&value={1}'.format(key, value))
+    response = self.http_get('/memcache/incr?async=true&'\
+                              'key={0}&value={1}'.format(key, value))
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertTrue(entry_info['success'])
