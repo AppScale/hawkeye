@@ -1,16 +1,26 @@
-import wsgiref
-from google.appengine.api import taskqueue
+import datetime
 import utils
+import webapp2
+import wsgiref
+
+from google.appengine.api import taskqueue
+from google.appengine.ext import deferred
+from google.appengine.ext import db
+from google.appengine.ext import webapp
 
 try:
   import json
 except ImportError:
   import simplejson as json
 
-from google.appengine.ext import db, webapp, deferred
-import webapp2
 
 __author__ = 'hiranya'
+
+UPDATED_BY_TXN = "TXN_UPDATE"
+UPDATED_BY_TQ = "TQ_UPDATE"
+
+class TaskEntity(db.Model):
+  value = db.StringProperty(required=True)
 
 class TaskCounterHandler(webapp2.RequestHandler):
   def get(self):
@@ -41,6 +51,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
     defer = self.request.get('defer')
     retry = self.request.get('retry')
     backend = self.request.get('backend')
+    eta = self.request.get('eta')
 
     if backend is not None and backend == 'true':
       taskqueue.add(url='/python/taskqueue/worker',
@@ -49,6 +60,10 @@ class TaskCounterHandler(webapp2.RequestHandler):
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
       taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET')
+    elif eta is not None and eta != '':
+      time_now = datetime.datetime.now()
+      eta = time_now + datetime.timedelta(0, long(eta))
+      taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key, 'eta': 'true'})
     else:
       taskqueue.add(url='/python/taskqueue/worker', params={'key': key, 'retry': retry})
     self.response.headers['Content-Type'] = "application/json"
@@ -75,6 +90,55 @@ class PullTaskHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
+class TransactionalTaskHandler(webapp2.RequestHandler):
+  def post(self):
+    def task_txn(key, throw_exception):
+      taskqueue.add(url='/python/taskqueue/transworker',
+        params={'key': key}, transactional=True)
+      # Enqueue a task update a key, assert that value
+      task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key) 
+      task_ent.put()
+      if throw_exception:
+        raise
+      # Client should poll to see if the task ran correctly
+
+    key = self.request.get('key')
+
+    raise_exception = False
+    if self.request.get('raise_exception'):
+      raise_exception = True
+
+    assert key != None
+
+    try:
+      db.run_in_transaction(task_txn, key, raise_exception)
+    except Exception: 
+      self.response.out.write(json.dumps({ 'value' : "None"}))
+      return
+    else:
+      value = TaskEntity.get_by_key_name(key).value
+      self.response.out.write(json.dumps({ 'value' : value}))
+     
+
+  def get(self):
+    key = self.request.get('key')
+    entity = TaskEntity.get_by_key_name(key)
+    value = None
+
+    if entity:
+      value = entity.value
+ 
+    self.response.out.write(json.dumps({ 'value' : value}))
+    
+class TransactionalTaskWorker(webapp2.RequestHandler):
+  """ Working the streets for transactions. Just trying to get by. Don't judge. 
+  """
+  def post(self):
+    key = self.request.get('key')
+    task_ent = TaskEntity.get_by_key_name(key)
+    task_ent.value = UPDATED_BY_TQ
+    task_ent.put() 
+
 class TaskCounterWorker(webapp2.RequestHandler):
   def get(self):
     utils.process(self.request.get('key'))
@@ -82,14 +146,20 @@ class TaskCounterWorker(webapp2.RequestHandler):
   def post(self):
     retry = self.request.get('retry')
     failures = self.request.headers.get("X-AppEngine-TaskRetryCount")
+    eta_test = self.request.get('eta')
+    eta = self.request.headers.get("X-AppEngine-TaskETA")
     if retry == 'true' and failures == "0":
       raise Exception
-
-    utils.process(self.request.get('key'))
+    elif eta_test == 'true':
+      utils.processEta(self.request.get('key'), eta)
+    else:
+      utils.process(self.request.get('key'))
 
 application = webapp.WSGIApplication([
   ('/python/taskqueue/counter', TaskCounterHandler),
   ('/python/taskqueue/worker', TaskCounterWorker),
+  ('/python/taskqueue/transworker', TransactionalTaskWorker),
+  ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
 ], debug=True)
 
