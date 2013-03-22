@@ -9,7 +9,7 @@ import os
 import sys
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
-from tests import xmpp_tests
+from tests import xmpp_tests, environment_variable_tests
 import csv
 import StringIO
 # We want to fail nicely on systems that don't have terminal colors installed.
@@ -48,6 +48,7 @@ def init_test_suites(lang):
   return {
     'blobstore' : blobstore_tests.suite(lang),
     'datastore' : datastore_tests.suite(lang),
+    'env_var' : environment_variable_tests.suite(lang),
     'images' : images_tests.suite(lang),
     'memcache' : memcache_tests.suite(lang),
     'ndb' : ndb_tests.suite(lang),
