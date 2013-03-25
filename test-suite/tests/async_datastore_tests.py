@@ -17,6 +17,26 @@ class DataStoreCleanupTest(HawkeyeTestCase):
     response = self.http_delete('/async_datastore/transactions')
     self.assertEquals(response.status, 200)
 
+class PutAndGetMultipleItemsTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key1 = str(uuid.uuid1())
+    val1 = str(uuid.uuid1())
+
+    key2 = str(uuid.uuid1())
+    val2 = str(uuid.uuid1())
+
+    post_response = self.http_post('/async_datastore/multi',
+      'key1={0}&val1={1}&key2={2}&val2={3}'.format(key1, val1, key2, val2))
+    self.assertEquals(post_response.status, 200)
+
+    get_response = self.http_get('/async_datastore/multi?key1={0}&key2={1}'
+      .format(key1, key2))
+    self.assertEquals(get_response.status, 200)
+    entry_info = json.loads(get_response.payload)
+    self.assertTrue(entry_info['success'])
+    self.assertEquals(val1, entry_info['val1'])
+    self.assertEquals(val2, entry_info['val2'])
+
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/async_datastore/project',
@@ -454,6 +474,7 @@ class CountQueryTest(HawkeyeTestCase):
 def suite(lang):
   suite = HawkeyeTestSuite('Asynchronous Datastore Test Suite', 'async_datastore')
   suite.addTest(DataStoreCleanupTest())
+  suite.addTest(PutAndGetMultipleItemsTest())
   suite.addTest(SimpleKindAwareInsertTest())
   suite.addTest(KindAwareInsertWithParentTest())
   suite.addTest(SimpleKindAwareQueryTest())
