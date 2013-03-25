@@ -4,6 +4,9 @@ runtime: python27
 api_version: 1
 threadsafe: false
 
+env_variables:
+  SHOULD_BE_BAZ: "baz"
+
 builtins:
 - deferred: on
 
@@ -55,6 +58,9 @@ handlers:
 - url: /python/secure/never/(.*?)/(.*)
   script: secure_url.py
   secure: never
+
+- url: /python/env_var
+  script: env_var.py
 
 - url: /python/xmpp/?
   script: xmpp.py
