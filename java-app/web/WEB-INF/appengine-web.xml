@@ -3,4 +3,7 @@
   <application>hawkeyejava</application>
   <version>1</version>
   <threadsafe>true</threadsafe>
+  <env-variables>
+    <env-var name="SHOULD_BE_BAZ" value="baz" />
+  </env-variables>
 </appengine-web-app>

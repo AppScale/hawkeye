@@ -126,6 +126,10 @@
         <servlet-name>LoginURLHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.users.LoginURLHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>EnvironmentVariableHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.envvar.EnvironmentVariableHandlerServlet</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -243,6 +247,10 @@
     <servlet-mapping>
         <servlet-name>LoginURLHandlerServlet</servlet-name>
         <url-pattern>/java/users/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EnvironmentVariableHandlerServlet</servlet-name>
+        <url-pattern>/java/env_var</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
