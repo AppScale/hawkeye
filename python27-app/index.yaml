@@ -10,6 +10,24 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Module
+  ancestor: yes
+  properties:
+  - name: description
+    direction: desc
+
+- kind: Module
+  ancestor: yes
+  properties:
+  - name: module_id
+    direction: desc
+
+- kind: Module
+  ancestor: yes
+  properties:
+  - name: name
+    direction: desc
+
 - kind: NDBProject
   properties:
   - name: description
