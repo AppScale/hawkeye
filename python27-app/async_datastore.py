@@ -4,6 +4,7 @@ except ImportError:
   import simplejson as json
 
 from google.appengine.ext import webapp, db
+import time
 import uuid
 import webapp2
 import wsgiref
@@ -442,6 +443,7 @@ class CountQueryHandler(webapp2.RequestHandler):
 
       employee1_future.get_result()
       employee2_future.get_result()
+      time.sleep(1)
 
       count1 = Employee.all().count(limit=5, deadline=60)
       if count1 != 2:
@@ -449,6 +451,7 @@ class CountQueryHandler(webapp2.RequestHandler):
       employee3 = Employee(name = "Brian")
       employee3_future = db.put_async(employee3)
       employee3_future.get_result()
+      time.sleep(1)
       count2 = Employee.all().count(limit=5, deadline=60)
       if count2 != 3:
         raise Exception('Did not retrieve 3 Employees, got ' + str(count2))
