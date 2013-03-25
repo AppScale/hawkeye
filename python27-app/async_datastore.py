@@ -24,6 +24,9 @@ class Module(db.Model):
 class Counter(db.Model):
   counter = db.IntegerProperty(required=True)
 
+class Text(db.Model):
+  text = db.StringProperty(required=True)
+
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
   if isinstance(entity, Project):
@@ -76,6 +79,33 @@ class ProjectHandler(webapp2.RequestHandler):
   def delete(self):
     delete_future = db.delete_async(Project.all())
     delete_future.get_result()
+
+class GetPutMultiHandler(webapp2.RequestHandler):
+  def get(self):
+    key1 = self.request.get('key1')
+    key2 = self.request.get('key2')
+
+    async_get = db.get_async([db.Key.from_path('Text', key1),
+      db.Key.from_path('Text', key2)])
+
+    text1, text2 = async_get.get_result()
+    self.response.out.write(json.dumps({
+      'success' : True,
+      'val1' : text1.text,
+      'val2' : text2.text
+    }))
+
+  def post(self):
+    key1 = self.request.get('key1')
+    val1 = self.request.get('val1')
+    key2 = self.request.get('key2')
+    val2 = self.request.get('val2')
+
+    text1 = Text(key_name=key1, text=val1)
+    text2 = Text(key_name=key2, text=val2)
+
+    async_put = db.put_async([text1, text2])
+    async_put.get_result()
 
 class ModuleHandler(webapp2.RequestHandler):
   def get(self):
@@ -474,6 +504,7 @@ class PhoneNumber(db.Model):
 
 application = webapp.WSGIApplication([
   ('/python/async_datastore/project', ProjectHandler),
+  ('/python/async_datastore/multi', GetPutMultiHandler),
   ('/python/async_datastore/module', ModuleHandler),
   ('/python/async_datastore/project_modules', ProjectModuleHandler),
   ('/python/async_datastore/project_keys', ProjectKeyHandler),
