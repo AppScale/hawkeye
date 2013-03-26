@@ -4,6 +4,7 @@ except ImportError:
   import simplejson as json
 
 from google.appengine.ext import webapp, db
+import time
 import uuid
 import webapp2
 import wsgiref
@@ -22,6 +23,9 @@ class Module(db.Model):
 
 class Counter(db.Model):
   counter = db.IntegerProperty(required=True)
+
+class Text(db.Model):
+  text = db.StringProperty(required=True)
 
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
@@ -75,6 +79,39 @@ class ProjectHandler(webapp2.RequestHandler):
   def delete(self):
     delete_future = db.delete_async(Project.all())
     delete_future.get_result()
+
+class GetPutMultiHandler(webapp2.RequestHandler):
+  def get(self):
+    key1 = db.Key.from_path('Text', self.request.get('key1'))
+    key2 = db.Key.from_path('Text', self.request.get('key2'))
+    key3 = db.Key.from_path('Text', 'definitelyDoesNotExist')
+
+    async_get = db.get_async([key1, key2, key3])
+    text1, text2, text3 = async_get.get_result()
+
+    if text3:
+      text3_is_none = False
+    else:
+      text3_is_none = True
+
+    self.response.out.write(json.dumps({
+      'success' : True,
+      'val1' : text1.text,
+      'val2' : text2.text,
+      'val3_is_None' : text3_is_none
+    }))
+
+  def post(self):
+    key1 = self.request.get('key1')
+    val1 = self.request.get('val1')
+    key2 = self.request.get('key2')
+    val2 = self.request.get('val2')
+
+    text1 = Text(key_name=key1, text=val1)
+    text2 = Text(key_name=key2, text=val2)
+
+    async_put = db.put_async([text1, text2])
+    async_put.get_result()
 
 class ModuleHandler(webapp2.RequestHandler):
   def get(self):
@@ -442,6 +479,7 @@ class CountQueryHandler(webapp2.RequestHandler):
 
       employee1_future.get_result()
       employee2_future.get_result()
+      time.sleep(1)
 
       count1 = Employee.all().count(limit=5, deadline=60)
       if count1 != 2:
@@ -449,6 +487,7 @@ class CountQueryHandler(webapp2.RequestHandler):
       employee3 = Employee(name = "Brian")
       employee3_future = db.put_async(employee3)
       employee3_future.get_result()
+      time.sleep(1)
       count2 = Employee.all().count(limit=5, deadline=60)
       if count2 != 3:
         raise Exception('Did not retrieve 3 Employees, got ' + str(count2))
@@ -471,6 +510,7 @@ class PhoneNumber(db.Model):
 
 application = webapp.WSGIApplication([
   ('/python/async_datastore/project', ProjectHandler),
+  ('/python/async_datastore/multi', GetPutMultiHandler),
   ('/python/async_datastore/module', ModuleHandler),
   ('/python/async_datastore/project_modules', ProjectModuleHandler),
   ('/python/async_datastore/project_keys', ProjectKeyHandler),
