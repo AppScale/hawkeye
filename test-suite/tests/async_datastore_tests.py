@@ -36,6 +36,7 @@ class PutAndGetMultipleItemsTest(HawkeyeTestCase):
     self.assertTrue(entry_info['success'])
     self.assertEquals(val1, entry_info['val1'])
     self.assertEquals(val2, entry_info['val2'])
+    self.assertTrue(entry_info['val3_is_None'])
 
 class SimpleKindAwareInsertTest(HawkeyeTestCase):
   def run_hawkeye_test(self):

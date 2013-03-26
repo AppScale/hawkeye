@@ -82,17 +82,23 @@ class ProjectHandler(webapp2.RequestHandler):
 
 class GetPutMultiHandler(webapp2.RequestHandler):
   def get(self):
-    key1 = self.request.get('key1')
-    key2 = self.request.get('key2')
+    key1 = db.Key.from_path('Text', self.request.get('key1'))
+    key2 = db.Key.from_path('Text', self.request.get('key2'))
+    key3 = db.Key.from_path('Text', 'definitelyDoesNotExist')
 
-    async_get = db.get_async([db.Key.from_path('Text', key1),
-      db.Key.from_path('Text', key2)])
+    async_get = db.get_async([key1, key2, key3])
+    text1, text2, text3 = async_get.get_result()
 
-    text1, text2 = async_get.get_result()
+    if text3:
+      text3_is_none = False
+    else:
+      text3_is_none = True
+
     self.response.out.write(json.dumps({
       'success' : True,
       'val1' : text1.text,
-      'val2' : text2.text
+      'val2' : text2.text,
+      'val3_is_None' : text3_is_none
     }))
 
   def post(self):
