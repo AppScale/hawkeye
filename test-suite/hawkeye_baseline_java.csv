@@ -31,6 +31,8 @@ tests.memcache_tests.MemcacheAsyncSetTest, ok
 tests.memcache_tests.MemcacheDeleteTest, ok
 tests.memcache_tests.MemcacheKeyExpiryTest, ok
 tests.memcache_tests.MemcacheKeyTest, ok
+tests.memcache_tests.MemcacheIncrTest, ok
+tests.memcache_tests.MemcacheIncrInitTest, ok
 tests.memcache_tests.MemcacheMultiAddTest, ok
 tests.memcache_tests.MemcacheMultiAsyncAddTest, ok
 tests.memcache_tests.MemcacheMultiAsyncDeleteTest, ok
@@ -39,6 +41,9 @@ tests.memcache_tests.MemcacheMultiDeleteTest, ok
 tests.memcache_tests.MemcacheMultiSetTest, ok
 tests.memcache_tests.MemcacheSetTest, ok
 tests.memcache_tests.SimpleJCacheTest, ok
+tests.memcache_tests.MemcacheAsyncIncrTest, ok
+tests.memcache_tests.MemcacheAsyncIncrInitTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
 tests.user_tests.LoginURLTest, ok
+tests.xmpp_tests.SendAndReceiveTest, ok
