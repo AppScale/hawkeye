@@ -126,6 +126,14 @@
         <servlet-name>LoginURLHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.users.LoginURLHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>XmppHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.xmpp.XmppHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+    <servlet-name>XmppReceiverServlet</servlet-name>
+      <servlet-class>com.appscale.hawkeye.xmpp.XmppReceiverServlet</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -243,6 +251,15 @@
     <servlet-mapping>
         <servlet-name>LoginURLHandlerServlet</servlet-name>
         <url-pattern>/java/users/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>XmppHandlerServlet</servlet-name>
+        <url-pattern>/java/xmpp</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>XmppReceiverServlet</servlet-name>
+      <url-pattern>/_ah/xmpp/message/chat/</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

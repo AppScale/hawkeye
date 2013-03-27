@@ -3,4 +3,10 @@
   <application>hawkeyejava</application>
   <version>1</version>
   <threadsafe>true</threadsafe>
+
+  <inbound-services>
+    <service>xmpp_message</service>
+    <service>xmpp_presence</service>
+  </inbound-services>
+
 </appengine-web-app>
