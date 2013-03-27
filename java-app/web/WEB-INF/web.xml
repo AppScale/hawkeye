@@ -131,8 +131,12 @@
         <servlet-class>com.appscale.hawkeye.xmpp.XmppHandlerServlet</servlet-class>
     </servlet>
     <servlet>
-    <servlet-name>XmppReceiverServlet</servlet-name>
+      <servlet-name>XmppReceiverServlet</servlet-name>
       <servlet-class>com.appscale.hawkeye.xmpp.XmppReceiverServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EnvironmentVariableHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.envvar.EnvironmentVariableHandlerServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -251,6 +255,10 @@
     <servlet-mapping>
         <servlet-name>LoginURLHandlerServlet</servlet-name>
         <url-pattern>/java/users/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EnvironmentVariableHandlerServlet</servlet-name>
+        <url-pattern>/java/env_var</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

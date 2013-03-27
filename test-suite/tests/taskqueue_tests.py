@@ -157,13 +157,62 @@ class PullQueueTest(HawkeyeTestCase):
       response = self.http_get('/taskqueue/pull')
       self.assertEquals(response.status, 200)
       task_info = json.loads(response.payload)
+
       if len(task_info['tasks']) == 1 and key in task_info['tasks']:
         break
+
       if datetime.datetime.now() > end:
         self.fail('Pull queue deadline exceeded with no result')
       else:
         sleep(2)
 
+class TransactionalTaskTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    response = self.http_post('/taskqueue/trans', 'key={0}'.format(key))
+    value = json.loads(response.payload)['value']
+    self.assertEquals('TXN_UPDATE', value)
+
+    start = datetime.datetime.now()
+    end = start + datetime.timedelta(0, 5)
+    while True:
+      response = self.http_get('/taskqueue/trans?key={0}'.format(key))
+      self.assertEquals(response.status, 200)
+      value = json.loads(response.payload)['value']
+
+      if value == 'TQ_UPDATE':
+        break
+
+      if datetime.datetime.now() > end:
+        self.fail('Transactional task did not run')
+      else:
+        sleep(1)
+
+class TransactionalFailedTaskTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    response = self.http_post('/taskqueue/trans', 'key={0}&raise_exception=True'.\
+      format(key))
+    value = json.loads(response.payload)['value']
+    self.assertEquals('None', value)
+
+    start = datetime.datetime.now()
+    end = start + datetime.timedelta(0, 5)
+    while True:
+      response = self.http_get('/taskqueue/trans?key={0}'.format(key))
+      self.assertEquals(response.status, 200)
+      value = json.loads(response.payload)['value']
+      # Make sure it does not change.
+      if value != None:
+        self.fail('Transaction value should have been None, was {0}'.format(value))
+
+      if datetime.datetime.now() > end:
+        break
+      else:
+        sleep(1)
+
+
+   
 def suite(lang):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTest(PushQueueTest())
@@ -172,6 +221,8 @@ def suite(lang):
   suite.addTest(PullQueueTest())
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
+  suite.addTest(TransactionalTaskTest())
+  suite.addTest(TransactionalFailedTaskTest())
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())

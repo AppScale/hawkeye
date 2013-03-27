@@ -4,6 +4,9 @@ runtime: python
 api_version: 1
 threadsafe: yes
 
+env_variables:
+  SHOULD_BE_BAZ: "baz"
+
 builtins:
 - deferred: on
 
@@ -14,6 +17,9 @@ handlers:
 
 - url: /python/datastore/(.*)
   script: datastore.py
+
+- url: /python/async_datastore/(.*)
+  script: async_datastore.py
 
 - url: /python/ndb/(.*)
   script: ndb.py
@@ -52,6 +58,9 @@ handlers:
 - url: /python/secure/never/(.*?)/(.*)
   script: secure_url.py
   secure: never
+
+- url: /python/env_var
+  script: env_var.py
 
 - url: /python/xmpp/?
   script: xmpp.py

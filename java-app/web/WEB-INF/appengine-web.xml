@@ -3,10 +3,13 @@
   <application>hawkeyejava</application>
   <version>1</version>
   <threadsafe>true</threadsafe>
-
+  
   <inbound-services>
     <service>xmpp_message</service>
     <service>xmpp_presence</service>
   </inbound-services>
 
+  <env-variables>
+    <env-var name="SHOULD_BE_BAZ" value="baz" />
+  </env-variables>
 </appengine-web-app>
