@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.*;
 import java.io.*;
 import javax.servlet.ServletInputStream;
+import java.lang.InterruptedException;
 
 public class XmppReceiverServlet extends HttpServlet
 {
@@ -23,6 +24,15 @@ public class XmppReceiverServlet extends HttpServlet
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException 
     {
+        try
+        {
+            //sleep so we don't write the same key too quickly
+            Thread.sleep(1500);
+        }
+        catch(InterruptedException e)
+        {
+            logger.warning("Thread interrupted: " + e.getMessage());
+        }
         XMPPService xmpp = XMPPServiceFactory.getXMPPService();
         Message message = xmpp.parseMessage(req);
 
@@ -33,7 +43,6 @@ public class XmppReceiverServlet extends HttpServlet
             logger.warning("Got unexpected message: " + body);
             return;
         }    
-        
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Entity entity = new Entity(TEST_ENTITYNAME, TEST_KEYNAME);
         entity.setProperty(ENTITY_PROPERTY, MESSAGE_RECEIVED);
