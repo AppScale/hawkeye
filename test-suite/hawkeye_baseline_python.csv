@@ -31,7 +31,6 @@ tests.memcache_tests.MemcacheMultiDeleteTest, ok
 tests.memcache_tests.MemcacheMultiSetTest, ok
 tests.memcache_tests.MemcacheSetTest, ok
 tests.memcache_tests.MemcacheIncrTest, ok
-tests.memcache_tests.MemcacheIncrInitTest, ok
 tests.ndb_tests.KindAwareNDBInsertWithParentTest, ok
 tests.ndb_tests.NDBAncestorQueryTest, ok
 tests.ndb_tests.NDBCleanupTest, ok
@@ -52,3 +51,11 @@ tests.taskqueue_tests.PushQueueTest, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
 tests.user_tests.LoginURLTest, ok
 tests.xmpp_tests.SendAndReceiveTest, ok
+tests.ndb_tests.NDBCrossGroupTransactionTest, ok
+tests.taskqueue_tests.TransactionalFailedTaskTest, ok
+tests.ndb_tests.SimpleNDBTransactionTest, ok
+tests.taskqueue_tests.TaskRetryTest, ok
+tests.taskqueue_tests.TaskEtaTest, ok
+tests.datastore_tests.CrossGroupTransactionTest, ok
+tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
+tests.taskqueue_tests.TransactionalTaskTest, ok
