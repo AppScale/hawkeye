@@ -49,7 +49,6 @@ tests.user_tests.LoginURLTest, ok
 tests.xmpp_tests.SendAndReceiveTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
 tests.taskqueue_tests.TaskEtaTest, ok
-ests.datastore_tests.CrossGroupTransactionTest, ok
+tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
 tests.datastore_tests.OrderedKindAncestorQueryTest, ok
-
