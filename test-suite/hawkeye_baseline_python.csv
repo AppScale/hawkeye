@@ -30,7 +30,6 @@ tests.memcache_tests.MemcacheMultiAddTest, ok
 tests.memcache_tests.MemcacheMultiDeleteTest, ok
 tests.memcache_tests.MemcacheMultiSetTest, ok
 tests.memcache_tests.MemcacheSetTest, ok
-tests.memcache_tests.MemcacheIncrTest, ok
 tests.ndb_tests.KindAwareNDBInsertWithParentTest, ok
 tests.ndb_tests.NDBAncestorQueryTest, ok
 tests.ndb_tests.NDBCleanupTest, ok
