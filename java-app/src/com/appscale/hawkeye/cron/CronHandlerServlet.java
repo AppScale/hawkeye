@@ -25,9 +25,11 @@ public class CronHandlerServlet extends HttpServlet {
                           HttpServletResponse response) throws ServletException, IOException {
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        String query = request.getParameter("query");        
+        String query = request.getParameter("query");
         if(query == null || query.equals(""))
         {
+	    System.out.println("Updating time");
+            /* This code executes if the request comes from crontab */
             Entity cronObject = new Entity("CronObject", "cronKey");
             Date lastUpdate = new Date();
             cronObject.setProperty("lastUpdate", lastUpdate);
@@ -35,6 +37,7 @@ public class CronHandlerServlet extends HttpServlet {
         }
         else
         {
+            /* This code executes if the request comes from hawkeye */
             Key key = KeyFactory.createKey("CronObject", "cronKey");
             Entity cronObject;
             try
@@ -43,23 +46,9 @@ public class CronHandlerServlet extends HttpServlet {
             }
             catch(EntityNotFoundException e)
             {
-                try
-                {
-                    Thread.sleep(57000);
-                }
-                catch(InterruptedException e1)
-                {
-                    System.out.println("Thread interrupted exception");
-                }
-                try
-                {
-                    cronObject = datastore.get(key);
-                }
-                catch(EntityNotFoundException e2)
-                {
-                    throw new ServletException("CronObject entity was not found");
-                }
+                throw new ServletException("Didn't find CronObject");
             }
+            /* Found the entity, see if the timestamp is correct */
             Date now = new Date();
             Date lastUpdate = (Date)cronObject.getProperty("lastUpdate");
             long nowMillis = now.getTime();

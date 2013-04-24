@@ -28,21 +28,12 @@ class CronHandler(webapp2.RequestHandler):
       cron_key = db.Key.from_path('CronObj', 'cron_key')
       cron_obj = db.get(cron_key)
       if cron_obj is None:
-        # If not found, maybe the cron didn't have enough time to run yet
-        time.sleep(60)
-        cron_obj = db.get(cron_key)
-        if cron_obj is None:
-          self.response.set_status(404)
-          self.response.out.write(
-            json.dumps({ 'success' : False}))
-      if self.is_valid_timestamp(cron_obj.last_update):
-        self.response.set_status(200)  
-        self.response.out.write(
-          json.dumps({ 'success' : True}))
-      else:
         self.response.set_status(404)
-        self.response.out.write(
-          json.dumps({ 'success' : False}))
+      else:
+        if self.is_valid_timestamp(cron_obj.last_update):
+          self.response.set_status(200)  
+        else:
+          self.response.set_status(404)
      
 
   def is_valid_timestamp(self, last_update):
