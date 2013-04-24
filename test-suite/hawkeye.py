@@ -10,6 +10,7 @@ import sys
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
+from tests import cron_tests
 import csv
 import StringIO
 
@@ -58,6 +59,7 @@ def init_test_suites(lang):
     'taskqueue' : taskqueue_tests.suite(lang),
     'users' : user_tests.suite(lang),
     'xmpp' : xmpp_tests.suite(lang),
+    'cron' : cron_tests.suite(lang),
   }
 
 def print_usage_and_exit(msg, myparser):
