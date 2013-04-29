@@ -28,7 +28,6 @@ public class CronHandlerServlet extends HttpServlet {
         String query = request.getParameter("query");
         if(query == null || query.equals(""))
         {
-	    System.out.println("Updating time");
             /* This code executes if the request comes from crontab */
             Entity cronObject = new Entity("CronObject", "cronKey");
             Date lastUpdate = new Date();
