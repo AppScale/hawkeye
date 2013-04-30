@@ -585,6 +585,13 @@ class MemcacheAsyncIncrInitTest(HawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '8')
 
+class MemcacheCasTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    response = self.http_get('/memcache/cas')
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+    self.assertEquals(response.status, 200)
 
 def suite(lang):
   suite = HawkeyeTestSuite('Memcache Test Suite', 'memcache')
@@ -598,7 +605,8 @@ def suite(lang):
   suite.addTest(MemcacheMultiDeleteTest()) 
   suite.addTest(MemcacheIncrTest())
   suite.addTest(MemcacheIncrInitTest())
-  
+  suite.addTest(MemcacheCasTest()) 
+ 
   if lang == 'java':
     suite.addTest(MemcacheAsyncAddTest())
     suite.addTest(MemcacheAsyncSetTest())

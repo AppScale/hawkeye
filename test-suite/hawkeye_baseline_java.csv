@@ -53,3 +53,4 @@ tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
 tests.datastore_tests.OrderedKindAncestorQueryTest, ok
 tests.cron_tests.CronTest, ok
+tests.memcache_tests.MemcacheCasTest, ok
