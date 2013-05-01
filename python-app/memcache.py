@@ -7,6 +7,8 @@ from google.appengine.api import memcache
 from google.appengine.ext import webapp
 import webapp2
 import wsgiref
+import logging
+import uuid
 __author__ = 'hiranya'
 
 class MemcacheHandler(webapp2.RequestHandler):
@@ -109,10 +111,34 @@ class MemcacheMultiKeyHandler(webapp2.RequestHandler):
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
 
+class MemcacheCasHandler(webapp2.RequestHandler):
+  def get(self):
+    self.response.headers['Content-Type'] = "application/json"
+    key = str(uuid.uuid1())
+    timeout = 36000
+    client = memcache.Client()
+    
+    memcache.set(key, 1, int(timeout))
+    gets_val = client.gets(key)
+    if client.cas(key, 2) == False:
+      self.response.out.write(json.dumps({ 'success' : False , 'error':\
+       'cas returned False, should have returned True'}))
+    
+    else:
+      gets_val = client.gets(key)
+      memcache.set(key, 1, int(timeout))
+      if client.cas(key, 2):
+        self.response.out.write(json.dumps({ 'success' : False, 'error':\
+          'cas returned True, should have returned False'}))
+      else:
+        self.response.out.write(json.dumps({ 'success' : True}))
+    
+
 application = webapp.WSGIApplication([
   ('/python/memcache', MemcacheHandler),
   ('/python/memcache/multi', MemcacheMultiKeyHandler),
   ('/python/memcache/incr', MemcacheIncrHandler),
+  ('/python/memcache/cas', MemcacheCasHandler),
 ], debug=True)
 
 if __name__ == '__main__':
