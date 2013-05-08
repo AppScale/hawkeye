@@ -40,15 +40,18 @@ class HawkeyeTestCase(TestCase):
   be extended by providing an implementation for the runTest
   method. Use the http_* methods to perform HTTP calls on backend
   endpoints. All the HTTP calls performed via these methods are
-  traced and logged to logs/http.log.
+  traced and logged to hawkeye-logs/http.log.
   """
 
-  def __init__(self):
-    """
-    Create a new instance of HawkeyeTestCase.
+  def __init__(self, log_base_dir):
+    """Create a new instance of HawkeyeTestCase.
+
+    Args:
+      log_base_dir: A str indicating the directory the logs should be stored in.
     """
     TestCase.__init__(self)
     self.description_printed = False
+    self.log_base_dir = log_base_dir
 
   def runTest(self):
     """
@@ -203,7 +206,7 @@ class HawkeyeTestCase(TestCase):
                      prepend_lang=True, ssl=False):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
-    are traced and logged to logs/http.log.
+    are traced and logged to hawkeye-logs/http.log.
 
     Args:
       method  HTTP method (eg: GET, POST)
@@ -217,7 +220,7 @@ class HawkeyeTestCase(TestCase):
     Returns:
       An instance of ResponseInfo
     """
-    http_log = open('logs/http.log', 'a')
+    http_log = open('{0}/http.log'.format(self.log_base_dir), 'a')
     if not self.description_printed:
       http_log.write('\n' + str(self) + '\n')
       http_log.write('=' * 70)
@@ -262,8 +265,8 @@ class HawkeyeTestSuite(TestSuite):
   and a more detailed long name attribute. HawkeyeTestSuite logs the
   results of each test case to console in the least verbose manner possible.
   In case of test failures and errors, the error details and stack traces are
-  logged to logs/{short_name}.log. If required the suite can be configured to
-  log this information to the console as well.
+  logged to hawkeye-logs/{short_name}.log. If required the suite can be 
+  configured to log this information to the console as well.
   """
 
   def __init__(self, name, short_name):
@@ -332,7 +335,8 @@ class HawkeyeTestResult(TextTestResult):
       mode = 'a'
     else:
       mode = 'w'
-    error_log = open('logs/{0}-errors.log'.format(self.suite), mode)
+    error_log = open('{0}/{1}-errors.log'.format(self.log_base_dir, 
+      self.suite), mode)
     for test, err in errors:
       error_log.write(self.separator1)
       error_log.write('\n')
@@ -361,7 +365,7 @@ class HawkeyeTestRunner(TextTestRunner):
   """
   An extension of unittest.TextTestRunner that keeps the console output
   clean and less verbose while logging all the failures and error details
-  to a separate log file in the logs directory.
+  to a separate log file in the hawkeye-logs directory.
   """
 
   def __init__(self, suite):

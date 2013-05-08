@@ -98,6 +98,9 @@ if __name__ == '__main__':
   parser.add_option('--baseline', action='store_true',
     dest='verbose_baseline', 
     help='Turn on verbose reporting for baseline comparison')
+  parser.add_option('--log-dir', action='store', type='string',
+    dest='base_dir',
+    help='Directory to store error logs.')
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
@@ -109,6 +112,12 @@ if __name__ == '__main__':
       format(SUPPORTED_LANGUAGES), parser)
   elif options.lang is None:
     options.lang = 'python'
+
+  if options.base_dir is None:
+    base_dir = os.getcwd()
+  else:
+    base_dir = options.base_dir
+
 
   suite_names = ['all']
   exclude_suites = []
@@ -153,11 +162,12 @@ if __name__ == '__main__':
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute', parser)
 
-  if not os.path.exists('logs'):
-    os.makedirs('logs')
+  hawkeye_logs = '{0}{1}hawkeye-logs'.format(base_dir, os.sep)
+  if not os.path.exists(hawkeye_logs):
+    os.makedirs(hawkeye_logs)
 
-  for child_file in os.listdir('logs'):
-    file_path = os.path.join('logs', child_file)
+  for child_file in os.listdir(hawkeye_logs):
+    file_path = os.path.join(hawkeye_logs, child_file)
     if os.path.isfile(file_path):
       os.unlink(file_path)
 
@@ -165,7 +175,7 @@ if __name__ == '__main__':
   for suite in suites.values():
     # Capture output from the test suites to a string.
     buff =  StringIO.StringIO()
-    runner = hawkeye_utils.HawkeyeTestRunner(suite)
+    runner = hawkeye_utils.HawkeyeTestRunner(suite, hawkeye_logs)
     runner.set_stream(buff)
     runner.run_suite()
     output = buff.getvalue()
