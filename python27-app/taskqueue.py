@@ -23,7 +23,7 @@ UPDATED_BY_TQ = "TQ_UPDATE"
 # The name of the queue that is used for push queue operations.
 # We include a dash in here to test regressions where the task queue system does
 # not handle dashes properly.
-PUSH_QUEUE_NAME = "hawkeye-python-push-queue"
+PUSH_QUEUE_NAME = "hawkeyepython-push-queue"
 
 
 class TaskEntity(db.Model):
