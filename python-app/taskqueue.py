@@ -19,6 +19,13 @@ __author__ = 'hiranya'
 UPDATED_BY_TXN = "TXN_UPDATE"
 UPDATED_BY_TQ = "TQ_UPDATE"
 
+
+# The name of the queue that is used for push queue operations.
+# We include a dash in here to test regressions where the task queue system does
+# not handle dashes properly.
+PUSH_QUEUE_NAME = "hawkeye-python-push-queue"
+
+
 class TaskEntity(db.Model):
   value = db.StringProperty(required=True)
 
@@ -34,7 +41,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
       else:
         self.response.set_status(404)
     elif stats is not None and stats == 'true':
-      statsResult = taskqueue.QueueStatistics.fetch('default')
+      statsResult = taskqueue.QueueStatistics.fetch(PUSH_QUEUE_NAME)
       self.response.headers['Content-Type'] = "application/json"
       result = {
         'queue' : statsResult.queue.name,
@@ -55,17 +62,20 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
     if backend is not None and backend == 'true':
       taskqueue.add(url='/python/taskqueue/worker',
-        params={'key': key}, target='hawkeyepython')
+        params={'key': key}, target='hawkeyepython', queue_name=PUSH_QUEUE_NAME)
     elif defer is not None and defer == 'true':
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
-      taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET')
+      taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET',
+        queue_name=PUSH_QUEUE_NAME)
     elif eta is not None and eta != '':
       time_now = datetime.datetime.now()
       eta = time_now + datetime.timedelta(0, long(eta))
-      taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key, 'eta': 'true'})
+      taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key,
+        'eta': 'true'}, queue_name=PUSH_QUEUE_NAME)
     else:
-      taskqueue.add(url='/python/taskqueue/worker', params={'key': key, 'retry': retry})
+      taskqueue.add(url='/python/taskqueue/worker', params={'key': key,
+        'retry': retry}, queue_name=PUSH_QUEUE_NAME)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
@@ -94,7 +104,7 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
   def post(self):
     def task_txn(key, throw_exception):
       taskqueue.add(url='/python/taskqueue/transworker',
-        params={'key': key}, transactional=True)
+        params={'key': key}, transactional=True, queue_name=PUSH_QUEUE_NAME)
       # Enqueue a task update a key, assert that value
       task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key) 
       task_ent.put()
