@@ -101,6 +101,9 @@ if __name__ == '__main__':
   parser.add_option('--baseline', action='store_true',
     dest='verbose_baseline', 
     help='Turn on verbose reporting for baseline comparison')
+  parser.add_option('--log-dir', action='store', type='string',
+    dest='base_dir',
+    help='Directory to store error logs.')
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
@@ -112,6 +115,13 @@ if __name__ == '__main__':
       format(SUPPORTED_LANGUAGES), parser)
   elif options.lang is None:
     options.lang = 'python'
+
+  if options.base_dir is None:
+    base_dir = os.getcwd()
+  else:
+    base_dir = options.base_dir
+    if base_dir[0] == '~':
+      base_dir = "{0}{1}".format(os.environ['HOME'], base_dir[1:])
 
   suite_names = ['all']
   exclude_suites = []
@@ -131,6 +141,17 @@ if __name__ == '__main__':
 
   if options.console:
     hawkeye_utils.CONSOLE_MODE = True
+
+  hawkeye_logs = '{0}{1}hawkeye-logs'.format(base_dir, os.sep)
+  if not os.path.exists(hawkeye_logs):
+    os.makedirs(hawkeye_logs)
+
+  os.environ['LOG_BASE_DIR'] = hawkeye_logs
+
+  for child_file in os.listdir(hawkeye_logs):
+    file_path = os.path.join(hawkeye_logs, child_file)
+    if os.path.isfile(file_path):
+      os.unlink(file_path)
 
   suites = {}
   TEST_SUITES = init_test_suites(options.lang)
@@ -155,14 +176,6 @@ if __name__ == '__main__':
 
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute', parser)
-
-  if not os.path.exists('logs'):
-    os.makedirs('logs')
-
-  for child_file in os.listdir('logs'):
-    file_path = os.path.join('logs', child_file)
-    if os.path.isfile(file_path):
-      os.unlink(file_path)
 
   ran_suites = {}
   for suite in suites.values():
