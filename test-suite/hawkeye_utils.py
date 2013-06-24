@@ -6,8 +6,6 @@ from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
 from unittest.suite import TestSuite
 
-__author__ = 'hiranya'
-
 HOST = None
 PORT = -1
 LANG = None
@@ -43,7 +41,7 @@ class HawkeyeTestCase(TestCase):
   traced and logged to hawkeye-logs/http.log.
   """
 
-  def __init__(self, log_base_dir):
+  def __init__(self, log_base_dir=None):
     """Create a new instance of HawkeyeTestCase.
 
     Args:
@@ -51,7 +49,13 @@ class HawkeyeTestCase(TestCase):
     """
     TestCase.__init__(self)
     self.description_printed = False
-    self.log_base_dir = log_base_dir
+    if log_base_dir is None:
+      if 'LOG_BASE_DIR' in os.environ:
+        self.log_base_dir = os.environ['LOG_BASE_DIR']
+      else:
+        self.log_base_dir = 'logs'
+    else:
+      self.log_base_dir = log_base_dir
 
   def runTest(self):
     """
@@ -309,6 +313,10 @@ class HawkeyeTestResult(TextTestResult):
     """
     TextTestResult.__init__(self, stream, descriptions, verbosity)
     self.suite = suite
+    if 'LOG_BASE_DIR' in os.environ:
+      self.log_base_dir = os.environ['LOG_BASE_DIR']
+    else:
+      self.log_base_dir = 'logs'
 
   def printErrors(self):
     if self.dots or self.showAll:

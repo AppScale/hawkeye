@@ -117,7 +117,8 @@ if __name__ == '__main__':
     base_dir = os.getcwd()
   else:
     base_dir = options.base_dir
-
+    if base_dir[0] == '~':
+      base_dir = "{0}{1}".format(os.environ['HOME'], base_dir[1:])
 
   suite_names = ['all']
   exclude_suites = []
@@ -137,6 +138,17 @@ if __name__ == '__main__':
 
   if options.console:
     hawkeye_utils.CONSOLE_MODE = True
+
+  hawkeye_logs = '{0}{1}hawkeye-logs'.format(base_dir, os.sep)
+  if not os.path.exists(hawkeye_logs):
+    os.makedirs(hawkeye_logs)
+
+  os.environ['LOG_BASE_DIR'] = hawkeye_logs
+
+  for child_file in os.listdir(hawkeye_logs):
+    file_path = os.path.join(hawkeye_logs, child_file)
+    if os.path.isfile(file_path):
+      os.unlink(file_path)
 
   suites = {}
   TEST_SUITES = init_test_suites(options.lang)
@@ -162,20 +174,11 @@ if __name__ == '__main__':
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute', parser)
 
-  hawkeye_logs = '{0}{1}hawkeye-logs'.format(base_dir, os.sep)
-  if not os.path.exists(hawkeye_logs):
-    os.makedirs(hawkeye_logs)
-
-  for child_file in os.listdir(hawkeye_logs):
-    file_path = os.path.join(hawkeye_logs, child_file)
-    if os.path.isfile(file_path):
-      os.unlink(file_path)
-
   ran_suites = {}
   for suite in suites.values():
     # Capture output from the test suites to a string.
     buff =  StringIO.StringIO()
-    runner = hawkeye_utils.HawkeyeTestRunner(suite, hawkeye_logs)
+    runner = hawkeye_utils.HawkeyeTestRunner(suite)
     runner.set_stream(buff)
     runner.run_suite()
     output = buff.getvalue()
