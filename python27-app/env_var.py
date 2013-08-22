@@ -3,6 +3,10 @@ import wsgiref
 from google.appengine.ext import webapp
 import webapp2
 
+# Test import of pycrypto library.
+import Crypto
+from Crypto import Random
+
 try:
   import json
 except ImportError:
