@@ -73,3 +73,7 @@ handlers:
 
 inbound_services:
 - xmpp_message
+
+libraries:
+- name: pycrypto
+  version: latest
