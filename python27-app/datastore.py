@@ -4,6 +4,9 @@ except ImportError:
   import simplejson as json
 
 from google.appengine.ext import webapp, db
+
+import logging
+import random
 import uuid
 import webapp2
 import wsgiref
@@ -22,6 +25,62 @@ class Module(db.Model):
 
 class Counter(db.Model):
   counter = db.IntegerProperty(required=True)
+
+class Cars(db.Model):
+  model = db.StringProperty(required=True)
+  make = db.StringProperty(required=True)
+  color = db.StringProperty(required=True) 
+
+class ZigZagQueryHandler(webapp2.RequestHandler):
+  """ Queries that use a set of equality filters use the zigzag merge join 
+  algorithm.
+  """
+  def get(self):
+    non_set_cars = []
+    for x in range(0, 10):
+      model = random.choice(["SModel", "Civic", "S2000"])
+      make = random.choice(["Tesla", "Ford"])
+      # The color will never match what we are querying for.
+      color = random.choice(["red", "green", "blue"])
+      car = Cars(model=model, make=make, color=color)
+      
+      non_set_cars.append(car)
+    db.put(non_set_cars)
+
+    set_cars = []
+    for x in range(0, 3):
+      car = Cars(model="SModel", make="Tesla", color="purple")
+      set_cars.append(car) 
+    db.put(set_cars)
+
+    second_set = []
+    for x in range(0, 3):
+      car = Cars(model="Camry", make="Toyota", color="gold")
+      second_set.append(car)
+    db.put(second_set)
+
+    q = Cars.all()
+    q.filter("model =", "SModel")
+    q.filter("make =", "Tesla")
+    q.filter("color =", "purple")
+    results = q.fetch(100)
+
+    q = Cars.all()
+    q.filter("model =", "Camry")
+    q.filter("make =", "Toyota")
+    q.filter("color =", "gold")
+    results2 = q.fetch(100)
+
+    db.delete(non_set_cars)
+    db.delete(set_cars)
+    db.delete(second_set)
+
+    if len(results) == 3 and len(results2) == 3:
+      self.response.set_status(200)
+    else:
+      logging.error("Result for ZigZaq query was %s and %s" % (str(results), 
+        str(results2)))
+      self.response.set_status(404)
 
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
@@ -435,6 +494,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/complex_cursor', ComplexCursorHandler),
   ('/python/datastore/count_query', CountQueryHandler),
   ('/python/datastore/transactions', TransactionHandler),
+  ('/python/datastore/zigzag', ZigZagQueryHandler),
 ], debug=True)
 
 if __name__ == '__main__':
