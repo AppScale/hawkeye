@@ -96,6 +96,11 @@ class SimpleKindAwareQueryTest(HawkeyeTestCase):
       self.assertEquals(len(entity_list), 1)
       self.assertEquals(mod_info['name'], entry['name'])
 
+class ZigZagQueryTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/zigzag')
+    self.assertEquals(response.status, 200)
+
 class AncestorQueryTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/datastore/project_modules?' \
@@ -474,6 +479,7 @@ def suite(lang):
   suite.addTest(CountQueryTest())
 
   if lang == 'python':
+    suite.addTest(ZigZagQueryTest())
     suite.addTest(GQLProjectionQueryTest())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
