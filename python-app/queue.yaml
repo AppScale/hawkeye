@@ -1,5 +1,0 @@
-queue:
-- name: hawkeyepython-push-queue
-
-- name: hawkeyepython-pull-queue
-  mode: pull

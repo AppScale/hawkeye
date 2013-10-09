@@ -1,4 +1,0 @@
-cron:
-- description: db update job
-  url: /python/cron
-  schedule: every 1 minutes
