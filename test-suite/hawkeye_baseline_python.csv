@@ -63,3 +63,12 @@ tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
 tests.taskqueue_tests.TransactionalTaskTest, ok
 tests.cron_tests.CronTest, ok
+tests.blobstore_tests.UploadBlobTest, ok
+tests.blobstore_tests.DownloadBlobTest, ok
+tests.blobstore_tests.QueryBlobDataTest, ok
+tests.blobstore_tests.QueryBlobByKeyTest, ok
+tests.blobstore_tests.QueryBlobByPropertyTest, ok
+tests.blobstore_tests.DeleteBlobTest, ok
+tests.blobstore_tests.AsyncUploadBlobTest, ok
+tests.blobstore_tests.AsyncQueryBlobDataTest, ok
+tests.blobstore_tests.AsyncDeleteBlobTest, ok
