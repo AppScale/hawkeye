@@ -1,0 +1,23 @@
+<!-- Indices written at Wed, 20 Nov 2013 23:57:56 UTC -->
+
+<datastore-indexes>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Project" ancestor="false" source="auto">
+        <property name="name" direction="asc"/>
+        <property name="project_id" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Project" ancestor="false" source="auto">
+        <property name="rating" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Project" ancestor="false" source="auto">
+        <property name="license" direction="asc"/>
+        <property name="rating" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>
