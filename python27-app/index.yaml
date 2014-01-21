@@ -67,3 +67,18 @@ indexes:
   properties:
   - name: rating
   - name: name
+
+- kind: CompositeCars 
+  properties:
+  - name: color
+  - name: make
+  - name: model
+  - name: value
+
+- kind: CompositeCars 
+  properties:
+  - name: color
+  - name: make
+  - name: model
+  - name: value
+    direction: desc

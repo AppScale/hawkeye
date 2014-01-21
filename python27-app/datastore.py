@@ -31,6 +31,120 @@ class Cars(db.Model):
   make = db.StringProperty(required=True)
   color = db.StringProperty(required=True) 
 
+class CompositeCars(db.Model):
+  model = db.StringProperty(required=True)
+  make = db.StringProperty(required=True)
+  color = db.StringProperty(required=True)
+  value = db.IntegerProperty(required=True)
+
+class CompositeMultipleFiltersOnProperty(webapp2.RequestHandler):
+  """ Queries that use a set of equality filters use the zigzag merge join 
+  algorithm.
+  """
+  def get(self):
+    non_set_cars = []
+    for x in range(0, 10):
+      model = random.choice(["SModel", "Civic", "S2000"])
+      make = random.choice(["Tesla", "Ford"])
+      # The color will never match what we are querying for.
+      color = random.choice(["red", "green", "blue"])
+      value = x
+      car = CompositeCars(model=model, make=make, color=color, value=value)
+      
+      non_set_cars.append(car)
+    db.put(non_set_cars)
+
+    set_cars = []
+    for x in range(0, 10):
+      car = CompositeCars(model="SModel", make="Tesla", color="purple", value=x)
+      set_cars.append(car)
+    db.put(set_cars)
+
+    second_set = []
+    for x in range(0, 10):
+      car = CompositeCars(model="Camry", make="Toyota", color="gold", value=x)
+      second_set.append(car)
+    db.put(second_set)
+
+    q = CompositeCars.all()
+    q.filter("model =", "SModel")
+    q.filter("make =", "Tesla")
+    q.filter("color =", "purple")
+    q.filter("value >", 4)  
+    q.filter("value <", 6)  
+    results = q.fetch(100)
+
+    q = CompositeCars.all()
+    q.filter("model =", "SModel")
+    q.filter("make =", "Tesla")
+    q.filter("color =", "purple")
+    q.filter("value >=", 4)  
+    q.filter("value <=", 6)  
+    results_2 = q.fetch(100)
+
+    q = CompositeCars.all()
+    q.filter("model =", "Camry")
+    q.filter("make =", "Toyota")
+    q.filter("color =", "gold")
+    q.filter("value >", 4)  
+    q.filter("value <=", 6)  
+    results_3 = q.fetch(100)
+
+    q = CompositeCars.all()
+    q.filter("model =", "Camry")
+    q.filter("make =", "Toyota")
+    q.filter("color =", "gold")
+    q.filter("value >=", 4)  
+    q.filter("value <", 6)  
+    results_4 = q.fetch(100)
+
+    q = CompositeCars.all()
+    q.filter("model =", "Camry")
+    q.filter("make =", "Toyota")
+    q.filter("color =", "gold")
+    q.filter("value >", 4)  
+    q.filter("value <=", 6)  
+    q.order('-value')
+    results_5 = q.fetch(100)
+
+    q = CompositeCars.all()
+    q.filter("model =", "Camry")
+    q.filter("make =", "Toyota")
+    q.filter("color =", "gold")
+    q.filter("value >=", 4)  
+    q.filter("value <", 6)  
+    q.order('-value')
+    results_6 = q.fetch(100)
+
+
+    db.delete(non_set_cars)
+    db.delete(set_cars)
+    db.delete(second_set)
+
+    if len(results) != 1:
+      logging.error("Result for query was {0}, expected 1 item".format(results))
+      for result in results:
+        logging.info("Item: {0}".format(result.value))
+      self.response.set_status(404)
+    elif len(results_2) != 3:
+      logging.error("Result for query was {0}, expected 3 items".format(results_2))
+      self.response.set_status(404)
+    elif len(results_3) != 2:
+      logging.error("Result for query was {0}, expected 2 items".format(results_3))
+      self.response.set_status(404)
+    elif len(results_4) != 2:
+      logging.error("Result for query was {0}, expected 2 items".format(results_4))
+      self.response.set_status(404)
+    elif len(results_5) != 2:
+      logging.error("Result for query was {0}, expected 2 items".format(results_5))
+      self.response.set_status(404)
+    elif len(results_6) != 2:
+      logging.error("Result for query was {0}, expected 2 items".format(results_6))
+      self.response.set_status(404)
+    else:
+      self.response.set_status(200)
+
+
 class ZigZagQueryHandler(webapp2.RequestHandler):
   """ Queries that use a set of equality filters use the zigzag merge join 
   algorithm.
@@ -495,6 +609,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/count_query', CountQueryHandler),
   ('/python/datastore/transactions', TransactionHandler),
   ('/python/datastore/zigzag', ZigZagQueryHandler),
+  ('/python/datastore/composite_multiple', CompositeMultipleFiltersOnProperty),
 ], debug=True)
 
 if __name__ == '__main__':

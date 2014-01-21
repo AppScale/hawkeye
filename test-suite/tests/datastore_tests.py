@@ -453,7 +453,12 @@ class ComplexQueryCursorTest(HawkeyeTestCase):
 
 class CountQueryTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
-    response=self.http_get('/datastore/count_query')
+    response = self.http_get('/datastore/count_query')
+    self.assertEquals(response.status, 200)
+
+class CompositeMultiple(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/composite_multiple')
     self.assertEquals(response.status, 200)
 
 def suite(lang):
@@ -480,6 +485,7 @@ def suite(lang):
 
   if lang == 'python':
     suite.addTest(ZigZagQueryTest())
+    suite.addTest(CompositeMultiple())
     suite.addTest(GQLProjectionQueryTest())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
