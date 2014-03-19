@@ -341,6 +341,6 @@ This is the kind of output you want to see. If any tests do not match the baseli
         tests.taskqueue_tests.TransactionalTaskTest = FAIL (baseline = ok)
 ```
 
-If you run into any of the baseline tests failing, you should definitely send an e-mail to chris@appscale.com with these logs:
+If you run into any of the baseline tests failing, you should definitely dig into these logs:
 * AppScale logs (run "appscale logs somedirectory" to grab AppScale logs and put them in somedirectory).
 * Hawkeye logs, located in "hawkeye/test-suite/logs"
