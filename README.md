@@ -18,15 +18,15 @@ Get Hawkeye from git:
 git clone git@github.com:AppScale/hawkeye.git
 ```
 
-and deploy the Python 2.5, Java, and Python 2.7 versions:
+compile the Java version as indicated in java-app/README.md
+and deploy the Java, and Python 2.7 versions:
 
 ```
-appscale deploy hawkeye/python-app
 appscale deploy hawkeye/java-app
 appscale deploy hawkeye/python27-app
 ```
 
-Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Python 2.5 running at 192.168.33.10:8080, Hawkeye Java running at 192.168.33.10:8081, and Hawkeye Python 2.7 running at 192.168.33.10:8082.
+Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Java running at 192.168.33.10:8080, and Hawkeye Python 2.7 running at 192.168.33.10:8081.
 
 run hawkeye
 =======
@@ -43,22 +43,16 @@ and run it:
 python hawkeye.py -s server_ip -p server_port -l lang --baseline
 ```
 
-For this example, running Hawkeye Python 2.5 would be:
+For this example, running Hawkeye Java would be:
 
 ```
-python hawkeye.py -s 192.168.33.10 -p 8080 -l python --baseline
-```
-
-Java would be:
-
-```
-python hawkeye.py -s 192.168.33.10 -p 8081 -l java --baseline
+python hawkeye.py -s 192.168.33.10 -p 8080 -l java --baseline
 ```
 
 and Python 2.7 would be:
 
 ```
-python hawkeye.py -s 192.168.33.10 -p 8082 -l python --baseline
+python hawkeye.py -s 192.168.33.10 -p 8081 -l python --baseline
 ```
 
 hawkeye output
@@ -67,7 +61,7 @@ hawkeye output
 You'll see output like the following:
 
 ```
-outer-haven:test-suite cgb$ python hawkeye.py -s ec2-107-22-98-150.compute-1.amazonaws.com -p 8082 -l python --baselin
+outer-haven:test-suite cgb$ python hawkeye.py -s ec2-107-22-98-150.compute-1.amazonaws.com -p 8081 -l python --baselin
 e
 
 User API Test Suite
@@ -347,6 +341,6 @@ This is the kind of output you want to see. If any tests do not match the baseli
         tests.taskqueue_tests.TransactionalTaskTest = FAIL (baseline = ok)
 ```
 
-If you run into any of the baseline tests failing, you should definitely send an e-mail to chris@appscale.com with these logs:
+If you run into any of the baseline tests failing, you should definitely dig into these logs:
 * AppScale logs (run "appscale logs somedirectory" to grab AppScale logs and put them in somedirectory).
 * Hawkeye logs, located in "hawkeye/test-suite/logs"
