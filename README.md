@@ -18,10 +18,10 @@ Get Hawkeye from git:
 git clone git@github.com:AppScale/hawkeye.git
 ```
 
-and deploy the Python 2.5, Java, and Python 2.7 versions:
+compile the Java version as indicated in java-app/README.md
+and deploy the Java, and Python 2.7 versions:
 
 ```
-appscale deploy hawkeye/python-app
 appscale deploy hawkeye/java-app
 appscale deploy hawkeye/python27-app
 ```
