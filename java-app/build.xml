@@ -22,7 +22,7 @@
             <fileset dir="${sdk.dir}/lib/user">
                 <include name="**/appengine-api-1.0-sdk*.jar" />
             </fileset>
-            <fileset dir="web/WEB-INF/lib">
+            <fileset dir="lib/lib">
                 <include name="**/commons-fileupload*.jar" />
             </fileset>
             <fileset dir="${sdk.dir}/lib/opt/user">
@@ -43,14 +43,14 @@
         </copy>
         <copy
                 todir="war/WEB-INF">
-            <fileset dir="web/WEB-INF">
+            <fileset dir="lib">
                 <include name="**/*.xml" />
                 <include name="**/*.properties" />
             </fileset>
         </copy>
         <copy
                 todir="war/WEB-INF/classes/META-INF">
-            <fileset dir="web/WEB-INF/classes/META-INF">
+            <fileset dir="lib/classes/META-INF">
                 <include name="**/*.xml" />
                 <include name="**/*.properties" />
             </fileset>
