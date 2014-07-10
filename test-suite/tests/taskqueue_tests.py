@@ -49,8 +49,7 @@ class PushQueueTest(HawkeyeTestCase):
       expected  Expected integer value
     """
 
-    start = datetime.datetime.now()
-    end = start + datetime.timedelta(0, 30)
+    end = start + datetime.timedelta(0, 60)
     while True:
       response = self.http_get('/taskqueue/counter?key={0}'.format(key))
       self.assertTrue(response.status == 200 or response.status == 404)
