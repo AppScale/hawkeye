@@ -18,7 +18,7 @@ class CronTest(HawkeyeTestCase):
       time_now = datetime.datetime.now()
       time_delta = time_now - time_start
       seconds = time_delta.seconds
-      if(seconds > 60):
+      if(seconds > 120):
         break
       sleep(5)
     self.assertEquals(success, True)
