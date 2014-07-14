@@ -48,7 +48,7 @@ class PushQueueTest(HawkeyeTestCase):
       key A datastore key string
       expected  Expected integer value
     """
-
+    start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 60)
     while True:
       response = self.http_get('/taskqueue/counter?key={0}'.format(key))
