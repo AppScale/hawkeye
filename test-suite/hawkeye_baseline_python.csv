@@ -58,7 +58,6 @@ tests.ndb_tests.NDBCrossGroupTransactionTest, ok
 tests.taskqueue_tests.TransactionalFailedTaskTest, ok
 tests.ndb_tests.SimpleNDBTransactionTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
-tests.taskqueue_tests.TaskEtaTest, ok
 tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
 tests.taskqueue_tests.TransactionalTaskTest, ok
