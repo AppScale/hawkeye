@@ -5,6 +5,7 @@ import sys
 from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
 from unittest.suite import TestSuite
+import ssl
 
 HOST = None
 PORT = -1
@@ -70,7 +71,7 @@ class HawkeyeTestCase(TestCase):
     """
     raise NotImplementedError
 
-  def http_get(self, path, headers=None, prepend_lang=True, ssl=False):
+  def http_get(self, path, headers=None, prepend_lang=True, use_ssl=False):
     """
     Perform a HTTP GET request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -83,14 +84,14 @@ class HawkeyeTestCase(TestCase):
       prepend_lang  If True the value of hawkeye_utils.LANG will be
                     prepended to the provided URL path. Default is
                     True.
-      ssl           If True use HTTPS to make the connection. Defaults
+      use_ssl       If True use HTTPS to make the connection. Defaults
                     to False.
 
     Returns:
       An instance of ResponseInfo
     """
     return self.__make_request('GET', path, headers=headers,
-      prepend_lang=prepend_lang, ssl=ssl)
+      prepend_lang=prepend_lang, use_ssl=use_ssl)
 
   def http_post(self, path, payload, headers=None, prepend_lang=True):
     """
@@ -207,19 +208,19 @@ class HawkeyeTestCase(TestCase):
     return list
 
   def __make_request(self, method, path, payload=None, headers=None,
-                     prepend_lang=True, ssl=False):
+                     prepend_lang=True, use_ssl=False):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
     are traced and logged to hawkeye-logs/http.log.
 
     Args:
-      method  HTTP method (eg: GET, POST)
-      path    URL path to execute on
-      payload Payload to be sent. Only used if the method is POST or PUT
-      headers Any HTTP headers to be sent as a dictionary
+      method       HTTP method (eg: GET, POST)
+      path         URL path to execute on
+      payload      Payload to be sent. Only used if the method is POST or PUT
+      headers      Any HTTP headers to be sent as a dictionary
       prepend_lang If True the value of hawkeye_utils.LANG will be prepended
-                    to the URL
-      ssl     If True use HTTPS to make the connection. Defaults to False.
+                   to the URL
+      use_ssl      If True use HTTPS to make the connection. Defaults to False.
 
     Returns:
       An instance of ResponseInfo
@@ -236,8 +237,9 @@ class HawkeyeTestCase(TestCase):
       print
       if prepend_lang:
         path = "/" + LANG + path
-      if ssl:
-        conn = httplib.HTTPSConnection(HOST + ':' + str(PORT - SSL_PORT_OFFSET))
+      if use_ssl:
+        conn = httplib.HTTPSConnection(HOST + ':' + str(PORT - SSL_PORT_OFFSET),
+          context=ssl._create_unverified_context())
       else:
         conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
       conn.set_debuglevel(1)
