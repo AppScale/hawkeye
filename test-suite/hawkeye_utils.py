@@ -238,8 +238,13 @@ class HawkeyeTestCase(TestCase):
       if prepend_lang:
         path = "/" + LANG + path
       if use_ssl:
-        conn = httplib.HTTPSConnection(HOST + ':' + str(PORT - SSL_PORT_OFFSET),
-          context=ssl._create_unverified_context())
+        try:
+          conn = httplib.HTTPSConnection(
+            HOST + ':' + str(PORT - SSL_PORT_OFFSET),
+            context=ssl._create_unverified_context())
+        except AttributeError:
+          conn = httplib.HTTPSConnection(
+            HOST + ':' + str(PORT - SSL_PORT_OFFSET))
       else:
         conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
       conn.set_debuglevel(1)
