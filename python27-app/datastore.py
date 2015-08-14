@@ -3,10 +3,14 @@ try:
 except ImportError:
   import simplejson as json
 
-from google.appengine.ext import webapp, db
+from google.appengine.api import datastore_errors, namespace_manager
+from google.appengine.ext import webapp, db, ndb
 
 import logging
 import random
+import string
+import time
+import unittest
 import uuid
 import webapp2
 import wsgiref
@@ -36,6 +40,18 @@ class CompositeCars(db.Model):
   make = db.StringProperty(required=True)
   color = db.StringProperty(required=True)
   value = db.IntegerProperty(required=True)
+
+class TestModel(ndb.Model):
+  field = ndb.StringProperty()
+  bool_field = ndb.BooleanProperty()
+
+class Post(db.Model):
+  content = db.StringProperty()
+  tags = db.StringListProperty()
+  date_added = db.DateTimeProperty(auto_now_add=True)
+
+class TestException(Exception):
+  pass
 
 class CompositeMultipleFiltersOnProperty(webapp2.RequestHandler):
   """ Queries that use a set of equality filters use the zigzag merge join 
@@ -595,6 +611,627 @@ class Company(db.Model):
 class PhoneNumber(db.Model):
   work = db.StringProperty(required=True)
 
+# The following test checks if a concurrent transaction exception is raised
+# when it shouldn't be.
+class TestConcurrentTransaction(unittest.TestCase):
+
+  NAMESPACE = "appscale-test-concurrent-txn"
+
+  def setUp(self):
+    namespace_manager.set_namespace(self.NAMESPACE)
+
+  def tearDown(self):
+    try:
+      keys = TestModel.query().fetch(keys_only=True)
+      ndb.delete_multi(keys)
+    except Exception as e:
+      logging.error("{}".format(e))
+
+  def test_failed_update_in_transaction_and_get(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    TestModel.get_by_id(identifier)
+
+  def test_failed_update_in_transaction_and_put(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    TestModel(id=identifier).put()
+
+  def test_failed_update_in_transaction_and_delete(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.Key(TestModel, identifier).delete()
+
+  def test_failed_create_in_transaction_and_get(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    TestModel.get_by_id(identifier)
+
+  def test_failed_create_in_transaction_and_put(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    TestModel(id=identifier).put()
+
+  def test_failed_create_in_transaction_and_delete(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.Key(TestModel, identifier).delete()
+
+  def test_failed_update_in_transaction_and_transactional_get(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: TestModel.get_by_id(identifier))
+
+  def test_failed_update_in_transaction_and_transactional_put(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: TestModel(id=identifier).put())
+
+  def test_failed_update_in_transaction_and_transactional_delete(self):
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier).put()
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: ndb.Key(TestModel, identifier).delete())
+
+  def test_failed_create_in_transaction_and_transactional_get(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: TestModel.get_by_id(identifier))
+
+  def test_failed_create_in_transaction_and_transactional_put(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: TestModel(id=identifier).put())
+
+  def test_failed_create_in_transaction_and_transactional_delete(self):
+    identifier = str(uuid.uuid4())
+
+    @ndb.transactional
+    def failed_update():
+      TestModel(id=identifier).put()
+      raise TestException("Test")
+
+    self.assertRaises(TestException, failed_update)
+    ndb.transaction(lambda: ndb.Key(TestModel, identifier).delete())
+
+class TestConcurrentTransactionHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestConcurrentTransaction))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
+# The following test checks if entities can be found even after a delete
+# succeeds in a failed transaction.
+class TestQueryingAfterFailedTxn(unittest.TestCase):
+  ids = ["save-time-single-ID"]
+  fetchers = [
+    ("Get (unordered)",
+     lambda: TestModel.query().get()),
+    ("Get (ordered by key)",
+     lambda: TestModel.query().order(TestModel._key).get()),
+    ("Get (ordered by field)",
+     lambda: TestModel.query().order(TestModel.field).get()),
+    ("Fetch (unordered)",
+     lambda: TestModel.query().fetch()),
+    ("Fetch (ordered by key)",
+     lambda: TestModel.query().order(TestModel._key).fetch()),
+    ("Fetch (ordered by field)",
+     lambda: TestModel.query().order(TestModel.field).fetch()),
+    ("Fetch keys (unordered)",
+     lambda: TestModel.query().fetch(keys_only=True)),
+    ("Fetch keys (ordered by key)",
+     lambda: TestModel.query().order(TestModel._key).fetch(keys_only=True)),
+    ("Fetch keys (ordered by field)",
+     lambda: TestModel.query().order(TestModel.field).fetch(keys_only=True)),
+    ("Get filtered (unordered)",
+     lambda: TestModel.query().filter(TestModel.field > '').get()),
+    ("Get filtered (ordered by field)",
+     lambda: TestModel.query().filter(TestModel.field > '').order(TestModel.field).get()),
+    ("Fetch filtered (unordered)",
+     lambda: TestModel.query().filter(TestModel.field > '').fetch()),
+    ("Fetch filtered (ordered by field)",
+     lambda: TestModel.query().filter(TestModel.field > '').order(TestModel.field).fetch()),
+    ("Fetch keys filtered (unordered)",
+     lambda: TestModel.query().filter(TestModel.field > '').fetch(keys_only=True)),
+    ("Fetch keys filtered (ordered by field)",
+     lambda: TestModel.query().filter(TestModel.field > '').order(TestModel.field).fetch(keys_only=True)),
+  ]
+
+  @staticmethod
+  def rand_str():
+    return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
+
+  def setUp(self):
+    namespace_manager.set_namespace("appscale-test-querying")
+    self.errors = []
+
+  def tearDown(self):
+    keys = TestModel.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+  def _errors_to_msg(self, context):
+    return "\n{}:\n{}".format(context, "\n".join(self.errors))
+
+  def _check_and_delete(self, id_, has_to_be):
+    gotten_by_id = TestModel.get_by_id(id_)
+    if bool(gotten_by_id) != has_to_be:
+      suffix = "(is not gotten)" if has_to_be else "(is gotten)"
+      err = "    {} > Get by ID: Failed {}".format(id_, suffix)
+      self.errors.append(err)
+    time.sleep(0.5)
+    for fetcher_comment, fetcher in self.fetchers:
+      result = fetcher()
+      if bool(result) != has_to_be:
+        suffix = "(is not fetched)" if has_to_be else "(is fetched)"
+        err = "    {} > {}: Failed {}".format(id_, fetcher_comment, suffix)
+        self.errors.append(err)
+    ndb.Key(TestModel, id_).delete()
+
+  def test_put_and_get_and_query(self):
+    for identifier in self.ids:
+      TestModel(id=identifier, field=self.rand_str()).put()
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_create_in_txn_and_get_and_query(self):
+    @ndb.transactional
+    def create(id_):
+      TestModel(id=id_, field=self.rand_str()).put()
+      raise TestException("expected error")
+    for identifier in self.ids:
+      self.assertRaises(TestException, create, identifier)
+      self._check_and_delete(identifier, False)
+    ctx = "Create in failed txn (non-xg) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_create_in_xg_txn_and_get_and_query(self):
+    @ndb.transactional(xg=True)
+    def create(id_):
+      TestModel(id=id_, field=self.rand_str()).put()
+      TestModel(id="second-entity-group", field=self.rand_str()).put()
+      raise TestException("expected error")
+    for identifier in self.ids:
+      self.assertRaises(TestException, create, identifier)
+      self._check_and_delete(identifier, False)
+    ctx = "Create in failed txn (valid-xg: 2 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_create_in_many_groups_txn_and_get_and_query(self):
+    @ndb.transactional(xg=True)
+    def create(id_):
+      TestModel(id=id_, field=self.rand_str()).put()
+      for x in xrange(30):
+        TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
+    for identifier in self.ids:
+      self.assertRaises(datastore_errors.Error, create, identifier)
+      self._check_and_delete(identifier, False)
+    ctx = "Create in failed txn (invalid-xg: 30 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_update_in_txn_and_get_and_query(self):
+    def create_and_update(id_):
+      @ndb.transactional
+      def update():
+        TestModel(id=id_, field=self.rand_str()).put()
+        raise TestException("expected error")
+      TestModel(id=id_, field=self.rand_str()).put()
+      update()
+    for identifier in self.ids:
+      self.assertRaises(TestException, create_and_update, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Update in failed txn (non-xg) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_update_in_xg_txn_and_get_and_query(self):
+    def create_and_update(id_):
+      @ndb.transactional(xg=True)
+      def update():
+        TestModel(id=id_, field=self.rand_str()).put()
+        TestModel(id="second-entity-group", field=self.rand_str()).put()
+        raise TestException("expected error")
+      TestModel(id=id_, field=self.rand_str()).put()
+      update()
+    for identifier in self.ids:
+      self.assertRaises(TestException, create_and_update, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Update in failed txn (valid-xg: 2 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_update_in_many_groups_txn_and_get_and_query(self):
+    def create_and_update(id_):
+      @ndb.transactional(xg=True)
+      def update():
+        TestModel(id=id_, field=self.rand_str()).put()
+        for x in xrange(30):
+          TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
+      TestModel(id=id_, field=self.rand_str()).put()
+      update()
+    for identifier in self.ids:
+      self.assertRaises(datastore_errors.Error, create_and_update, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Update in failed txn (invalid-xg: 30 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_delete_in_txn_and_get_and_query(self):
+    def create_and_delete(id_):
+      @ndb.transactional
+      def delete():
+        ndb.Key(TestModel, id_).delete()
+        raise TestException("expected error")
+      TestModel(id=id_, field=self.rand_str()).put()
+      delete()
+    for identifier in self.ids:
+      self.assertRaises(TestException, create_and_delete, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Delete in failed txn (non-xg) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_delete_in_xg_txn_and_get_and_query(self):
+    def create_and_delete(id_):
+      @ndb.transactional(xg=True)
+      def delete():
+        ndb.Key(TestModel, id_).delete()
+        TestModel(id="second-entity-group", field=self.rand_str()).put()
+        raise TestException("expected error")
+      TestModel(id=id_, field=self.rand_str()).put()
+      delete()
+    for identifier in self.ids:
+      self.assertRaises(TestException, create_and_delete, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Delete in failed txn (valid-xg: 2 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+  def test_failed_delete_in_many_groups_txn_and_get_and_query(self):
+    def create_and_delete(id_):
+      @ndb.transactional(xg=True)
+      def delete():
+        ndb.Key(TestModel, id_).delete()
+        for x in xrange(30):
+          TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
+      TestModel(id=id_, field=self.rand_str()).put()
+      delete()
+    for identifier in self.ids:
+      self.assertRaises(datastore_errors.Error, create_and_delete, identifier)
+      self._check_and_delete(identifier, True)
+    ctx = "Create > Delete in failed txn (invalid-xg: 30 groups) > Check"
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
+
+class TestQueryingAfterFailedTxnHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestQueryingAfterFailedTxn))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
+class TestQueryPagination(unittest.TestCase):
+  page_size = 3
+  query_builders = [
+    ("Fetch (unordered)",
+     lambda: TestModel.query()),
+    ("Fetch (ordered by key)",
+     lambda: TestModel.query().order(TestModel._key)),
+    ("Fetch (ordered by field)",
+     lambda: TestModel.query().order(TestModel.field)),
+    ("Fetch filtered (unordered)",
+     lambda: TestModel.query().filter(TestModel.field > '')),
+    ("Fetch filtered (ordered by field)",
+     lambda: TestModel.query().filter(TestModel.field > '').order(TestModel.field))
+  ]
+
+  @staticmethod
+  def rand_str():
+    return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
+
+  def setUp(self):
+    self.errors = []
+
+  def _init_entities_and_namespace(self):
+    namespace_manager.set_namespace("appscale-test-pagination")
+    self.entities = [
+      TestModel(id="entity-{}".format(x), field=self.rand_str()) for x in xrange(10)
+    ]
+    ndb.put_multi(self.entities)
+    self.keys = [entity.key for entity in self.entities]
+
+  def _errors_to_msg(self, context):
+    return "\n{}:\n{}".format(context, "\n".join(self.errors))
+
+  def _check_and_delete(self, fetcher, context):
+    for comment, query_builder in self.query_builders:
+      self._init_entities_and_namespace()
+      time.sleep(0.5)
+      entities = fetcher(query_builder())
+      if len(entities) != len(self.entities):
+        err_fmt = "    {}: Failed ({} of {} are fetched)"
+        err = err_fmt.format(comment, len(entities), len(self.entities))
+        self.errors.append(err)
+      ndb.delete_multi(self.keys)
+    self.assertEqual(len(self.errors), 0, self._errors_to_msg(context))
+
+  def test_one_shot_querying(self):
+    def one_shot_fetcher(query):
+      return query.fetch()
+    ctx = "One shot - fetch()"
+    self._check_and_delete(one_shot_fetcher, ctx)
+
+  def test_limit_offset_querying(self):
+    def limit_offset_fetcher(query):
+      results = []
+      page = query.fetch(limit=self.page_size)
+      offset = self.page_size
+      while page:
+        results += page
+        page = query.fetch(limit=self.page_size, offset=offset)
+        offset += self.page_size
+      return results
+    ctx = "Limit-offset pagination - fetch(limit, offset)"
+    self._check_and_delete(limit_offset_fetcher, ctx)
+
+  def test_cursor_querying(self):
+    def cursor_fetcher(query):
+      results = []
+      page, cursor, has_more = query.fetch_page(self.page_size, start_cursor=None)
+      results += page
+      while has_more and cursor:
+        page, cursor, has_more = query.fetch_page(self.page_size, start_cursor=cursor)
+        results += page
+      return results
+    ctx = "Cursor pagination - fetch(limit, start_cursor)"
+    self._check_and_delete(cursor_fetcher, ctx)
+
+class TestQueryPaginationHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestQueryPagination))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
+class TestMaxGroupsInTxn(unittest.TestCase):
+  fetchers = [
+    ("Get (unordered)",
+     lambda: TestModel.query().get()),
+    ("Get (ordered by key)",
+     lambda: TestModel.query().order(TestModel._key).get()),
+    ("Get (ordered by field)",
+     lambda: TestModel.query().order(TestModel.field).get()),
+    ("Fetch (unordered)",
+     lambda: TestModel.query().fetch()),
+  ]
+
+  @staticmethod
+  def rand_str():
+    return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
+
+  def setUp(self):
+    namespace_manager.set_namespace("appscale-test-querying")
+
+  def tearDown(self):
+    keys = TestModel.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+  def test_max_groups_in_txn(self):
+    @ndb.transactional(xg=True)
+    def create(groups):
+      for x in xrange(groups):
+        TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
+    create(25)
+    self.assertRaises(datastore_errors.Error, create, 26)
+
+class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestMaxGroupsInTxn))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
+class TestIndexIntegrity(unittest.TestCase):
+  def setUp(self):
+    namespace_manager.set_namespace("appscale-test-querying")
+
+  def tearDown(self):
+    keys = TestModel.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+  def test_index_just_created(self):
+    id_ = str(uuid.uuid4())
+    TestModel(id=id_ + "1", field="value", bool_field=True).put()
+    TestModel(id=id_ + "2", field="---", bool_field=True).put()
+    TestModel(id=id_ + "3", field=None, bool_field=True).put()
+    TestModel(id=id_ + "4", field="value", bool_field=False).put()
+    TestModel(id=id_ + "5", field="value", bool_field=None).put()
+    TestModel(id=id_ + "6", field="---", bool_field=False).put()
+    TestModel(id=id_ + "7", field=None, bool_field=None).put()
+    time.sleep(0.5)
+    results = TestModel.query() \
+      .filter(TestModel.field=="value") \
+      .filter(TestModel.bool_field==True) \
+      .fetch()
+    field_values = [(entity.field, entity.bool_field) for entity in results]
+    self.assertEqual(field_values, [("value", True)])
+
+  def test_index_updated(self):
+    id_ = str(uuid.uuid4())
+    TestModel(id=id_ + "1", field="value", bool_field=True).put()
+    TestModel(id=id_ + "2", field="value", bool_field=True).put()
+    TestModel(id=id_ + "3", field="value", bool_field=True).put()
+    TestModel(id=id_ + "4", field="value", bool_field=True).put()
+    TestModel(id=id_ + "5", field="value", bool_field=True).put()
+    TestModel(id=id_ + "6", field="value", bool_field=True).put()
+    TestModel(id=id_ + "7", field="value", bool_field=True).put()
+    TestModel(id=id_ + "1", field="value", bool_field=True).put()
+    TestModel(id=id_ + "2", field="---", bool_field=True).put()
+    TestModel(id=id_ + "3", field=None, bool_field=True).put()
+    TestModel(id=id_ + "4", field="value", bool_field=False).put()
+    TestModel(id=id_ + "5", field="value", bool_field=None).put()
+    TestModel(id=id_ + "6", field="---", bool_field=False).put()
+    TestModel(id=id_ + "7", field=None, bool_field=None).put()
+    time.sleep(0.5)
+    results = TestModel.query() \
+      .filter(TestModel.field=="value") \
+      .filter(TestModel.bool_field==True) \
+      .fetch()
+    field_values = [(entity.field, entity.bool_field) for entity in results]
+    self.assertEqual(field_values, [("value", True)])
+
+class TestIndexIntegrityHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestIndexIntegrity))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
+class TestMultipleEqualityFilters(unittest.TestCase):
+  def setUp(self):
+    namespace_manager.set_namespace("appscale-test-querying-2")
+    Post(tags=['boo'], content='test').put()
+    Post(tags=['baz'], content='test').put()
+    Post(tags=['boo', 'baz'], content='test').put()
+    time.sleep(.5)
+
+  def tearDown(self):
+    posts = Post.all().run()
+    for post in posts:
+      post.delete()
+    time.sleep(.5)
+
+  def test_multiple_equality_filters_for_single_prop(self):
+    query = Post.all()
+    self.assertEqual(query.count(), 3)
+
+    query = Post.all().filter('tags = ', 'boo')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().filter('tags = ', 'baz')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
+    self.assertEqual(query.count(), 1)
+
+    query = Post.all().filter('tags = ', 'baz').filter('tags = ', 'boo')
+    self.assertEqual(query.count(), 1)
+
+  def test_multiple_equality_filters_for_zz_merge(self):
+    query = Post.all()
+    self.assertEqual(query.count(), 3)
+
+    query = Post.all().filter('tags = ', 'boo').filter('content =', 'test')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().filter('tags = ', 'baz').filter('content =', 'test')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')\
+      .filter('content =', 'test')
+    self.assertEqual(query.count(), 1)
+
+    query = Post.all().filter('tags = ', 'baz').filter('tags = ', 'boo')\
+      .filter('content =', 'test')
+    self.assertEqual(query.count(), 1)
+
+  def test_multiple_equality_filters_for_composite(self):
+    query = Post.all()
+    self.assertEqual(query.count(), 3)
+
+    query = Post.all().order('-date_added').filter('tags = ', 'boo')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().order('-date_added').filter('tags = ', 'baz')
+    self.assertEqual(query.count(), 2)
+
+    query = Post.all().order('-date_added')\
+      .filter('tags = ', 'boo').filter('tags = ', 'baz')
+    self.assertEqual(query.count(), 1)
+
+    query = Post.all().order('-date_added')\
+      .filter('tags = ', 'baz').filter('tags = ', 'boo')
+    self.assertEqual(query.count(), 1)
+
+class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestMultipleEqualityFilters))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -610,6 +1247,12 @@ application = webapp.WSGIApplication([
   ('/python/datastore/transactions', TransactionHandler),
   ('/python/datastore/zigzag', ZigZagQueryHandler),
   ('/python/datastore/composite_multiple', CompositeMultipleFiltersOnProperty),
+  ('/python/datastore/concurrent_transactions', TestConcurrentTransactionHandler),
+  ('/python/datastore/querying_after_failed_txn', TestQueryingAfterFailedTxnHandler),
+  ('/python/datastore/query_pagination', TestQueryPaginationHandler),
+  ('/python/datastore/max_groups_in_txn', TestMaxGroupsInTxnHandler),
+  ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
+  ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
 ], debug=True)
 
 if __name__ == '__main__':
