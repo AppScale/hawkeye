@@ -60,6 +60,7 @@ tests.ndb_tests.SimpleNDBTransactionTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
 tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
+tests.environment_variable_tests.RequestAPI, ok
 tests.taskqueue_tests.TransactionalTaskTest, ok
 tests.cron_tests.CronTest, ok
 tests.blobstore_tests.UploadBlobTest, ok

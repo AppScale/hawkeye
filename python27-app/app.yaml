@@ -62,7 +62,7 @@ handlers:
   script: secure_url.py
   secure: never
 
-- url: /python/env_var
+- url: /python/env/(.*)
   script: env_var.py
 
 - url: /python/xmpp/?
