@@ -1,3 +1,4 @@
+import unittest
 import urllib
 import wsgiref
 from google.appengine.ext import webapp, blobstore
@@ -98,11 +99,17 @@ class DownloadHandler(blobstore_handlers.BlobstoreDownloadHandler):
     blob_info = blobstore.BlobInfo.get(resource)
     self.send_blob(blob_info)
 
+class CreateURL(webapp2.RequestHandler):
+  def get(self):
+    url = blobstore.create_upload_url('test')
+    self.response.write(url)
+
 application = webapp.WSGIApplication([
   ('/python/blobstore/url', MainHandler),
   ('/python/blobstore/upload', UploadHandler),
   ('/python/blobstore/download/(.*)', DownloadHandler),
   ('/python/blobstore/query', BlobQueryHandler),
+  ('/python/blobstore/create_url', CreateURL),
 ], debug=True)
 
 if __name__ == '__main__':

@@ -1,4 +1,6 @@
 import json
+import ssl
+import urllib2
 import urlparse
 from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
 import hawkeye_utils
@@ -162,6 +164,25 @@ class AsyncDeleteBlobTest(HawkeyeTestCase):
       FILE_UPLOADS[FILE3]))
     self.assertEquals(response.status, 500)
 
+class CreateURLScheme(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    path = '/python/blobstore/create_url'
+    url = 'http://{}:{}{}'.format(
+      hawkeye_utils.HOST, hawkeye_utils.PORT, path)
+    response = urllib2.urlopen(url)
+    self.assertEqual(response.read()[:5], 'http:')
+
+    url = 'https://{}:{}{}'.format(
+      hawkeye_utils.HOST,
+      hawkeye_utils.PORT - hawkeye_utils.SSL_PORT_OFFSET,
+      path)
+    if hasattr(ssl, '_create_unverified_context'):
+      context = ssl._create_unverified_context()
+      response = urllib2.urlopen(url, context=context)
+    else:
+      response = urllib2.urlopen(url)
+    self.assertEqual(response.read()[:5], 'https')
+
 def suite(lang):
   suite = HawkeyeTestSuite('Blobstore Test Suite', 'blobstore')
   suite.addTest(UploadBlobTest())
@@ -175,4 +196,5 @@ def suite(lang):
     suite.addTest(AsyncUploadBlobTest())
     suite.addTest(AsyncQueryBlobDataTest())
     suite.addTest(AsyncDeleteBlobTest())
+    suite.addTest(CreateURLScheme())
   return suite
