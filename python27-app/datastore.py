@@ -3,8 +3,11 @@ try:
 except ImportError:
   import simplejson as json
 
-from google.appengine.api import datastore_errors, namespace_manager
-from google.appengine.ext import webapp, db, ndb
+from google.appengine.api import datastore_errors
+from google.appengine.api import namespace_manager
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+from google.appengine.ext import webapp
 
 import logging
 import random
