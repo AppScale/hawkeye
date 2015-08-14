@@ -71,6 +71,7 @@ tests.blobstore_tests.DeleteBlobTest, ok
 tests.blobstore_tests.AsyncUploadBlobTest, ok
 tests.blobstore_tests.AsyncQueryBlobDataTest, ok
 tests.blobstore_tests.AsyncDeleteBlobTest, ok
+tests.blobstore_tests.CreateURLScheme, ok
 tests.async_datastore_tests.QueryByKeyNameTest, ok
 tests.async_datastore_tests.SimpleKindAwareQueryTest, ok
 tests.async_datastore_tests.KindlessAncestorQueryTest, ok
