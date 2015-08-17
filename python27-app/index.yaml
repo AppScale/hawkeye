@@ -43,6 +43,12 @@ indexes:
   - name: rating
   - name: name
 
+- kind: Post
+  properties:
+  - name: tags
+  - name: date_added
+    direction: desc
+
 - kind: Project
   properties:
   - name: id

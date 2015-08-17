@@ -15,6 +15,12 @@ tests.datastore_tests.SimpleTransactionTest, ok
 tests.datastore_tests.SinglePropertyBasedQueryTest, ok
 tests.datastore_tests.CountQueryTest, ok
 tests.datastore_tests.ZigZagQueryTest, ok
+tests.datastore_tests.ConcurrentTransactionTest, ok
+tests.datastore_tests.QueryingAfterFailedTxn, ok
+tests.datastore_tests.QueryPagination, ok
+tests.datastore_tests.MaxGroupsInTxn, ok
+tests.datastore_tests.IndexIntegrity, ok
+tests.datastore_tests.MultipleEqualityFilters, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok

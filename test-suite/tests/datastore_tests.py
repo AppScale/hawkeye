@@ -461,6 +461,36 @@ class CompositeMultiple(HawkeyeTestCase):
     response = self.http_get('/datastore/composite_multiple')
     self.assertEquals(response.status, 200)
 
+class ConcurrentTransactionTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/concurrent_transactions')
+    self.assertEquals(response.status, 200)
+
+class QueryingAfterFailedTxn(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/querying_after_failed_txn')
+    self.assertEquals(response.status, 200)
+
+class QueryPagination(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/query_pagination')
+    self.assertEquals(response.status, 200)
+
+class MaxGroupsInTxn(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/max_groups_in_txn')
+    self.assertEquals(response.status, 200)
+
+class IndexIntegrity(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/index_integrity')
+    self.assertEquals(response.status, 200)
+
+class MultipleEqualityFilters(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/multiple_equality_filters')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -487,11 +517,14 @@ def suite(lang):
     suite.addTest(ZigZagQueryTest())
     suite.addTest(CompositeMultiple())
     suite.addTest(GQLProjectionQueryTest())
+    suite.addTest(ConcurrentTransactionTest())
+    suite.addTest(QueryingAfterFailedTxn())
+    suite.addTest(QueryPagination())
+    suite.addTest(MaxGroupsInTxn())
+    suite.addTest(IndexIntegrity())
+    suite.addTest(MultipleEqualityFilters())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
-    
 
   return suite
-
-
