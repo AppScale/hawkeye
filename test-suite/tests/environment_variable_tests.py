@@ -28,7 +28,7 @@ class RequestAPI(HawkeyeTestCase):
       for method in ['GET', 'PUT', 'POST', 'DELETE']:
         url = '{}://{}:{}/python/env/mirror'.\
           format(scheme, hawkeye_utils.HOST, config[scheme]['port'])
-        request = urllib2.Request(url)
+        request = urllib2.Request(url, headers={'Content-Length': '0'})
         request.get_method = lambda: method
 
         if hasattr(ssl, '_create_unverified_context'):
