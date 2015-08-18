@@ -270,7 +270,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>EnvironmentVariableHandlerServlet</servlet-name>
-        <url-pattern>/java/env_var</url-pattern>
+        <url-pattern>/java/env/var</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

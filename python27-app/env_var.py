@@ -12,8 +12,6 @@ try:
 except ImportError:
   import simplejson as json
 
-__author__ = 'chris'
-
 class GetConfigEnvironmentVariableHandler(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = "application/json"
@@ -31,8 +29,31 @@ class GetConfigEnvironmentVariableHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps(result))
 
+class MirrorHandler(webapp2.RequestHandler):
+  def repulse(self):
+    response_dict = {
+      'method': self.request.method,
+      'scheme': self.request.scheme,
+      'uri': self.request.uri
+    }
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(json.dumps(response_dict))
+
+  def get(self):
+    self.repulse()
+
+  def put(self):
+    self.repulse()
+
+  def post(self):
+    self.repulse()
+
+  def delete(self):
+    self.repulse()
+
 application = webapp.WSGIApplication([
-  ('/python/env_var', GetConfigEnvironmentVariableHandler),
+  ('/python/env/var', GetConfigEnvironmentVariableHandler),
+  ('/python/env/mirror', MirrorHandler),
 ], debug=True)
 
 if __name__ == '__main__':
