@@ -15,6 +15,12 @@ tests.datastore_tests.SimpleTransactionTest, ok
 tests.datastore_tests.SinglePropertyBasedQueryTest, ok
 tests.datastore_tests.CountQueryTest, ok
 tests.datastore_tests.ZigZagQueryTest, ok
+tests.datastore_tests.ConcurrentTransactionTest, ok
+tests.datastore_tests.QueryingAfterFailedTxn, ok
+tests.datastore_tests.QueryPagination, ok
+tests.datastore_tests.MaxGroupsInTxn, ok
+tests.datastore_tests.IndexIntegrity, ok
+tests.datastore_tests.MultipleEqualityFilters, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok
@@ -60,6 +66,7 @@ tests.ndb_tests.SimpleNDBTransactionTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
 tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest, ok
+tests.environment_variable_tests.RequestAPI, ok
 tests.taskqueue_tests.TransactionalTaskTest, ok
 tests.cron_tests.CronTest, ok
 tests.blobstore_tests.UploadBlobTest, ok
@@ -71,6 +78,7 @@ tests.blobstore_tests.DeleteBlobTest, ok
 tests.blobstore_tests.AsyncUploadBlobTest, ok
 tests.blobstore_tests.AsyncQueryBlobDataTest, ok
 tests.blobstore_tests.AsyncDeleteBlobTest, ok
+tests.blobstore_tests.CreateURLScheme, ok
 tests.async_datastore_tests.QueryByKeyNameTest, ok
 tests.async_datastore_tests.SimpleKindAwareQueryTest, ok
 tests.async_datastore_tests.KindlessAncestorQueryTest, ok
