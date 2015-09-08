@@ -4,7 +4,6 @@ except ImportError:
   import simplejson as json
 
 from google.appengine.api import datastore_errors
-from google.appengine.api import namespace_manager
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
@@ -623,11 +622,6 @@ class PhoneNumber(db.Model):
 # when it shouldn't be.
 class TestConcurrentTransaction(unittest.TestCase):
 
-  NAMESPACE = "appscale-test-concurrent-txn"
-
-  def setUp(self):
-    namespace_manager.set_namespace(self.NAMESPACE)
-
   def tearDown(self):
     try:
       keys = TestModel.query().fetch(keys_only=True)
@@ -823,7 +817,6 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
 
   def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
     self.errors = []
 
   def tearDown(self):
@@ -1008,8 +1001,7 @@ class TestQueryPagination(unittest.TestCase):
   def setUp(self):
     self.errors = []
 
-  def _init_entities_and_namespace(self):
-    namespace_manager.set_namespace("appscale-test-pagination")
+  def _init_entities(self):
     self.entities = [
       TestModel(id="entity-{}".format(x), field=self.rand_str()) for x in xrange(10)
     ]
@@ -1021,7 +1013,7 @@ class TestQueryPagination(unittest.TestCase):
 
   def _check_and_delete(self, fetcher, context):
     for comment, query_builder in self.query_builders:
-      self._init_entities_and_namespace()
+      self._init_entities()
       time.sleep(0.5)
       entities = fetcher(query_builder())
       if len(entities) != len(self.entities):
@@ -1086,9 +1078,6 @@ class TestMaxGroupsInTxn(unittest.TestCase):
   def rand_str():
     return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
 
-  def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
-
   def tearDown(self):
     keys = TestModel.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
@@ -1110,9 +1099,6 @@ class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
       self.error(500)
 
 class TestIndexIntegrity(unittest.TestCase):
-  def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
-
   def tearDown(self):
     keys = TestModel.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
@@ -1168,7 +1154,6 @@ class TestIndexIntegrityHandler(webapp2.RequestHandler):
 
 class TestMultipleEqualityFilters(unittest.TestCase):
   def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying-2")
     Post(tags=['boo'], content='test').put()
     Post(tags=['baz'], content='test').put()
     Post(tags=['boo', 'baz'], content='test').put()
