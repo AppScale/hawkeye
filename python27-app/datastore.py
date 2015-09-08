@@ -53,6 +53,11 @@ class Post(db.Model):
   tags = db.StringListProperty()
   date_added = db.DateTimeProperty(auto_now_add=True)
 
+class User(ndb.Model):
+  username = ndb.StringProperty(required=True)
+  brands = ndb.StringProperty(repeated=True)
+  status = ndb.StringProperty(default='pending')
+
 class TestException(Exception):
   pass
 
@@ -1235,6 +1240,69 @@ class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
 
+class TestCursorWithZigZagMerge(unittest.TestCase):
+  def tearDown(self):
+    for user in User.query():
+      user.key.delete()
+    time.sleep(.5)
+
+  def test_cursor_with_repeated_props(self):
+    brand_options = [
+      [],
+      ['brand1'],
+      ['brand2'],
+      ['brand3'],
+      ['brand1', 'brand2'],
+      ['brand1', 'brand3'],
+      ['brand2', 'brand3'],
+      ['brand1', 'brand2', 'brand3']
+    ]
+    status_options = ['pending', 'approved', 'expired']
+
+    brands_to_query = ['brand1']
+    statuses_to_query = ['approved', 'expired']
+    page_size = 5
+
+    i = 1
+    expected_usernames = []
+    for brand_option in brand_options:
+      for status in status_options:
+        username = 'user{}'.format(i)
+        User(username=username, brands=brand_option, status=status).put()
+        if (any(brand in brands_to_query for brand in brand_option)
+          and status in statuses_to_query):
+          expected_usernames.append(username)
+        i += 1
+
+    time.sleep(.5)
+
+    retrieved_usernames = []
+    cursor = None
+    more = True
+
+    while more:
+      query = User.query().\
+        filter(User.brands.IN(brands_to_query),
+          User.status.IN(statuses_to_query)).\
+        order(User._key)
+      results, cursor, more = query.\
+        fetch_page(page_size, start_cursor=cursor, keys_only=True)
+      for result in results:
+        retrieved_usernames.append(result.get().username)
+
+    expected_usernames.sort()
+    retrieved_usernames.sort()
+
+    self.assertListEqual(expected_usernames, retrieved_usernames)
+
+class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCursorWithZigZagMerge))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1256,6 +1324,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/max_groups_in_txn', TestMaxGroupsInTxnHandler),
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
+  ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
 ], debug=True)
 
 if __name__ == '__main__':

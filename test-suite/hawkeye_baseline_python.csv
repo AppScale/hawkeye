@@ -21,6 +21,7 @@ tests.datastore_tests.QueryPagination, ok
 tests.datastore_tests.MaxGroupsInTxn, ok
 tests.datastore_tests.IndexIntegrity, ok
 tests.datastore_tests.MultipleEqualityFilters, ok
+tests.datastore_tests.CursorWithZigzagMerge, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok
