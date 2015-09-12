@@ -4,7 +4,6 @@ except ImportError:
   import simplejson as json
 
 from google.appengine.api import datastore_errors
-from google.appengine.api import namespace_manager
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
@@ -52,6 +51,11 @@ class Post(db.Model):
   content = db.StringProperty()
   tags = db.StringListProperty()
   date_added = db.DateTimeProperty(auto_now_add=True)
+
+class User(ndb.Model):
+  username = ndb.StringProperty(required=True)
+  brands = ndb.StringProperty(repeated=True)
+  status = ndb.StringProperty(default='pending')
 
 class TestException(Exception):
   pass
@@ -618,11 +622,6 @@ class PhoneNumber(db.Model):
 # when it shouldn't be.
 class TestConcurrentTransaction(unittest.TestCase):
 
-  NAMESPACE = "appscale-test-concurrent-txn"
-
-  def setUp(self):
-    namespace_manager.set_namespace(self.NAMESPACE)
-
   def tearDown(self):
     try:
       keys = TestModel.query().fetch(keys_only=True)
@@ -818,7 +817,6 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
 
   def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
     self.errors = []
 
   def tearDown(self):
@@ -1003,8 +1001,7 @@ class TestQueryPagination(unittest.TestCase):
   def setUp(self):
     self.errors = []
 
-  def _init_entities_and_namespace(self):
-    namespace_manager.set_namespace("appscale-test-pagination")
+  def _init_entities(self):
     self.entities = [
       TestModel(id="entity-{}".format(x), field=self.rand_str()) for x in xrange(10)
     ]
@@ -1016,7 +1013,7 @@ class TestQueryPagination(unittest.TestCase):
 
   def _check_and_delete(self, fetcher, context):
     for comment, query_builder in self.query_builders:
-      self._init_entities_and_namespace()
+      self._init_entities()
       time.sleep(0.5)
       entities = fetcher(query_builder())
       if len(entities) != len(self.entities):
@@ -1081,9 +1078,6 @@ class TestMaxGroupsInTxn(unittest.TestCase):
   def rand_str():
     return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
 
-  def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
-
   def tearDown(self):
     keys = TestModel.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
@@ -1105,9 +1099,6 @@ class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
       self.error(500)
 
 class TestIndexIntegrity(unittest.TestCase):
-  def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying")
-
   def tearDown(self):
     keys = TestModel.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
@@ -1163,7 +1154,6 @@ class TestIndexIntegrityHandler(webapp2.RequestHandler):
 
 class TestMultipleEqualityFilters(unittest.TestCase):
   def setUp(self):
-    namespace_manager.set_namespace("appscale-test-querying-2")
     Post(tags=['boo'], content='test').put()
     Post(tags=['baz'], content='test').put()
     Post(tags=['boo', 'baz'], content='test').put()
@@ -1235,6 +1225,69 @@ class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
 
+class TestCursorWithZigZagMerge(unittest.TestCase):
+  def tearDown(self):
+    for user in User.query():
+      user.key.delete()
+    time.sleep(.5)
+
+  def test_cursor_with_repeated_props(self):
+    brand_options = [
+      [],
+      ['brand1'],
+      ['brand2'],
+      ['brand3'],
+      ['brand1', 'brand2'],
+      ['brand1', 'brand3'],
+      ['brand2', 'brand3'],
+      ['brand1', 'brand2', 'brand3']
+    ]
+    status_options = ['pending', 'approved', 'expired']
+
+    brands_to_query = ['brand1']
+    statuses_to_query = ['approved', 'expired']
+    page_size = 5
+
+    i = 1
+    expected_usernames = []
+    for brand_option in brand_options:
+      for status in status_options:
+        username = 'user{}'.format(i)
+        User(username=username, brands=brand_option, status=status).put()
+        if (any(brand in brands_to_query for brand in brand_option)
+          and status in statuses_to_query):
+          expected_usernames.append(username)
+        i += 1
+
+    time.sleep(.5)
+
+    retrieved_usernames = []
+    cursor = None
+    more = True
+
+    while more:
+      query = User.query().\
+        filter(User.brands.IN(brands_to_query),
+          User.status.IN(statuses_to_query)).\
+        order(User._key)
+      results, cursor, more = query.\
+        fetch_page(page_size, start_cursor=cursor, keys_only=True)
+      for result in results:
+        retrieved_usernames.append(result.get().username)
+
+    expected_usernames.sort()
+    retrieved_usernames.sort()
+
+    self.assertListEqual(expected_usernames, retrieved_usernames)
+
+class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCursorWithZigZagMerge))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
 class TestRepeatedProperties(unittest.TestCase):
   def tearDown(self):
     posts = Post.all().run()
@@ -1284,6 +1337,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/max_groups_in_txn', TestMaxGroupsInTxnHandler),
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
+  ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler)
 ], debug=True)
 

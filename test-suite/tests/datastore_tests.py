@@ -491,6 +491,11 @@ class MultipleEqualityFilters(HawkeyeTestCase):
     response = self.http_get('/datastore/multiple_equality_filters')
     self.assertEquals(response.status, 200)
 
+class CursorWithZigzagMerge(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_with_zigzag_merge')
+    self.assertEquals(response.status, 200)
+
 class RepeatedProperties(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/repeated_properties')
@@ -528,6 +533,7 @@ def suite(lang):
     suite.addTest(MaxGroupsInTxn())
     suite.addTest(IndexIntegrity())
     suite.addTest(MultipleEqualityFilters())
+    suite.addTest(CursorWithZigzagMerge())
     suite.addTest(RepeatedProperties())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())

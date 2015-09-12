@@ -10,6 +10,21 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: CompositeCars
+  properties:
+  - name: color
+  - name: make
+  - name: model
+  - name: value
+
+- kind: CompositeCars
+  properties:
+  - name: color
+  - name: make
+  - name: model
+  - name: value
+    direction: desc
+
 - kind: Module
   ancestor: yes
   properties:
@@ -73,18 +88,3 @@ indexes:
   properties:
   - name: rating
   - name: name
-
-- kind: CompositeCars 
-  properties:
-  - name: color
-  - name: make
-  - name: model
-  - name: value
-
-- kind: CompositeCars 
-  properties:
-  - name: color
-  - name: make
-  - name: model
-  - name: value
-    direction: desc
