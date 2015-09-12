@@ -1288,6 +1288,34 @@ class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
 
+class TestRepeatedProperties(unittest.TestCase):
+  def tearDown(self):
+    posts = Post.all().run()
+    for post in posts:
+      post.delete()
+    time.sleep(.5)
+
+  def test_add_and_empty_repeated_props(self):
+    Post(tags=['boo', 'baz'], content='test').put()
+    time.sleep(.5)
+
+    query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
+    post = query.get()
+    post.tags = []
+    post.put()
+    time.sleep(.5)
+
+    query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
+    self.assertEqual(query.count(), 0)
+
+class TestRepeatedPropertiesHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestRepeatedProperties))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1310,6 +1338,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
+  ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler)
 ], debug=True)
 
 if __name__ == '__main__':

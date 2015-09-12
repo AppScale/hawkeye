@@ -496,6 +496,11 @@ class CursorWithZigzagMerge(HawkeyeTestCase):
     response = self.http_get('/datastore/cursor_with_zigzag_merge')
     self.assertEquals(response.status, 200)
 
+class RepeatedProperties(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/repeated_properties')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -529,6 +534,7 @@ def suite(lang):
     suite.addTest(IndexIntegrity())
     suite.addTest(MultipleEqualityFilters())
     suite.addTest(CursorWithZigzagMerge())
+    suite.addTest(RepeatedProperties())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
