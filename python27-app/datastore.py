@@ -8,6 +8,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
+import datetime
 import logging
 import random
 import string
@@ -1316,6 +1317,33 @@ class TestRepeatedPropertiesHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
 
+class TestCompositeProjection(unittest.TestCase):
+  def tearDown(self):
+    posts = Post.all().run()
+    for post in posts:
+      post.delete()
+    time.sleep(.5)
+
+  def test_value_with_delimiter(self):
+    timestamp = datetime.datetime(2015, 1, 1)
+    for _ in range(150):
+      Post(tags=['boo'], date_added=timestamp).put()
+      timestamp -= datetime.timedelta(seconds=1)
+    time.sleep(.5)
+
+    query = Post.all(projection=['date_added']).filter('tags = ', 'boo')\
+      .order('-date_added')
+    for _ in query.run():
+      pass
+
+class TestCompositeProjectionHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCompositeProjection))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1338,7 +1366,8 @@ application = webapp.WSGIApplication([
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
-  ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler)
+  ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
+  ('/python/datastore/composite_projection', TestCompositeProjectionHandler)
 ], debug=True)
 
 if __name__ == '__main__':

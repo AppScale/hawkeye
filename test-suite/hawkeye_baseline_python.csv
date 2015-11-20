@@ -23,6 +23,7 @@ tests.datastore_tests.IndexIntegrity, ok
 tests.datastore_tests.MultipleEqualityFilters, ok
 tests.datastore_tests.CursorWithZigzagMerge, ok
 tests.datastore_tests.RepeatedProperties, ok
+tests.datastore_tests.CompositeProjection, ok
 tests.images_tests.ImageDeleteTest, ok
 tests.images_tests.ImageLoadTest, ok
 tests.images_tests.ImageMetadataTest, ok

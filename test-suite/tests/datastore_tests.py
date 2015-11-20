@@ -501,6 +501,11 @@ class RepeatedProperties(HawkeyeTestCase):
     response = self.http_get('/datastore/repeated_properties')
     self.assertEquals(response.status, 200)
 
+class CompositeProjection(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/composite_projection')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -535,6 +540,7 @@ def suite(lang):
     suite.addTest(MultipleEqualityFilters())
     suite.addTest(CursorWithZigzagMerge())
     suite.addTest(RepeatedProperties())
+    suite.addTest(CompositeProjection())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
