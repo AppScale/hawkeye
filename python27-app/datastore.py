@@ -63,113 +63,122 @@ class User(ndb.Model):
 class TestException(Exception):
   pass
 
-class CompositeMultipleFiltersOnProperty(webapp2.RequestHandler):
+class CompositeMultipleFiltersOnProperty(unittest.TestCase):
   """ Queries that use a set of equality filters use the zigzag merge join 
   algorithm.
   """
-  def get(self):
+  def setUp(self):
+    # Populate the index.
     non_set_cars = []
     for x in range(0, 10):
       model = random.choice(["SModel", "Civic", "S2000"])
       make = random.choice(["Tesla", "Ford"])
-      # The color will never match what we are querying for.
       color = random.choice(["red", "green", "blue"])
       value = x
       car = CompositeCars(model=model, make=make, color=color, value=value)
-      
       non_set_cars.append(car)
     db.put(non_set_cars)
 
-    set_cars = []
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+  def tearDown(self):
+    cars = CompositeCars.all().run()
+    for car in cars:
+      car.delete()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+  def test_operations_for_integers(self):
+    cars = []
     for x in range(0, 10):
       car = CompositeCars(model="SModel", make="Tesla", color="purple", value=x)
-      set_cars.append(car)
-    db.put(set_cars)
-
-    second_set = []
+      cars.append(car)
     for x in range(0, 10):
       car = CompositeCars(model="Camry", make="Toyota", color="gold", value=x)
-      second_set.append(car)
-    db.put(second_set)
+      cars.append(car)
+    db.put(cars)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
-    q = CompositeCars.all()
-    q.filter("model =", "SModel")
-    q.filter("make =", "Tesla")
-    q.filter("color =", "purple")
-    q.filter("value >", 4)  
-    q.filter("value <", 6)  
-    results = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "SModel")\
+      .filter("make =", "Tesla")\
+      .filter("color =", "purple")\
+      .filter("value >", 4)\
+      .filter("value <", 6)
+    self.assertEqual(query.count(), 1)
 
-    q = CompositeCars.all()
-    q.filter("model =", "SModel")
-    q.filter("make =", "Tesla")
-    q.filter("color =", "purple")
-    q.filter("value >=", 4)  
-    q.filter("value <=", 6)  
-    results_2 = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "SModel")\
+      .filter("make =", "Tesla")\
+      .filter("color =", "purple")\
+      .filter("value >=", 4)\
+      .filter("value <=", 6)
+    self.assertEqual(query.count(), 3)
 
-    q = CompositeCars.all()
-    q.filter("model =", "Camry")
-    q.filter("make =", "Toyota")
-    q.filter("color =", "gold")
-    q.filter("value >", 4)  
-    q.filter("value <=", 6)  
-    results_3 = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "Camry")\
+      .filter("make =", "Toyota")\
+      .filter("color =", "gold")\
+      .filter("value >", 4)\
+      .filter("value <=", 6)
+    self.assertEqual(query.count(), 2)
 
-    q = CompositeCars.all()
-    q.filter("model =", "Camry")
-    q.filter("make =", "Toyota")
-    q.filter("color =", "gold")
-    q.filter("value >=", 4)  
-    q.filter("value <", 6)  
-    results_4 = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "Camry")\
+      .filter("make =", "Toyota")\
+      .filter("color =", "gold")\
+      .filter("value >=", 4)\
+      .filter("value <", 6)
+    self.assertEqual(query.count(), 2)
 
-    q = CompositeCars.all()
-    q.filter("model =", "Camry")
-    q.filter("make =", "Toyota")
-    q.filter("color =", "gold")
-    q.filter("value >", 4)  
-    q.filter("value <=", 6)  
-    q.order('-value')
-    results_5 = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "Camry")\
+      .filter("make =", "Toyota")\
+      .filter("color =", "gold")\
+      .filter("value >", 4)\
+      .filter("value <=", 6)\
+      .order('-value')
+    self.assertEqual(query.count(), 2)
 
-    q = CompositeCars.all()
-    q.filter("model =", "Camry")
-    q.filter("make =", "Toyota")
-    q.filter("color =", "gold")
-    q.filter("value >=", 4)  
-    q.filter("value <", 6)  
-    q.order('-value')
-    results_6 = q.fetch(100)
+    query = CompositeCars.all()\
+      .filter("model =", "Camry")\
+      .filter("make =", "Toyota")\
+      .filter("color =", "gold")\
+      .filter("value >=", 4)\
+      .filter("value <", 6)\
+      .order('-value')
+    self.assertEqual(query.count(), 2)
 
+  def test_empty_values(self):
+    make_options = [None, 'Audi', 'Buick']
+    model_options = [None, 'Model_1', 'Model_2']
+    color_options = [None, 'aqua', 'black']
+    value_options = [None, 1, 2]
+    cars = []
+    for make in make_options:
+      for model in model_options:
+        for color in color_options:
+          for value in value_options:
+            cars.append(
+              CompositeCars(make=make, model=model, color=color, value=value))
+    db.put(cars)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
-    db.delete(non_set_cars)
-    db.delete(set_cars)
-    db.delete(second_set)
+    for make in make_options:
+      for model in model_options:
+        for color in color_options:
+          query = CompositeCars.all().filter('make =', make)\
+            .filter('model =', model).filter('color =', color).order('value')
+          results = query.fetch(limit=None)
+          values_fetched = [car.value for car in results]
+          self.assertListEqual(value_options, values_fetched)
 
-    if len(results) != 1:
-      logging.error("Result for query was {0}, expected 1 item".format(results))
-      for result in results:
-        logging.info("Item: {0}".format(result.value))
-      self.response.set_status(404)
-    elif len(results_2) != 3:
-      logging.error("Result for query was {0}, expected 3 items".format(results_2))
-      self.response.set_status(404)
-    elif len(results_3) != 2:
-      logging.error("Result for query was {0}, expected 2 items".format(results_3))
-      self.response.set_status(404)
-    elif len(results_4) != 2:
-      logging.error("Result for query was {0}, expected 2 items".format(results_4))
-      self.response.set_status(404)
-    elif len(results_5) != 2:
-      logging.error("Result for query was {0}, expected 2 items".format(results_5))
-      self.response.set_status(404)
-    elif len(results_6) != 2:
-      logging.error("Result for query was {0}, expected 2 items".format(results_6))
-      self.response.set_status(404)
-    else:
-      self.response.set_status(200)
-
+class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(CompositeMultipleFiltersOnProperty))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
 
 class ZigZagQueryHandler(webapp2.RequestHandler):
   """ Queries that use a set of equality filters use the zigzag merge join 
@@ -1360,7 +1369,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/count_query', CountQueryHandler),
   ('/python/datastore/transactions', TransactionHandler),
   ('/python/datastore/zigzag', ZigZagQueryHandler),
-  ('/python/datastore/composite_multiple', CompositeMultipleFiltersOnProperty),
+  ('/python/datastore/composite_multiple', CompositeMultipleFiltersOnPropertyHandler),
   ('/python/datastore/concurrent_transactions', TestConcurrentTransactionHandler),
   ('/python/datastore/querying_after_failed_txn', TestQueryingAfterFailedTxnHandler),
   ('/python/datastore/query_pagination', TestQueryPaginationHandler),
