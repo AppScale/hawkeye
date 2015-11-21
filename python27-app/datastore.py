@@ -41,10 +41,10 @@ class Cars(db.Model):
   color = db.StringProperty(required=True) 
 
 class CompositeCars(db.Model):
-  model = db.StringProperty(required=True)
-  make = db.StringProperty(required=True)
-  color = db.StringProperty(required=True)
-  value = db.IntegerProperty(required=True)
+  model = db.StringProperty()
+  make = db.StringProperty()
+  color = db.StringProperty()
+  value = db.IntegerProperty()
 
 class TestModel(ndb.Model):
   field = ndb.StringProperty()
