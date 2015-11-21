@@ -18,6 +18,8 @@ import uuid
 import webapp2
 import wsgiref
 
+SDK_CONSISTENCY_WAIT = .5
+
 class Project(db.Model):
   project_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
@@ -1015,7 +1017,7 @@ class TestQueryPagination(unittest.TestCase):
   def _check_and_delete(self, fetcher, context):
     for comment, query_builder in self.query_builders:
       self._init_entities()
-      time.sleep(0.5)
+      time.sleep(SDK_CONSISTENCY_WAIT)
       entities = fetcher(query_builder())
       if len(entities) != len(self.entities):
         err_fmt = "    {}: Failed ({} of {} are fetched)"
@@ -1113,7 +1115,7 @@ class TestIndexIntegrity(unittest.TestCase):
     TestModel(id=id_ + "5", field="value", bool_field=None).put()
     TestModel(id=id_ + "6", field="---", bool_field=False).put()
     TestModel(id=id_ + "7", field=None, bool_field=None).put()
-    time.sleep(0.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
     results = TestModel.query() \
       .filter(TestModel.field=="value") \
       .filter(TestModel.bool_field==True) \
@@ -1137,7 +1139,7 @@ class TestIndexIntegrity(unittest.TestCase):
     TestModel(id=id_ + "5", field="value", bool_field=None).put()
     TestModel(id=id_ + "6", field="---", bool_field=False).put()
     TestModel(id=id_ + "7", field=None, bool_field=None).put()
-    time.sleep(0.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
     results = TestModel.query() \
       .filter(TestModel.field=="value") \
       .filter(TestModel.bool_field==True) \
@@ -1158,13 +1160,13 @@ class TestMultipleEqualityFilters(unittest.TestCase):
     Post(tags=['boo'], content='test').put()
     Post(tags=['baz'], content='test').put()
     Post(tags=['boo', 'baz'], content='test').put()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
   def tearDown(self):
     posts = Post.all().run()
     for post in posts:
       post.delete()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
   def test_multiple_equality_filters_for_single_prop(self):
     query = Post.all()
@@ -1230,7 +1232,7 @@ class TestCursorWithZigZagMerge(unittest.TestCase):
   def tearDown(self):
     for user in User.query():
       user.key.delete()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
   def test_cursor_with_repeated_props(self):
     brand_options = [
@@ -1260,7 +1262,7 @@ class TestCursorWithZigZagMerge(unittest.TestCase):
           expected_usernames.append(username)
         i += 1
 
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
     retrieved_usernames = []
     cursor = None
@@ -1294,17 +1296,17 @@ class TestRepeatedProperties(unittest.TestCase):
     posts = Post.all().run()
     for post in posts:
       post.delete()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
   def test_add_and_empty_repeated_props(self):
     Post(tags=['boo', 'baz'], content='test').put()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
     query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
     post = query.get()
     post.tags = []
     post.put()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
     query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
     self.assertEqual(query.count(), 0)
@@ -1322,14 +1324,14 @@ class TestCompositeProjection(unittest.TestCase):
     posts = Post.all().run()
     for post in posts:
       post.delete()
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
   def test_value_with_delimiter(self):
     timestamp = datetime.datetime(2015, 1, 1)
     for _ in range(150):
       Post(tags=['boo'], date_added=timestamp).put()
       timestamp -= datetime.timedelta(seconds=1)
-    time.sleep(.5)
+    time.sleep(SDK_CONSISTENCY_WAIT)
 
     query = Post.all(projection=['date_added']).filter('tags = ', 'boo')\
       .order('-date_added')
