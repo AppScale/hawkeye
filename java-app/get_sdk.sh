@@ -1,9 +1,14 @@
+JAVA_SDK_VERSION=1.8.2
+JAVA_SDK_ZIP=appengine-java-sdk-${JAVA_SDK_VERSION}.zip
+
 cd ../../
-if [ -e ${HOME}/appengine-java-sdk-1.8.1.zip ]; then
-        cp ${HOME}/appengine-java-sdk-1.8.1.zip .
+if [ -e ${HOME}/${JAVA_SDK_ZIP} ]; then
+        cp ${HOME}/${JAVA_SDK_ZIP} .
 else
-        wget http://googleappengine.googlecode.com/files/appengine-java-sdk-1.8.1.zip
+        wget http://googleappengine.googlecode.com/files/${JAVA_SDK_ZIP}
 fi
-unzip appengine-java-sdk-1.8.1.zip
-rm appengine-java-sdk-1.8.1.zip
+
+unzip ${JAVA_SDK_ZIP}
+rm ${JAVA_SDK_ZIP}
+
 cd -
