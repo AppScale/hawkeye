@@ -1,4 +1,4 @@
-JAVA_SDK_VERSION=1.8.2
+JAVA_SDK_VERSION=1.8.3
 JAVA_SDK_ZIP=appengine-java-sdk-${JAVA_SDK_VERSION}.zip
 
 cd ../../
