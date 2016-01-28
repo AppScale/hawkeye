@@ -350,8 +350,8 @@ class HawkeyeTestResult(TextTestResult):
       mode = 'a'
     else:
       mode = 'w'
-    error_log = open('{0}/{1}-errors.log'.format(self.log_base_dir, 
-      self.suite), mode)
+    error_log = open('{0}/{1}-{2}-errors.log'.format(self.log_base_dir,
+      self.suite, LANG), mode)
     for test, err in errors:
       error_log.write(self.separator1)
       error_log.write('\n')
