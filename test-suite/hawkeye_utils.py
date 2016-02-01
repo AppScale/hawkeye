@@ -225,7 +225,7 @@ class HawkeyeTestCase(TestCase):
     Returns:
       An instance of ResponseInfo
     """
-    http_log = open('{0}/http.log'.format(self.log_base_dir), 'a')
+    http_log = open('{0}/http-{1}.log'.format(self.log_base_dir, LANG), 'a')
     if not self.description_printed:
       http_log.write('\n' + str(self) + '\n')
       http_log.write('=' * 70)
