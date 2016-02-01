@@ -225,7 +225,7 @@ class HawkeyeTestCase(TestCase):
     Returns:
       An instance of ResponseInfo
     """
-    http_log = open('{0}/http.log'.format(self.log_base_dir), 'a')
+    http_log = open('{0}/http-{1}.log'.format(self.log_base_dir, LANG), 'a')
     if not self.description_printed:
       http_log.write('\n' + str(self) + '\n')
       http_log.write('=' * 70)
@@ -350,8 +350,8 @@ class HawkeyeTestResult(TextTestResult):
       mode = 'a'
     else:
       mode = 'w'
-    error_log = open('{0}/{1}-errors.log'.format(self.log_base_dir, 
-      self.suite), mode)
+    error_log = open('{0}/{1}-{2}-errors.log'.format(self.log_base_dir,
+      self.suite, LANG), mode)
     for test, err in errors:
       error_log.write(self.separator1)
       error_log.write('\n')

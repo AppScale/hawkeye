@@ -104,6 +104,8 @@ if __name__ == '__main__':
   parser.add_option('--log-dir', action='store', type='string',
     dest='base_dir',
     help='Directory to store error logs.')
+  parser.add_option('--keep-old-logs', action='store_true',
+    dest='keep_old_logs', help='Keep existing hawkeye logs')
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
@@ -148,10 +150,11 @@ if __name__ == '__main__':
 
   os.environ['LOG_BASE_DIR'] = hawkeye_logs
 
-  for child_file in os.listdir(hawkeye_logs):
-    file_path = os.path.join(hawkeye_logs, child_file)
-    if os.path.isfile(file_path):
-      os.unlink(file_path)
+  if not options.keep_old_logs:
+    for child_file in os.listdir(hawkeye_logs):
+      file_path = os.path.join(hawkeye_logs, child_file)
+      if os.path.isfile(file_path):
+        os.unlink(file_path)
 
   suites = {}
   TEST_SUITES = init_test_suites(options.lang)
