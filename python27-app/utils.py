@@ -1,6 +1,6 @@
+import time
+
 from google.appengine.ext import db
-import logging
-import time, datetime
 
 __author__ = 'hiranya'
 
@@ -26,3 +26,25 @@ def processEta(key, eta):
     success = 0
   counter = TaskCounter(key_name=key, count=success)
   counter.put()
+
+def format_errors(result):
+  output = ''
+  if len(result.errors) > 0:
+    output += 'Errors:\n'
+    for error in result.errors:
+      if type(error) is tuple:
+        for error_line in error:
+          output += str(error_line).rstrip() + '\n'
+      else:
+        output += str(error)
+
+  if len(result.failures) > 0:
+    output += 'Failures:\n'
+    for failure in result.failures:
+      if type(failure) is tuple:
+        for failure_line in failure:
+          output += str(failure_line).rstrip() + '\n'
+      else:
+        output += str(failure)
+
+  return output
