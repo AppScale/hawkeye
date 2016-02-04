@@ -1017,6 +1017,8 @@ class TestQueryPagination(unittest.TestCase):
 
   def setUp(self):
     self.errors = []
+    keys = TestModel.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
 
   def _init_entities(self):
     self.entities = [
