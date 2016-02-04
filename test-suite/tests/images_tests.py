@@ -1,5 +1,7 @@
 import json
+from PIL import Image
 from time import sleep
+import StringIO
 from hawkeye_utils import HawkeyeTestCase
 import hawkeye_utils
 
@@ -29,6 +31,10 @@ class ImageLoadTest(HawkeyeTestCase):
     response = self.http_get('/images/logo?project_id=' + PROJECTS['appscale'])
     self.assertEquals(response.status, 200)
     self.assertEquals(response.headers['content-type'], 'image/png')
+
+    # Make sure we actually received an image in the response.
+    image = Image.open(StringIO.StringIO(response.payload))
+    self.assertEquals((100, 32), image.size)
 
 class ImageMetadataTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
