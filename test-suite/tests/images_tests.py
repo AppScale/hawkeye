@@ -93,4 +93,7 @@ def suite(lang):
   if lang == 'python':
     suite.addTest(ImageResizeTransformTest())
     suite.addTest(ImageRotateTransformTest())
+
+  # Clean up entities. They can affect later tests.
+  suite.addTest(ImageDeleteTest())
   return suite
