@@ -34,7 +34,7 @@ class ImageLoadTest(HawkeyeTestCase):
 
     # Make sure we actually received an image in the response.
     image = Image.open(StringIO.StringIO(response.payload))
-    self.assertEquals((100, 32), image.size)
+    self.assertEquals(100, image.size[0])
 
 class ImageMetadataTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
