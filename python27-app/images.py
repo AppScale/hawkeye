@@ -50,7 +50,7 @@ class ProjectLogoHandler(webapp2.RequestHandler):
       self.response.out.write(json.dumps(image_data))
     else:
       self.response.headers['Content-Type'] = 'image/png'
-      self.response.out.write(logo.picture)
+      self.response.out.write(str(logo.picture))
 
   def post(self):
     project_id = str(uuid.uuid1())

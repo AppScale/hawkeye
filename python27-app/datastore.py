@@ -18,6 +18,8 @@ import uuid
 import webapp2
 import wsgiref
 
+import utils
+
 SDK_CONSISTENCY_WAIT = .5
 
 class Project(db.Model):
@@ -179,6 +181,7 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class ZigZagQueryHandler(webapp2.RequestHandler):
   """ Queries that use a set of equality filters use the zigzag merge join 
@@ -786,6 +789,7 @@ class TestConcurrentTransactionHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 # The following test checks if entities can be found even after a delete
 # succeeds in a failed transaction.
@@ -990,6 +994,7 @@ class TestQueryingAfterFailedTxnHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestQueryPagination(unittest.TestCase):
   page_size = 3
@@ -1012,6 +1017,8 @@ class TestQueryPagination(unittest.TestCase):
 
   def setUp(self):
     self.errors = []
+    keys = TestModel.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
 
   def _init_entities(self):
     self.entities = [
@@ -1073,6 +1080,7 @@ class TestQueryPaginationHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestMaxGroupsInTxn(unittest.TestCase):
   fetchers = [
@@ -1109,6 +1117,7 @@ class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestIndexIntegrity(unittest.TestCase):
   def tearDown(self):
@@ -1163,6 +1172,7 @@ class TestIndexIntegrityHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestMultipleEqualityFilters(unittest.TestCase):
   def setUp(self):
@@ -1236,6 +1246,7 @@ class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestCursorWithZigZagMerge(unittest.TestCase):
   def tearDown(self):
@@ -1299,6 +1310,7 @@ class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestRepeatedProperties(unittest.TestCase):
   def tearDown(self):
@@ -1327,6 +1339,7 @@ class TestRepeatedPropertiesHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class TestCompositeProjection(unittest.TestCase):
   def tearDown(self):
@@ -1354,6 +1367,7 @@ class TestCompositeProjectionHandler(webapp2.RequestHandler):
     result = unittest.TextTestRunner().run(suite)
     if not result.wasSuccessful():
       self.error(500)
+      self.response.write(utils.format_errors(result))
 
 application = webapp.WSGIApplication([
   ('/python/datastore/project', ProjectHandler),
