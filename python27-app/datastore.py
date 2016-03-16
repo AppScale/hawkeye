@@ -184,7 +184,7 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
       self.response.write(utils.format_errors(result))
 
 class ZigZagQueryHandler(webapp2.RequestHandler):
-  """ Queries that use a set of equality filters use the zigzag merge join 
+  """ Queries that use a set of equality filters use the zigzag merge join
   algorithm.
   """
   def get(self):
@@ -195,14 +195,14 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
       # The color will never match what we are querying for.
       color = random.choice(["red", "green", "blue"])
       car = Cars(model=model, make=make, color=color)
-      
+
       non_set_cars.append(car)
     db.put(non_set_cars)
 
     set_cars = []
     for x in range(0, 3):
       car = Cars(model="SModel", make="Tesla", color="purple")
-      set_cars.append(car) 
+      set_cars.append(car)
     db.put(set_cars)
 
     second_set = []
@@ -230,7 +230,7 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
     if len(results) == 3 and len(results2) == 3:
       self.response.set_status(200)
     else:
-      logging.error("Result for ZigZaq query was %s and %s" % (str(results), 
+      logging.error("Result for ZigZaq query was %s and %s" % (str(results),
         str(results2)))
       self.response.set_status(404)
 
@@ -546,7 +546,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     try:
       num_employees = 4
-      seen_entities = set() 
+      seen_entities = set()
       self.set_up_data()
       query = Employee.all()
       result_list = query.fetch(1)
@@ -557,26 +557,26 @@ class ComplexCursorHandler(webapp2.RequestHandler):
           raise Exception('Unexpected kind from query')
         if result.key().id() in seen_entities:
           raise Exception('Saw same result twice')
-        seen_entities.add(result.key().id()) 
+        seen_entities.add(result.key().id())
         ctr = ctr + 1
         cursor = query.cursor()
         query.with_cursor(cursor)
         result_list = query.fetch(1)
-      if ctr != num_employees: 
+      if ctr != num_employees:
         raise Exception('Did not retrieve ' + str(num_employees) + ' Employees')
     except Exception:
-      status = {'success' : False}  
+      status = {'success' : False}
       self.response.out.write(json.dumps(status))
       raise
     finally:
       self.clean_up_data()
-    
+
     self.response.out.write(json.dumps(status))
 
   def set_up_data(self):
     company = Company(name = "AppScale")
-    company.put()  
-    
+    company.put()
+
     employee1 = Employee(name = "A", parent = company)
     employee1.put()
     employee2 = Employee(name = "B", parent = company)
@@ -594,7 +594,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     pn3.put()
     pn4 = PhoneNumber(work = "4444444444", parent = employee4)
     pn4.put()
-    
+
   def clean_up_data(self):
     db.delete(Company.all())
     db.delete(Employee.all())
