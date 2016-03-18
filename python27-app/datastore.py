@@ -22,6 +22,21 @@ import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
+def remove_db_entities(query):
+  """ Remove all DB entities that match a given query.
+
+  Args:
+    query: A DB query object.
+  """
+  batch_size = 200
+  while True:
+    entity_batch = query.fetch(batch_size)
+    entities_fetched = len(entity_batch)
+    db.delete(entity_batch)
+    time.sleep(SDK_CONSISTENCY_WAIT)
+    if entities_fetched < batch_size:
+      break
+
 class Project(db.Model):
   project_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
@@ -183,11 +198,11 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
-class ZigZagQueryHandler(webapp2.RequestHandler):
-  """ Queries that use a set of equality filters use the zigzag merge join
-  algorithm.
-  """
-  def get(self):
+class ZigZagQuery(unittest.TestCase):
+  def tearDown(self):
+    remove_db_entities(Cars.all())
+
+  def test_zigzag_query(self):
     non_set_cars = []
     for x in range(0, 10):
       model = random.choice(["SModel", "Civic", "S2000"])
@@ -216,23 +231,26 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
     q.filter("make =", "Tesla")
     q.filter("color =", "purple")
     results = q.fetch(100)
+    self.assertEqual(len(results), 3)
 
     q = Cars.all()
     q.filter("model =", "Camry")
     q.filter("make =", "Toyota")
     q.filter("color =", "gold")
-    results2 = q.fetch(100)
+    results = q.fetch(100)
+    self.assertEqual(len(results), 3)
 
-    db.delete(non_set_cars)
-    db.delete(set_cars)
-    db.delete(second_set)
-
-    if len(results) == 3 and len(results2) == 3:
-      self.response.set_status(200)
-    else:
-      logging.error("Result for ZigZaq query was %s and %s" % (str(results),
-        str(results2)))
-      self.response.set_status(404)
+class ZigZagQueryHandler(webapp2.RequestHandler):
+  """ Queries that use a set of equality filters use the zigzag merge join
+  algorithm.
+  """
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(ZigZagQuery))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+      self.response.write(utils.format_errors(result))
 
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
