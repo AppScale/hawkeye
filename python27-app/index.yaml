@@ -43,6 +43,19 @@ indexes:
   - name: name
     direction: desc
 
+- kind: NDBCompositeCar
+  properties:
+  - name: color
+  - name: model
+  - name: value
+
+- kind: NDBCompositeCar
+  properties:
+  - name: color
+  - name: model
+  - name: value
+    direction: desc
+
 - kind: NDBProject
   properties:
   - name: description

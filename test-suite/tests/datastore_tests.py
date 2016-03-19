@@ -506,6 +506,11 @@ class CompositeProjection(HawkeyeTestCase):
     response = self.http_get('/datastore/composite_projection')
     self.assertEquals(response.status, 200)
 
+class CursorQueries(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_queries')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -541,6 +546,7 @@ def suite(lang):
     suite.addTest(CursorWithZigzagMerge())
     suite.addTest(RepeatedProperties())
     suite.addTest(CompositeProjection())
+    suite.addTest(CursorQueries())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
