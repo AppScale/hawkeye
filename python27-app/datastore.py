@@ -1179,12 +1179,19 @@ class TestMultipleEqualityFilters(unittest.TestCase):
     Post(tags=['boo'], content='test').put()
     Post(tags=['baz'], content='test').put()
     Post(tags=['boo', 'baz'], content='test').put()
+
+    User(username='slothrop', brands=['brand1']).put()
+    User(username='prentice', brands=['brand2', 'brand3']).put()
+    User(username='bloat', brands=['brand1', 'brand2', 'brand3']).put()
     time.sleep(SDK_CONSISTENCY_WAIT)
 
   def tearDown(self):
     posts = Post.all().run()
     for post in posts:
       post.delete()
+
+    keys = User.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
     time.sleep(SDK_CONSISTENCY_WAIT)
 
   def test_multiple_equality_filters_for_single_prop(self):
@@ -1237,6 +1244,17 @@ class TestMultipleEqualityFilters(unittest.TestCase):
 
     query = Post.all().order('-date_added')\
       .filter('tags = ', 'baz').filter('tags = ', 'boo')
+    self.assertEqual(query.count(), 1)
+
+  def test_ndb_multiple_equality_for_single_prop(self):
+    query = User.query()
+    self.assertEqual(query.count(), 3)
+
+    query = User.query(User.brands == 'brand1')
+    self.assertEqual(query.count(), 2)
+
+    query = User.query(ndb.AND(User.brands == 'brand1',
+      User.brands == 'brand2', User.brands == 'brand3'))
     self.assertEqual(query.count(), 1)
 
 class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
