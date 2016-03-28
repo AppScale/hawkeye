@@ -1,3 +1,9 @@
+tests.blobstore_tests.DeleteBlobTest, ok
+tests.blobstore_tests.DownloadBlobTest, ok
+tests.blobstore_tests.QueryBlobByKeyTest, ok
+tests.blobstore_tests.QueryBlobByPropertyTest, ok
+tests.blobstore_tests.QueryBlobDataTest, ok
+tests.blobstore_tests.UploadBlobTest, ok
 tests.datastore_tests.AncestorQueryTest, ok
 tests.datastore_tests.ComplexQueryCursorTest, ok
 tests.datastore_tests.CompositeQueryTest, ok
@@ -9,6 +15,7 @@ tests.datastore_tests.KindlessAncestorQueryTest, ok
 tests.datastore_tests.KindlessQueryTest, ok
 tests.datastore_tests.LimitedResultQueryTest, ok
 tests.datastore_tests.OrderedResultQueryTest, ok
+tests.datastore_tests.ProjectionQueryTest, ok
 tests.datastore_tests.QueryByKeyNameTest, ok
 tests.datastore_tests.QueryCursorTest, ok
 tests.datastore_tests.SimpleKindAwareInsertTest, ok

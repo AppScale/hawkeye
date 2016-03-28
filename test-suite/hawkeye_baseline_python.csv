@@ -1,6 +1,7 @@
 tests.datastore_tests.AncestorQueryTest, ok
 tests.datastore_tests.ComplexQueryCursorTest, ok
 tests.datastore_tests.CompositeQueryTest, ok
+tests.datastore_tests.CursorQueries, ok
 tests.datastore_tests.DataStoreCleanupTest, ok
 tests.datastore_tests.KindAwareInsertWithParentTest, ok
 tests.datastore_tests.KindlessAncestorQueryTest, ok

@@ -210,8 +210,11 @@ class TransactionalFailedTaskTest(HawkeyeTestCase):
       else:
         sleep(1)
 
+class CleanUpTaskEntities(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/taskqueue/clean_up')
+    self.assertEquals(response.status, 200)
 
-   
 def suite(lang):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTest(PushQueueTest())
@@ -222,8 +225,8 @@ def suite(lang):
   suite.addTest(TaskEtaTest())
   suite.addTest(TransactionalTaskTest())
   suite.addTest(TransactionalFailedTaskTest())
+  suite.addTest(CleanUpTaskEntities())
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())
   return suite
-

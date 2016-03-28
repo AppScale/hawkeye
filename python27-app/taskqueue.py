@@ -1,4 +1,5 @@
 import datetime
+import time
 import utils
 import webapp2
 import wsgiref
@@ -7,6 +8,8 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.ext import webapp
+
+from datastore import SDK_CONSISTENCY_WAIT
 
 try:
   import json
@@ -165,12 +168,25 @@ class TaskCounterWorker(webapp2.RequestHandler):
     else:
       utils.process(self.request.get('key'))
 
+class CleanUpTaskEntities(webapp2.RequestHandler):
+  def get(self):
+    batch_size = 200
+    while True:
+      query = TaskEntity.all()
+      entity_batch = query.fetch(batch_size)
+      entities_fetched = len(entity_batch)
+      db.delete(entity_batch)
+      time.sleep(SDK_CONSISTENCY_WAIT)
+      if entities_fetched < batch_size:
+        break
+
 application = webapp.WSGIApplication([
   ('/python/taskqueue/counter', TaskCounterHandler),
   ('/python/taskqueue/worker', TaskCounterWorker),
   ('/python/taskqueue/transworker', TransactionalTaskWorker),
   ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
+  ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 
 if __name__ == '__main__':

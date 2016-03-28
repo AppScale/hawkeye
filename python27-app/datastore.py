@@ -22,6 +22,21 @@ import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
+def remove_db_entities(query):
+  """ Remove all DB entities that match a given query.
+
+  Args:
+    query: A DB query object.
+  """
+  batch_size = 200
+  while True:
+    entity_batch = query.fetch(batch_size)
+    entities_fetched = len(entity_batch)
+    db.delete(entity_batch)
+    time.sleep(SDK_CONSISTENCY_WAIT)
+    if entities_fetched < batch_size:
+      break
+
 class Project(db.Model):
   project_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
@@ -61,6 +76,11 @@ class User(ndb.Model):
   username = ndb.StringProperty(required=True)
   brands = ndb.StringProperty(repeated=True)
   status = ndb.StringProperty(default='pending')
+
+class NDBCompositeCar(ndb.Model):
+  model = ndb.StringProperty()
+  color = ndb.StringProperty()
+  value = ndb.IntegerProperty()
 
 class TestException(Exception):
   pass
@@ -183,11 +203,11 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
-class ZigZagQueryHandler(webapp2.RequestHandler):
-  """ Queries that use a set of equality filters use the zigzag merge join 
-  algorithm.
-  """
-  def get(self):
+class ZigZagQuery(unittest.TestCase):
+  def tearDown(self):
+    remove_db_entities(Cars.all())
+
+  def test_zigzag_query(self):
     non_set_cars = []
     for x in range(0, 10):
       model = random.choice(["SModel", "Civic", "S2000"])
@@ -195,14 +215,14 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
       # The color will never match what we are querying for.
       color = random.choice(["red", "green", "blue"])
       car = Cars(model=model, make=make, color=color)
-      
+
       non_set_cars.append(car)
     db.put(non_set_cars)
 
     set_cars = []
     for x in range(0, 3):
       car = Cars(model="SModel", make="Tesla", color="purple")
-      set_cars.append(car) 
+      set_cars.append(car)
     db.put(set_cars)
 
     second_set = []
@@ -216,23 +236,26 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
     q.filter("make =", "Tesla")
     q.filter("color =", "purple")
     results = q.fetch(100)
+    self.assertEqual(len(results), 3)
 
     q = Cars.all()
     q.filter("model =", "Camry")
     q.filter("make =", "Toyota")
     q.filter("color =", "gold")
-    results2 = q.fetch(100)
+    results = q.fetch(100)
+    self.assertEqual(len(results), 3)
 
-    db.delete(non_set_cars)
-    db.delete(set_cars)
-    db.delete(second_set)
-
-    if len(results) == 3 and len(results2) == 3:
-      self.response.set_status(200)
-    else:
-      logging.error("Result for ZigZaq query was %s and %s" % (str(results), 
-        str(results2)))
-      self.response.set_status(404)
+class ZigZagQueryHandler(webapp2.RequestHandler):
+  """ Queries that use a set of equality filters use the zigzag merge join
+  algorithm.
+  """
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(ZigZagQuery))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+      self.response.write(utils.format_errors(result))
 
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
@@ -546,7 +569,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     try:
       num_employees = 4
-      seen_entities = set() 
+      seen_entities = set()
       self.set_up_data()
       query = Employee.all()
       result_list = query.fetch(1)
@@ -557,26 +580,26 @@ class ComplexCursorHandler(webapp2.RequestHandler):
           raise Exception('Unexpected kind from query')
         if result.key().id() in seen_entities:
           raise Exception('Saw same result twice')
-        seen_entities.add(result.key().id()) 
+        seen_entities.add(result.key().id())
         ctr = ctr + 1
         cursor = query.cursor()
         query.with_cursor(cursor)
         result_list = query.fetch(1)
-      if ctr != num_employees: 
+      if ctr != num_employees:
         raise Exception('Did not retrieve ' + str(num_employees) + ' Employees')
     except Exception:
-      status = {'success' : False}  
+      status = {'success' : False}
       self.response.out.write(json.dumps(status))
       raise
     finally:
       self.clean_up_data()
-    
+
     self.response.out.write(json.dumps(status))
 
   def set_up_data(self):
     company = Company(name = "AppScale")
-    company.put()  
-    
+    company.put()
+
     employee1 = Employee(name = "A", parent = company)
     employee1.put()
     employee2 = Employee(name = "B", parent = company)
@@ -594,7 +617,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     pn3.put()
     pn4 = PhoneNumber(work = "4444444444", parent = employee4)
     pn4.put()
-    
+
   def clean_up_data(self):
     db.delete(Company.all())
     db.delete(Employee.all())
@@ -1082,6 +1105,305 @@ class TestQueryPaginationHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
+class TestCursorQueries(unittest.TestCase):
+  def setUp(self):
+    self.parent = Project(
+      project_id=''.join(random.choice(string.digits) for _ in range(10)),
+      name=''.join(random.choice(string.ascii_letters) for _ in range(10)),
+      description='test',
+      rating=random.randint(0, 1000),
+      license='test',
+    )
+    self.parent.put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+  def tearDown(self):
+    keys = NDBCompositeCar.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+    remove_db_entities(Module.all().ancestor(self.parent))
+    remove_db_entities(Module.all())
+    self.parent.delete()
+    remove_db_entities(CompositeCars.all())
+
+  def fetch_with_db_cursor(self, query, page_size):
+    """ Use a cursor to fetch DB entities.
+
+    Args:
+      query: A DB query object.
+      page_size: An integer indicating the page size for each fetch.
+    Returns:
+      A list of entities.
+    """
+    results = []
+    logging.debug('Fetching DB entities with page size: {}'.format(page_size))
+    results += query.fetch(page_size)
+
+    cursor = query.cursor()
+    while True:
+      query.with_cursor(start_cursor=cursor)
+      page = query.fetch(page_size)
+      results += page
+      if len(page) < page_size:
+        break
+      cursor = query.cursor()
+
+    return results
+
+  def fetch_with_ndb_cursor(self, query, page_size, end_cursor=None):
+    """ Use a cursor to fetch NDB entities.
+
+    Args:
+      query: An NDB query object.
+      page_size: An integer indicating the page size for each fetch.
+    Returns:
+      A list of entities and a list of cursors used.
+    """
+    results = []
+    cursors = []
+    logging.debug('Fetching NDB entities with page size: {}'.format(page_size))
+    page, cursor, has_more = query.fetch_page(page_size, start_cursor=None,
+      end_cursor=end_cursor)
+    results += page
+    while has_more and cursor:
+      cursors.append(cursor)
+      page, cursor, has_more = query.fetch_page(page_size, start_cursor=cursor,
+        end_cursor=end_cursor)
+      results += page
+    return results, cursors
+
+  def test_composite_db_cursor(self):
+    color = 'Color_1'
+    make = 'Make_1'
+    model = 'Model_1'
+    total_entities = random.randint(0, 300)
+    page_size = random.randint(5, 40)
+    logging.debug('Inserting {} CompositeCars'.format(total_entities))
+
+    for _ in range(total_entities):
+      composite_car = CompositeCars(
+        color=color,
+        make=make,
+        model=model,
+        value=random.randint(0, total_entities)
+      )
+      composite_car.put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = CompositeCars().all().\
+      filter('make =', 'Make_1').\
+      filter('color =', color).\
+      filter('model =', model).\
+      filter('value >=', 0)
+    results = self.fetch_with_db_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    # Make sure the values were fetched in ascending order.
+    highest_value = 0
+    for result in results:
+      self.assertGreaterEqual(result.value, highest_value)
+      highest_value = result.value
+
+    query = CompositeCars().all().\
+      filter('make =', 'Make_1').\
+      filter('color =', color).\
+      filter('model =', model).\
+      order('-value')
+    results = self.fetch_with_db_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    # Make sure the values were fetched in descending order.
+    lowest_value = total_entities
+    for result in results:
+      self.assertLessEqual(result.value, lowest_value)
+      lowest_value = result.value
+
+  def test_composite_ndb_cursor(self):
+    color = 'Color_1'
+    model = 'Model_1'
+    total_entities = random.randint(0, 300)
+    page_size = random.randint(5, 40)
+    logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
+
+    for _ in range(total_entities):
+      NDBCompositeCar(
+        color=color,
+        model=model,
+        value=random.randint(0, total_entities),
+      ).put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = NDBCompositeCar.query(
+      NDBCompositeCar.color == color,
+      NDBCompositeCar.model == model,
+      NDBCompositeCar.value >= 0
+    )
+    results, _ = self.fetch_with_ndb_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    # Make sure the values were fetched in ascending order.
+    highest_value = 0
+    for result in results:
+      self.assertGreaterEqual(result.value, highest_value)
+      highest_value = result.value
+
+    query = NDBCompositeCar.query(
+      NDBCompositeCar.color == color,
+      NDBCompositeCar.model == model
+    ).order(-NDBCompositeCar.value)
+    results, _ = self.fetch_with_ndb_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    # Make sure the values were fetched in descending order.
+    lowest_value = total_entities
+    for result in results:
+      self.assertLessEqual(result.value, lowest_value)
+      lowest_value = result.value
+
+  def test_end_cursor(self):
+    color = 'Color_1'
+    model = 'Model_1'
+    total_entities = random.randint(20, 200)
+    page_size = random.randint(10, 19)
+    logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
+
+    for _ in range(total_entities):
+      NDBCompositeCar(
+        color=color,
+        model=model,
+        value=random.randint(0, total_entities),
+      ).put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = NDBCompositeCar.query(NDBCompositeCar.value >= 0)
+    results, end_cursors = self.fetch_with_ndb_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    for cursor_num, end_cursor in enumerate(end_cursors):
+      logging.debug('Fetching up to {}'.format(end_cursor))
+      results, _ = self.fetch_with_ndb_cursor(query, page_size,
+        end_cursor=end_cursor)
+
+      # Make sure the results up to each end cursor were fetched.
+      self.assertEqual(len(results), page_size * (cursor_num + 1))
+
+  def test_composite_end_cursor(self):
+    color = 'Color_1'
+    model = 'Model_1'
+    total_entities = random.randint(20, 200)
+    page_size = random.randint(10, 19)
+    logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
+
+    for _ in range(total_entities):
+      NDBCompositeCar(
+        color=color,
+        model=model,
+        value=random.randint(0, total_entities),
+      ).put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = NDBCompositeCar.query(
+      NDBCompositeCar.color == color,
+      NDBCompositeCar.model == model,
+      NDBCompositeCar.value >= 0,
+    )
+    results, end_cursors = self.fetch_with_ndb_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+    # Make sure the values were fetched in ascending order.
+    highest_value = 0
+    for result in results:
+      self.assertGreaterEqual(result.value, highest_value)
+      highest_value = result.value
+
+    for cursor_num, end_cursor in enumerate(end_cursors):
+      logging.debug('Fetching up to {}'.format(end_cursor))
+      results, _ = self.fetch_with_ndb_cursor(query, page_size,
+        end_cursor=end_cursor)
+
+      # Make sure the results up to each end cursor were fetched.
+      self.assertEqual(len(results), page_size * (cursor_num + 1))
+
+      # Make sure the values were fetched in ascending order.
+      highest_value = 0
+      for result in results:
+        self.assertGreaterEqual(result.value, highest_value)
+        highest_value = result.value
+
+  def test_kindless_cursor(self):
+    total_entities = random.randint(0, 300)
+    page_size = random.randint(5, 40)
+
+    logging.debug('Inserting {} Modules'.format(total_entities))
+    first_module = None
+    last_module = None
+    padding_size = len(str(total_entities))
+    for entity_num in range(total_entities):
+      name = 'kindless_cursor_{}'.format(str(entity_num).zfill(padding_size))
+      module = Module(
+        module_id=str(uuid.uuid1()),
+        name=name,
+        description='test',
+        key_name=name,
+      )
+      module.put()
+      if entity_num == 0:
+        first_module = module
+      if entity_num == total_entities - 1:
+        last_module = module
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = db.Query().filter('__key__ >=', first_module).\
+      filter('__key__ <=', last_module)
+    results = self.fetch_with_db_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+  def test_kindless_ancestor_cursor(self):
+    total_entities = random.randint(0, 300)
+    page_size = random.randint(5, 40)
+
+    logging.debug('Inserting {} Modules'.format(total_entities))
+    for _ in range(total_entities):
+      name = ''.join(random.choice(string.ascii_letters) for _ in range(20))
+      module = Module(
+        module_id=str(uuid.uuid1()),
+        name=name,
+        description='test',
+        parent=self.parent,
+        key_name=name,
+      )
+      module.put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = db.Query().ancestor(self.parent).filter('__key__ >', self.parent)
+    results = self.fetch_with_db_cursor(query, page_size)
+
+    # Make sure all of the results were fetched.
+    self.assertEqual(len(results), total_entities)
+
+class TestCursorQueriesHandler(webapp.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(TestCursorQueries))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+      self.response.write(utils.format_errors(result))
+
 class TestMaxGroupsInTxn(unittest.TestCase):
   fetchers = [
     ("Get (unordered)",
@@ -1405,6 +1727,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/concurrent_transactions', TestConcurrentTransactionHandler),
   ('/python/datastore/querying_after_failed_txn', TestQueryingAfterFailedTxnHandler),
   ('/python/datastore/query_pagination', TestQueryPaginationHandler),
+  ('/python/datastore/cursor_queries', TestCursorQueriesHandler),
   ('/python/datastore/max_groups_in_txn', TestMaxGroupsInTxnHandler),
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
