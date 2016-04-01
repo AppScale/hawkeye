@@ -1,5 +1,6 @@
 queue:
 - name: hawkeyepython-push-queue
+  rate: 5/s
 
 - name: hawkeyepython-pull-queue
   mode: pull
