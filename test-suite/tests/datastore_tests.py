@@ -529,7 +529,7 @@ def suite(lang):
   suite.addTest(CompositeQueryTest())
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
-  suite.addTest(QueryCursorTest())  
+  suite.addTest(QueryCursorTest())
   suite.addTest(ComplexQueryCursorTest())
   suite.addTest(CountQueryTest())
 
