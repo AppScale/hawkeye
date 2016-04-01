@@ -25,6 +25,12 @@ indexes:
   - name: value
     direction: desc
 
+- kind: CompositeCars
+  ancestor: yes
+  properties:
+  - name: value
+    direction: desc
+
 - kind: Module
   ancestor: yes
   properties:
@@ -53,6 +59,12 @@ indexes:
   properties:
   - name: color
   - name: model
+  - name: value
+    direction: desc
+
+- kind: NDBCompositeCar
+  ancestor: yes
+  properties:
   - name: value
     direction: desc
 

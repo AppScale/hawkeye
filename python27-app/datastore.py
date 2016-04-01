@@ -203,6 +203,91 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
+class IndexVersatility(unittest.TestCase):
+  def tearDown(self):
+    remove_db_entities(Counter.all())
+    remove_db_entities(CompositeCars.all())
+
+    keys = NDBCompositeCar.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+    keys = User.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+  def log_index(self, index):
+    """ This should print what index the query actually used. """
+    logging.info('Index kind: {}'.format(index.kind()))
+    logging.info('Has ancestor? {}'.format(index.has_ancestor))
+    for name, direction in index.properties():
+      logging.info('Property name: {}'.format(name))
+      if direction == db.Index.DESCENDING:
+        logging.info('Sort direction: DESC')
+      else:
+        logging.info('Sort direction: ASC')
+
+  def test_index_versatility(self):
+    """
+    This test assumes that the following index does not exist:
+    - kind: NDBCompositeCar
+      ancestor: yes
+      properties:
+      - name: value
+
+    The datastore should use the following descending index instead:
+    - kind: NDBCompositeCar
+      ancestor: yes
+      properties:
+      - name: value
+        direction: desc
+    """
+    parent = User(username='car_enthusiast').put()
+    for value in range(10):
+      NDBCompositeCar(parent=parent, value=value).put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = NDBCompositeCar.query(ancestor=parent).\
+      filter(NDBCompositeCar.value > 4)
+    results = query.fetch(20)
+    self.assertEqual(len(results), 5)
+    values = [result.value for result in results]
+    self.assertListEqual([5, 6, 7, 8, 9], values)
+
+  def test_db_index_versatility(self):
+    """
+    This test assumes that the following index does not exist:
+    - kind: CompositeCars
+      ancestor: yes
+      properties:
+      - name: value
+
+    The datastore should use the following descending index instead:
+    - kind: CompositeCars
+      ancestor: yes
+      properties:
+      - name: value
+        direction: desc
+    """
+    parent = Counter(counter=1).put()
+    for value in range(10):
+      CompositeCars(parent=parent, value=value).put()
+    time.sleep(SDK_CONSISTENCY_WAIT)
+
+    query = CompositeCars.all().ancestor(parent).filter('value >', 4)
+    self.assertEqual(query.count(), 5)
+    query.fetch(100)
+    for index in query.index_list():
+      self.log_index(index)
+
+class IndexVersatilityHandler(webapp2.RedirectHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(IndexVersatility))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+      self.response.write(utils.format_errors(result))
+
 class ZigZagQuery(unittest.TestCase):
   def tearDown(self):
     remove_db_entities(Cars.all())
@@ -1730,6 +1815,7 @@ application = webapp.WSGIApplication([
   ('/python/datastore/cursor_queries', TestCursorQueriesHandler),
   ('/python/datastore/max_groups_in_txn', TestMaxGroupsInTxnHandler),
   ('/python/datastore/index_integrity', TestIndexIntegrityHandler),
+  ('/python/datastore/index_versatility', IndexVersatilityHandler),
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),

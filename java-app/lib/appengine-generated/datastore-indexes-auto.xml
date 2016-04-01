@@ -20,4 +20,8 @@
         <property name="rating" direction="asc"/>
     </datastore-index>
 
+    <datastore-index kind="Employee" ancestor="true" source="manual">
+        <property name="value" direction="desc"/>
+    </datastore-index>
+
 </datastore-indexes>
