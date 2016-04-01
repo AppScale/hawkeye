@@ -511,6 +511,11 @@ class CursorQueries(HawkeyeTestCase):
     response = self.http_get('/datastore/cursor_queries')
     self.assertEquals(response.status, 200)
 
+class IndexVersatility(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/index_versatility')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -529,9 +534,10 @@ def suite(lang):
   suite.addTest(CompositeQueryTest())
   suite.addTest(SimpleTransactionTest())
   suite.addTest(CrossGroupTransactionTest())
-  suite.addTest(QueryCursorTest())  
+  suite.addTest(QueryCursorTest())
   suite.addTest(ComplexQueryCursorTest())
   suite.addTest(CountQueryTest())
+  suite.addTest(IndexVersatility())
 
   if lang == 'python':
     suite.addTest(ZigZagQueryTest())

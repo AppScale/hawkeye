@@ -64,6 +64,10 @@
         <servlet-name>JPAHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.jpa.JPAHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>IndexVersatilityHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.datastore.IndexVersatilityHandlerServlet</servlet-class>
+    </servlet>
 
 
     <servlet>
@@ -202,6 +206,10 @@
     <servlet-mapping>
         <servlet-name>JPAHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/jpa_project</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>IndexVersatilityHandlerServlet</servlet-name>
+        <url-pattern>/java/datastore/index_versatility</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
