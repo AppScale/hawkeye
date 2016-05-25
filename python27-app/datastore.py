@@ -1261,8 +1261,8 @@ class TestCursorQueries(unittest.TestCase):
     color = 'Color_1'
     make = 'Make_1'
     model = 'Model_1'
-    total_entities = random.randint(0, 300)
-    page_size = random.randint(5, 40)
+    total_entities = random.randint(1, 50)
+    page_size = random.randint(5, 20)
     logging.debug('Inserting {} CompositeCars'.format(total_entities))
 
     for _ in range(total_entities):
@@ -1310,8 +1310,8 @@ class TestCursorQueries(unittest.TestCase):
   def test_composite_ndb_cursor(self):
     color = 'Color_1'
     model = 'Model_1'
-    total_entities = random.randint(0, 300)
-    page_size = random.randint(5, 40)
+    total_entities = random.randint(1, 50)
+    page_size = random.randint(5, 20)
     logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
 
     for _ in range(total_entities):
@@ -1356,7 +1356,7 @@ class TestCursorQueries(unittest.TestCase):
   def test_end_cursor(self):
     color = 'Color_1'
     model = 'Model_1'
-    total_entities = random.randint(20, 200)
+    total_entities = random.randint(20, 50)
     page_size = random.randint(10, 19)
     logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
 
@@ -1385,7 +1385,7 @@ class TestCursorQueries(unittest.TestCase):
   def test_composite_end_cursor(self):
     color = 'Color_1'
     model = 'Model_1'
-    total_entities = random.randint(20, 200)
+    total_entities = random.randint(20, 50)
     page_size = random.randint(10, 19)
     logging.debug('Inserting {} NDBCompositeCars'.format(total_entities))
 
@@ -1428,8 +1428,8 @@ class TestCursorQueries(unittest.TestCase):
         highest_value = result.value
 
   def test_kindless_cursor(self):
-    total_entities = random.randint(0, 300)
-    page_size = random.randint(5, 40)
+    total_entities = random.randint(1, 50)
+    page_size = random.randint(5, 20)
 
     logging.debug('Inserting {} Modules'.format(total_entities))
     first_module = None
@@ -1458,8 +1458,8 @@ class TestCursorQueries(unittest.TestCase):
     self.assertEqual(len(results), total_entities)
 
   def test_kindless_ancestor_cursor(self):
-    total_entities = random.randint(0, 300)
-    page_size = random.randint(5, 40)
+    total_entities = random.randint(1, 50)
+    page_size = random.randint(5, 20)
 
     logging.debug('Inserting {} Modules'.format(total_entities))
     for _ in range(total_entities):
