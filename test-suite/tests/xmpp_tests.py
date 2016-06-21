@@ -13,6 +13,8 @@ class SendAndReceiveTest(HawkeyeTestCase):
   Does not work on the SDK, because it does not send or receive
   XMPP messages.
   """
+  def tearDown(self):
+    self.http_delete('/xmpp')
 
   def run_hawkeye_test(self):
     # first, clean up any old data that may have been laying
