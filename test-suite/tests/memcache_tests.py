@@ -520,6 +520,38 @@ class MemcacheIncrTest(HawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '19')
 
+class MemcacheDecrTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+    value = 1
+    response = self.http_get('/memcache/incr?key={0}&value={1}'\
+                              .format(key, value))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_post('/memcache/incr',
+      'key={0}&delta={1}&async=false'.format(key, -1))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache?key={0}'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(str(entry_info['value']), '0')
+
+    response = self.http_post('/memcache/incr',
+      'key={0}&delta={1}&async=false'.format(key, -1))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertTrue(entry_info['success'])
+
+    response = self.http_get('/memcache?key={0}'.format(key))
+    self.assertEquals(response.status, 200)
+    entry_info = json.loads(response.payload)
+    self.assertEquals(str(entry_info['value']), '0')
+
 class MemcacheAsyncIncrTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -604,6 +636,7 @@ def suite(lang):
   suite.addTest(MemcacheMultiSetTest())
   suite.addTest(MemcacheMultiDeleteTest()) 
   suite.addTest(MemcacheIncrTest())
+  suite.addTest(MemcacheDecrTest())
   suite.addTest(MemcacheIncrInitTest())
   suite.addTest(MemcacheCasTest()) 
  

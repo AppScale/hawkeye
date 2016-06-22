@@ -36,6 +36,7 @@ tests.images_tests.ImageUploadTest, ok
 tests.memcache_tests.MemcacheAddTest, ok
 tests.memcache_tests.MemcacheCasTest, ok
 tests.memcache_tests.MemcacheDeleteTest, ok
+tests.memcache_tests.MemcacheDecrTest, ok
 tests.memcache_tests.MemcacheIncrTest, ok
 tests.memcache_tests.MemcacheIncrInitTest, ok
 tests.memcache_tests.MemcacheKeyExpiryTest, ok
