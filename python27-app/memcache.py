@@ -57,7 +57,10 @@ class MemcacheIncrHandler(webapp2.RequestHandler):
     postincrval = -1000
     if not initval:
       initval = 0
-    postincrval = memcache.incr(key, long(delta), None, long(initval))
+    if long(delta) > 0:
+      postincrval = memcache.incr(key, long(delta), None, long(initval))
+    else:
+      postincrval = memcache.decr(key, -long(delta), None, long(initval))
     self.response.headers['Content-Type'] = "application/json"
     self.response.set_status(200)
     self.response.out.write(
@@ -72,7 +75,6 @@ class MemcacheIncrHandler(webapp2.RequestHandler):
       self.response.out.write(json.dumps({ 'success' : True }))
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
-
 
 class MemcacheMultiKeyHandler(webapp2.RequestHandler):
 
