@@ -1,11 +1,12 @@
 import httplib
 import json
 import os
+import ssl
 import sys
+
 from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
 from unittest.suite import TestSuite
-import ssl
 
 HOST = None
 PORT = -1

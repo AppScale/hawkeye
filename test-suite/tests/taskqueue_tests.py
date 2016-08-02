@@ -1,10 +1,10 @@
-import json
-from time import sleep
-import uuid
 import datetime
-from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
+import json
+import uuid
+from time import sleep
 
-__author__ = 'hiranya'
+from hawkeye_utils import HawkeyeTestCase
+from hawkeye_utils import HawkeyeTestSuite
 
 class PushQueueTest(HawkeyeTestCase):
   def run_hawkeye_test(self):

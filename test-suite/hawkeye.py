@@ -3,19 +3,19 @@
 hawkeye.py: Run API fidelity tests on AppScale.
 """
 
+import csv
+import optparse
+import os
+import StringIO
 import sys
 if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 import hawkeye_utils
-import optparse
-import os
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
 from tests import cron_tests
-import csv
-import StringIO
 
 # We want to proceed nicely on systems that don't have termcolor installed.
 try:
