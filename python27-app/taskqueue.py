@@ -17,8 +17,6 @@ except ImportError:
   import simplejson as json
 
 
-__author__ = 'hiranya'
-
 UPDATED_BY_TXN = "TXN_UPDATE"
 UPDATED_BY_TQ = "TQ_UPDATE"
 
