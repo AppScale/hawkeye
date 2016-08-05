@@ -20,15 +20,59 @@ except ImportError:
 UPDATED_BY_TXN = "TXN_UPDATE"
 UPDATED_BY_TQ = "TQ_UPDATE"
 
+# Default Push Queue.
+DEFAULT_PUSH_QUEUE = 'default'
+
+# From the GAE docs:
+# A queue name can contain uppercase and lowercase letters, numbers,
+# and hyphens. The maximum length for a queue name is 100 characters.
 
 # The name of the queue that is used for push queue operations.
-# We include a dash in here to test regressions where the task queue system does
-# not handle dashes properly.
-PUSH_QUEUE_NAME = "hawkeyepython-push-queue"
+PUSH_QUEUE_NAME = "hawkeyepython-PushQueue-0"
+# The name of the queue that is used for pull queue operations.
+PULL_QUEUE_NAME = "hawkeyepython-PullQueue-0"
 
 
 class TaskEntity(db.Model):
   value = db.StringProperty(required=True)
+
+
+class QueueHandler(webapp2.RequestHandler):
+  def get(self):
+    results = {'queues': [], 'exists': []}
+    self.response.set_status(200)
+
+    queue = 'default'
+    results['queues'].append(queue)
+    try:
+      taskqueue.Queue(queue).\
+        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
+      results['exists'].append(True)
+    except taskqueue.UnknownQueueError:
+      self.response.set_status(404)
+      results['exists'].append(False)
+
+    queue = DEFAULT_PUSH_QUEUE
+    results['queues'].append(queue)
+    try:
+      taskqueue.Queue(queue).\
+        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
+      results['exists'].append(True)
+    except taskqueue.UnknownQueueError:
+      self.response.set_status(404)
+      results['exists'].append(False)
+
+    queue = PULL_QUEUE_NAME
+    results['queues'].append(queue)
+    try:
+      taskqueue.Queue(queue).\
+        add(taskqueue.Task(payload='this is a fake payload'))
+      results['exists'].append(True)
+    except taskqueue.UnknownQueueError:
+      self.response.set_status(404)
+      results['exists'].append(False)
+
+    self.response.out.write(json.dumps(results))
 
 class TaskCounterHandler(webapp2.RequestHandler):
   def get(self):
@@ -42,7 +86,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
       else:
         self.response.set_status(404)
     elif stats is not None and stats == 'true':
-      statsResult = taskqueue.QueueStatistics.fetch(PUSH_QUEUE_NAME)
+      statsResult = taskqueue.QueueStatistics.fetch(DEFAULT_PUSH_QUEUE)
       self.response.headers['Content-Type'] = "application/json"
       result = {
         'queue' : statsResult.queue.name,
@@ -63,20 +107,20 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
     if backend is not None and backend == 'true':
       taskqueue.add(url='/python/taskqueue/worker',
-        params={'key': key}, target='hawkeyepython', queue_name=PUSH_QUEUE_NAME)
+        params={'key': key}, target='hawkeyepython', queue_name=DEFAULT_PUSH_QUEUE)
     elif defer is not None and defer == 'true':
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
       taskqueue.add(url='/python/taskqueue/worker?key=' + key, method='GET',
-        queue_name=PUSH_QUEUE_NAME)
+        queue_name=DEFAULT_PUSH_QUEUE)
     elif eta is not None and eta != '':
       time_now = datetime.datetime.now()
       eta = time_now + datetime.timedelta(0, long(eta))
       taskqueue.add(url='/python/taskqueue/worker', eta=eta, params={'key': key,
-        'eta': 'true'}, queue_name=PUSH_QUEUE_NAME)
+        'eta': 'true'}, queue_name=DEFAULT_PUSH_QUEUE)
     else:
       taskqueue.add(url='/python/taskqueue/worker', params={'key': key,
-        'retry': retry}, queue_name=PUSH_QUEUE_NAME)
+        'retry': retry}, queue_name=DEFAULT_PUSH_QUEUE)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
@@ -105,7 +149,7 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
   def post(self):
     def task_txn(key, throw_exception):
       taskqueue.add(url='/python/taskqueue/transworker',
-        params={'key': key}, transactional=True, queue_name=PUSH_QUEUE_NAME)
+        params={'key': key}, transactional=True, queue_name=DEFAULT_PUSH_QUEUE)
       # Enqueue a task update a key, assert that value
       task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key) 
       task_ent.put()
@@ -167,18 +211,23 @@ class TaskCounterWorker(webapp2.RequestHandler):
       utils.process(self.request.get('key'))
 
 class CleanUpTaskEntities(webapp2.RequestHandler):
-  def get(self):
+  def post(self):
     batch_size = 200
     while True:
       query = TaskEntity.all()
       entity_batch = query.fetch(batch_size)
+      if not entity_batch:
+        self.response.set_status(200)
+        return
       entities_fetched = len(entity_batch)
       db.delete(entity_batch)
       time.sleep(SDK_CONSISTENCY_WAIT)
       if entities_fetched < batch_size:
         break
+    self.response.set_status(200)
 
 application = webapp.WSGIApplication([
+  ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
   ('/python/taskqueue/worker', TaskCounterWorker),
   ('/python/taskqueue/transworker', TransactionalTaskWorker),

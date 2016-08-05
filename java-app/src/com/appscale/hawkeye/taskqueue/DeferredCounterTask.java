@@ -11,7 +11,5 @@ public class DeferredCounterTask implements DeferredTask {
     }
 
     @Override
-    public void run() {
-        TaskUtils.process(key);
-    }
+    public void run() { TaskUtils.process(key); }
 }

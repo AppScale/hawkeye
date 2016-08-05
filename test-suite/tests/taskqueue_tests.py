@@ -134,6 +134,18 @@ class BackendTaskTest(PushQueueTest):
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
+class QueueExistsTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_get('/taskqueue/exists')
+    self.assertEquals(response.status, 200)
+
+    queue_info = json.loads(response.payload)
+
+    # Expected Queues:
+    # 'default', 'hawkeyepython-PushQueue-0', 'hawkeyepython-PullQueue-0'
+    self.assertEquals(len(queue_info['queues']), 3)
+    self.assertEquals(queue_info['exists'], [True, True, True])
+
 class QueueStatisticsTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/taskqueue/counter?stats=true')
@@ -144,8 +156,7 @@ class QueueStatisticsTest(HawkeyeTestCase):
 class PullQueueTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
-    response = self.http_post('/taskqueue/pull',
-      'key={0}'.format(key))
+    response = self.http_post('/taskqueue/pull', 'key={0}'.format(key))
     task_info = json.loads(response.payload)
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['status'])
@@ -212,20 +223,24 @@ class TransactionalFailedTaskTest(HawkeyeTestCase):
 
 class CleanUpTaskEntities(HawkeyeTestCase):
   def run_hawkeye_test(self):
-    response = self.http_get('/taskqueue/clean_up')
+    response = self.http_post('/taskqueue/clean_up', '')
     self.assertEquals(response.status, 200)
 
 def suite(lang):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
+  suite.addTest(QueueExistsTest())
   suite.addTest(PushQueueTest())
   suite.addTest(DeferredTaskTest())
   suite.addTest(QueueStatisticsTest())
   suite.addTest(PullQueueTest())
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
-  suite.addTest(TransactionalTaskTest())
-  suite.addTest(TransactionalFailedTaskTest())
-  suite.addTest(CleanUpTaskEntities())
+
+  if lang == 'python':
+    suite.addTest(TransactionalTaskTest())
+    suite.addTest(TransactionalFailedTaskTest())
+    suite.addTest(CleanUpTaskEntities())
+
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
   #suite.addTest(BackendTaskTest())

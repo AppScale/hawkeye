@@ -24,6 +24,7 @@
             </fileset>
             <fileset dir="lib/lib">
                 <include name="**/commons-fileupload*.jar" />
+                <include name="**/json-*.jar" />
             </fileset>
             <fileset dir="${sdk.dir}/lib/opt/user">
                 <include name="appengine-api-labs/v1/*.jar" />
