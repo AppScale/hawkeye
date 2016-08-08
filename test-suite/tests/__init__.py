@@ -1,1 +1,1 @@
-__author__ = 'hiranya'
+""" Hawkeye testing suite for GAE API fidelity. """

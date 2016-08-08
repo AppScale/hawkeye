@@ -1,21 +1,19 @@
 #!/usr/bin/python
-"""
-hawkeye.py: Run API fidelity tests on AppScale.
-"""
+""" hawkeye.py: Run API fidelity tests on AppScale. """
 
+import csv
+import optparse
+import os
+import StringIO
 import sys
 if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 import hawkeye_utils
-import optparse
-import os
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
 from tests import cron_tests
-import csv
-import StringIO
 
 # We want to proceed nicely on systems that don't have termcolor installed.
 try:
@@ -28,17 +26,15 @@ except ImportError:
 
     Args:
       msg: string to be printed stdout.
-      color: this argument is ignored, inclued for compatability with
+      color: this argument is ignored, included for compatibility with
         termcolor.cprint().
-      end: line-ending charcter, typically a new-line or empty string.
+      end: line-ending character, typically a new-line or empty string.
     """
     sys.stdout.write(msg)
     if end is not '':
       sys.stdout.write(end)
 
-__author__ = 'hiranya,Brian'
-
-SUPPORTED_LANGUAGES = [ 'java', 'python' ]
+SUPPORTED_LANGUAGES = ['java', 'python']
 
 def init_test_suites(lang):
   """
@@ -183,7 +179,7 @@ if __name__ == '__main__':
   ran_suites = {}
   for suite in suites.values():
     # Capture output from the test suites to a string.
-    buff =  StringIO.StringIO()
+    buff = StringIO.StringIO()
     runner = hawkeye_utils.HawkeyeTestRunner(suite)
     runner.set_stream(buff)
     runner.run_suite()
@@ -218,7 +214,7 @@ if __name__ == '__main__':
   test_added_buffer = ''
   tests_ommitted = 0
   test_ommitted_buffer = ''
-  test_results = {} #Dict to count the various result values.
+  test_results = {} # Dict to count the various result values.
   for key in ran_suites.keys():
     # Add to the count (i.e. how many 'ok', how many 'FAIL'...).
     value = ran_suites[key]
@@ -246,7 +242,6 @@ if __name__ == '__main__':
   print str(tests_matched)+" tests match baseline result"
   print str(tests_no_match)+" tests did not match baseline result"
   if options.verbose_baseline and tests_no_match > 0:
-    #print test_no_match_buffer,
     cprint(test_no_match_buffer, 'red', end='')
   print str(tests_added)+" tests run, but not found in baseline"
   if options.verbose_baseline and tests_added > 0:
