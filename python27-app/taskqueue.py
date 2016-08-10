@@ -66,7 +66,7 @@ class QueueHandler(webapp2.RequestHandler):
     results['queues'].append(queue)
     try:
       taskqueue.Queue(queue).\
-        add(taskqueue.Task(payload='this is a fake payload'))
+        add(taskqueue.Task(payload='this is a fake payload', method='PULL'))
       results['exists'].append(True)
     except taskqueue.UnknownQueueError:
       self.response.set_status(404)
