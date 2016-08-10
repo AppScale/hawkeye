@@ -129,7 +129,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
 class PullTaskHandler(webapp2.RequestHandler):
   def get(self):
-    q = taskqueue.Queue('hawkeyepython-pull-queue')
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
     tasks = q.lease_tasks(3600, 100)
     result = []
     for task in tasks:
@@ -140,7 +140,7 @@ class PullTaskHandler(webapp2.RequestHandler):
 
   def post(self):
     key = self.request.get('key')
-    q = taskqueue.Queue('hawkeyepython-pull-queue')
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.add([taskqueue.Task(payload=key, method='PULL')])
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
