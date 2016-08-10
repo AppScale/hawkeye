@@ -1,10 +1,13 @@
 import datetime
 import time
+import urllib
 import utils
 import webapp2
 import wsgiref
 
 from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch_errors
 from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -145,6 +148,148 @@ class PullTaskHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
+class RESTPullQueueHandler(webapp2.RequestHandler):
+  def get(self):
+    key = self.request.get('key', None)
+    test = self.request.get('test', None)
+
+    url_prefix = '{scheme}://{host}:{port}' \
+      '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
+        scheme='http',
+        host='localhost',
+        port='64839',
+        app_id='hawkeyepython27',
+        queue=PULL_QUEUE_NAME)
+
+    # Retrieve a Pull task.
+    if test == 'get':
+      url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
+                                                  task_id=key)
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+
+  def post(self):
+    key = self.request.get('key', None)
+    test = self.request.get('test', None)
+    groupByTag = self.request.get('groupByTag', False)
+    tag = self.request.get('tag', None)
+
+    url_prefix = '{scheme}://{host}:{port}' \
+      '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
+        scheme='http',
+        host='localhost',
+        port='64839',
+        app_id='hawkeyepython27',
+        queue=PULL_QUEUE_NAME)
+
+    # Insert a Pull task.
+    if test == 'insert':
+      url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
+      payload = {
+        "id": key,
+        "payloadBase64": "1234",
+        "retry_count": 1
+      }
+      if tag:
+        payload['tag'] = tag
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(
+          url,
+          payload=json.dumps(payload),
+          method='POST'
+        )
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      # Response is a tuple of (content, status_code, headers) coming from
+      # URLFetch API.
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        logging.warn(tq_response.content)
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'lease':
+      url = '{url_prefix}/tasks/lease'.format(url_prefix=url_prefix)
+      payload = {
+        "leaseSecs": 60,
+        "numTasks": 1000
+      }
+
+      if groupByTag:
+        payload['groupByTag'] = groupByTag
+        if tag:
+          payload['tag'] = tag
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(
+          url,
+          payload=urllib.urlencode(payload),
+          method='POST',
+        )
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        tasks = json.loads(tq_response.content)['items']
+        logging.warn(tasks)
+        self.response.out.write(
+          json.dumps({'success': True, 'tasks': tasks}))
+        return
+      else:
+        logging.warn(tq_response.content)
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'delete':
+      url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
+                                                  task_id=key)
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='DELETE')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+
+
 class TransactionalTaskHandler(webapp2.RequestHandler):
   def post(self):
     def task_txn(key, throw_exception):
@@ -231,6 +376,7 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/transworker', TransactionalTaskWorker),
   ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
+  ('/python/taskqueue/pull/rest', RESTPullQueueHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 

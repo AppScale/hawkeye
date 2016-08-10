@@ -176,6 +176,90 @@ class PullQueueTest(HawkeyeTestCase):
       else:
         sleep(2)
 
+class RESTPullQueueTest(HawkeyeTestCase):
+  def run_hawkeye_test(self):
+    key = str(uuid.uuid1())
+
+    # Insert Pull task with tag 'oldest'.
+    response = self.http_post('/taskqueue/pull/rest',
+                              'key={0}&test=insert&tag=oldest'.format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    # Retrieve Pull task.
+    response = self.http_get('/taskqueue/pull/rest?key={0}&test=get'.
+      format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    # Insert Pull task with same ID should fail.
+    response = self.http_post('/taskqueue/pull/rest',
+                              'key={0}&test=insert'.format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 400)
+    self.assertFalse(task_info['success'])
+
+    # Insert another Pull task with tag 'oldest'.
+    oldest_tag_key = str(uuid.uuid1())
+    response = self.http_post(
+      '/taskqueue/pull/rest',
+      'key={0}&test=insert&tag=oldest'.format(oldest_tag_key)
+    )
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    # Insert Pull task with tag 'newest'.
+    newest_tag_key = str(uuid.uuid1())
+    response = self.http_post(
+      '/taskqueue/pull/rest',
+      'key={0}&test=insert&tag=newest'.format(newest_tag_key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    # Lease Pull tasks with tag 'newest'.
+    response = self.http_post(
+      '/taskqueue/pull/rest',
+      'test=lease&groupByTag=true&tag=newest'
+    )
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertEquals(len(task_info['tasks']), 1)
+
+    # # Lease Pull tasks with implicit tag 'oldest'.
+    response = self.http_post(
+      '/taskqueue/pull/rest',
+      'test=lease&groupByTag=true'
+    )
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertEquals(len(task_info['tasks']), 2)
+
+    # Delete all Pull tasks.
+    response = self.http_post('/taskqueue/pull/rest',
+                              'key={0}&test=delete'.format(key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    response = self.http_post('/taskqueue/pull/rest',
+                              'key={0}&test=delete'.format(oldest_tag_key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+    response = self.http_post('/taskqueue/pull/rest',
+                              'key={0}&test=delete'.format(newest_tag_key))
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
+
 class TransactionalTaskTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -233,6 +317,7 @@ def suite(lang):
   suite.addTest(DeferredTaskTest())
   suite.addTest(QueueStatisticsTest())
   suite.addTest(PullQueueTest())
+  suite.addTest(RESTPullQueueTest())
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
 
