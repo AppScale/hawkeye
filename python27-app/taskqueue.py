@@ -238,6 +238,3 @@ application = webapp.WSGIApplication([
 
 if __name__ == '__main__':
   wsgiref.handlers.CGIHandler().run(application)
-
-
-
