@@ -186,8 +186,6 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
     self.response.out.write(json.dumps({ 'value' : value}))
     
 class TransactionalTaskWorker(webapp2.RequestHandler):
-  """ Working the streets for transactions. Just trying to get by. Don't judge. 
-  """
   def post(self):
     key = self.request.get('key')
     task_ent = TaskEntity.get_by_key_name(key)
