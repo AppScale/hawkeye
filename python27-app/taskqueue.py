@@ -182,6 +182,26 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
         return
+    elif test == 'list':
+      url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        tasks = json.loads(tq_response.content)['items']
+        self.response.out.write(json.dumps({'success': True, 'tasks': tasks}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
 
   def post(self):
     key = self.request.get('key', None)

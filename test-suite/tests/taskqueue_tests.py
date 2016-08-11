@@ -220,6 +220,13 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
 
+    # List all enqueued Pull Tasks.
+    response = self.http_get('/taskqueue/pull/rest?test=list')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertEquals(len(task_info['tasks']), 3)
+
     # Lease Pull tasks with tag 'newest'.
     response = self.http_post(
       '/taskqueue/pull/rest',
