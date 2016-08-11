@@ -237,7 +237,7 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertTrue(task_info['success'])
     self.assertEquals(len(task_info['tasks']), 1)
 
-    # # Lease Pull tasks with implicit tag 'oldest'.
+    # Lease Pull tasks with implicit tag 'oldest'.
     response = self.http_post(
       '/taskqueue/pull/rest',
       'test=lease&groupByTag=true'
