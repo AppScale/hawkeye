@@ -247,7 +247,6 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(json.dumps({'success': True}))
         return
       else:
-        logging.warn(tq_response.content)
         self.response.set_status(tq_response.status_code)
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
@@ -278,12 +277,10 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
 
       if tq_response.status_code == 200:
         tasks = json.loads(tq_response.content)['items']
-        logging.warn(tasks)
         self.response.out.write(
           json.dumps({'success': True, 'tasks': tasks}))
         return
       else:
-        logging.warn(tq_response.content)
         self.response.set_status(tq_response.status_code)
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
