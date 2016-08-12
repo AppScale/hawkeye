@@ -203,6 +203,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
     elif test == 'list':
       url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
+
       self.response.headers['Content-Type'] = "application/json"
       try:
         tq_response = urlfetch.fetch(url, method='GET')
@@ -239,21 +240,15 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
     # Insert a Pull task.
     if test == 'insert':
       url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
-      payload = {
-        "id": key,
-        "payloadBase64": "1234",
-        "retry_count": 1
-      }
+      payload = {"id": key, "payloadBase64": "1234", "retry_count": 1}
       if tag:
         payload['tag'] = tag
 
       self.response.headers['Content-Type'] = "application/json"
       try:
-        tq_response = urlfetch.fetch(
-          url,
-          payload=json.dumps(payload),
-          method='POST'
-        )
+        tq_response = urlfetch.fetch(url,
+                                     payload=json.dumps(payload),
+                                     method='POST')
       except urlfetch_errors.DownloadError as download_error:
         self.response.set_status(500)
         self.response.out.write(
@@ -272,15 +267,12 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
     elif test == 'lease':
       url = '{url_prefix}/tasks/lease'.format(url_prefix=url_prefix)
-      payload = {
-        "leaseSecs": 60,
-        "numTasks": 1000
-      }
-
+      payload = {"leaseSecs": 60, "numTasks": 1000}
       if groupByTag:
         payload['groupByTag'] = groupByTag
         if tag:
           payload['tag'] = tag
+
       self.response.headers['Content-Type'] = "application/json"
       try:
         tq_response = urlfetch.fetch(
@@ -307,6 +299,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
     elif test == 'delete':
       url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
                                                   task_id=key)
+
       self.response.headers['Content-Type'] = "application/json"
       try:
         tq_response = urlfetch.fetch(url, method='DELETE')
