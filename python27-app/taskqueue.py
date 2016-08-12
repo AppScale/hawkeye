@@ -45,16 +45,7 @@ class QueueHandler(webapp2.RequestHandler):
     results = {'queues': [], 'exists': []}
     self.response.set_status(200)
 
-    queue = 'default'
-    results['queues'].append(queue)
-    try:
-      taskqueue.Queue(queue).\
-        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
-      results['exists'].append(True)
-    except taskqueue.UnknownQueueError:
-      self.response.set_status(404)
-      results['exists'].append(False)
-
+    # Test default push queue.
     queue = DEFAULT_PUSH_QUEUE
     results['queues'].append(queue)
     try:
@@ -65,6 +56,18 @@ class QueueHandler(webapp2.RequestHandler):
       self.response.set_status(404)
       results['exists'].append(False)
 
+    # Test push queue.
+    queue = PUSH_QUEUE_NAME
+    results['queues'].append(queue)
+    try:
+      taskqueue.Queue(queue).\
+        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
+      results['exists'].append(True)
+    except taskqueue.UnknownQueueError:
+      self.response.set_status(404)
+      results['exists'].append(False)
+
+    # Test pull queue.
     queue = PULL_QUEUE_NAME
     results['queues'].append(queue)
     try:
