@@ -178,6 +178,12 @@ class PullQueueTest(HawkeyeTestCase):
 
 class RESTPullQueueTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
+    # Retrieve default Pull Queue information.
+    response = self.http_get('/taskqueue/pull/rest?&test=get-queue')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
     key = str(uuid.uuid1())
 
     # Insert Pull task with tag 'oldest'.

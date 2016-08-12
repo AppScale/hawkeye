@@ -161,10 +161,29 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         app_id='hawkeyepython27',
         queue=PULL_QUEUE_NAME)
 
-    # Retrieve a Pull task.
-    if test == 'get':
+    # Test pull queue via REST API.
+    if test == 'get-queue':
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url_prefix, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'get':
       url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
                                                   task_id=key)
+
       self.response.headers['Content-Type'] = "application/json"
       try:
         tq_response = urlfetch.fetch(url, method='GET')
