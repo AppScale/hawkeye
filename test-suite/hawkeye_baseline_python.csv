@@ -107,7 +107,6 @@ tests.taskqueue_tests.CleanUpTaskEntities, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
 tests.taskqueue_tests.QueueStatisticsTest, ok
-tests.taskqueue_tests.TaskEtaTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
 tests.taskqueue_tests.TransactionalFailedTaskTest, ok
 tests.taskqueue_tests.TransactionalTaskTest, ok
