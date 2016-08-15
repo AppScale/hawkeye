@@ -60,7 +60,6 @@ tests.taskqueue_tests.CleanUpTaskEntities, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
 tests.taskqueue_tests.QueueStatisticsTest, ok
-tests.taskqueue_tests.TaskEtaTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
 tests.user_tests.LoginURLTest, ok
 tests.xmpp_tests.SendAndReceiveTest, ok
