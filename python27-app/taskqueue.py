@@ -266,8 +266,6 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
           json.dumps({'success': False, 'error': download_error.message}))
         return
 
-      # Response is a tuple of (content, status_code, headers) coming from
-      # URLFetch API.
       if tq_response.status_code == 200:
         self.response.out.write(json.dumps({'success': True}))
         return
