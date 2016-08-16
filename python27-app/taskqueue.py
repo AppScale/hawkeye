@@ -155,6 +155,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key', None)
     test = self.request.get('test', None)
+    getStats = self.request.get('getStats', False)
 
     url_prefix = '{scheme}://{host}:{port}' \
       '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
@@ -166,9 +167,13 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
 
     # Test pull queue via REST API.
     if test == 'get-queue':
+      url = url_prefix
+      if getStats:
+        url += '?getStats=true'
+
       self.response.headers['Content-Type'] = "application/json"
       try:
-        tq_response = urlfetch.fetch(url_prefix, method='GET')
+        tq_response = urlfetch.fetch(url, method='GET')
       except urlfetch_errors.DownloadError as download_error:
         self.response.set_status(500)
         self.response.out.write(
@@ -176,7 +181,8 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
 
       if tq_response.status_code == 200:
-        self.response.out.write(json.dumps({'success': True}))
+        queue = json.loads(tq_response.content)
+        self.response.out.write(json.dumps({'success': True, 'queue': queue}))
         return
       else:
         self.response.set_status(tq_response.status_code)
@@ -231,6 +237,8 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
     test = self.request.get('test', None)
     groupByTag = self.request.get('groupByTag', False)
     tag = self.request.get('tag', None)
+    patch = self.request.get('patch', False)
+    leaseTimestamp = self.request.get('leaseTimestamp', None)
 
     url_prefix = '{scheme}://{host}:{port}' \
       '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
@@ -293,6 +301,37 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         tasks = json.loads(tq_response.content)['items']
         self.response.out.write(
           json.dumps({'success': True, 'tasks': tasks}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'update':
+      url = '{url_prefix}/tasks/{task_id}?newLeaseSeconds={newLeaseSeconds}'.\
+        format(url_prefix=url_prefix, task_id=key, newLeaseSeconds=180)
+      method = 'POST'
+      payload = {
+        'id': key,
+        'leaseTimestamp': leaseTimestamp
+      }
+      if patch:
+        method = 'PATCH'
+        payload['queueName'] = PULL_QUEUE_NAME
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url,
+                                     payload=json.dumps(payload),
+                                     method=method)
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
         return
       else:
         self.response.set_status(tq_response.status_code)

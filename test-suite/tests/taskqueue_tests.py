@@ -179,7 +179,7 @@ class PullQueueTest(HawkeyeTestCase):
 class RESTPullQueueTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
     # Retrieve default Pull Queue information.
-    response = self.http_get('/taskqueue/pull/rest?&test=get-queue')
+    response = self.http_get('/taskqueue/pull/rest?test=get-queue')
     task_info = json.loads(response.payload)
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
@@ -239,9 +239,40 @@ class RESTPullQueueTest(HawkeyeTestCase):
       'test=lease&groupByTag=true&tag=newest'
     )
     task_info = json.loads(response.payload)
+    tasks = \
+      [(task['id'], task['leaseTimestamp']) for task in task_info['tasks']]
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
     self.assertEquals(len(task_info['tasks']), 1)
+
+    # Test default Pull Queue statistics.
+    response = self.http_get('/taskqueue/pull/rest?'
+                             'test=get-queue&getStats=true')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertIn('stats', task_info['queue'])
+    self.assertEquals(task_info['queue']['stats']['totalTasks'], 3)
+    self.assertEquals(task_info['queue']['stats']['leasedLastMinute'], 1)
+    self.assertEquals(task_info['queue']['stats']['leasedLastHour'], 1)
+
+    # Update/Patch Pull tasks that are leased out of a TaskQueue.
+    for index, task in enumerate(tasks):
+      response = self.http_post(
+        '/taskqueue/pull/rest',
+        'key={0}&test=update&leaseTimestamp={1}&patch={2}'.format(task[0],
+                                                                  task[1],
+                                                                  index%2))
+      task_info = json.loads(response.payload)
+      self.assertEquals(response.status, 200)
+      self.assertTrue(task_info['success'])
+
+    # List all enqueued Pull Tasks, leased/non-leased/expired.
+    response = self.http_get('/taskqueue/pull/rest?test=list')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertEquals(len(task_info['tasks']), 3)
 
     # Lease Pull tasks with implicit tag 'oldest'.
     response = self.http_post(
