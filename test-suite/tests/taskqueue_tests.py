@@ -258,11 +258,14 @@ class RESTPullQueueTest(HawkeyeTestCase):
 
     # Update/Patch Pull tasks that are leased out of a TaskQueue.
     for index, task in enumerate(tasks):
+      # Alternate between update and patch methods.
+      patch = True if index%2 else False
+
       response = self.http_post(
         '/taskqueue/pull/rest',
         'key={0}&test=update&leaseTimestamp={1}&patch={2}'.format(task[0],
                                                                   task[1],
-                                                                  index%2))
+                                                                  patch))
       task_info = json.loads(response.payload)
       self.assertEquals(response.status, 200)
       self.assertTrue(task_info['success'])
