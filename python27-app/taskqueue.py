@@ -307,7 +307,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
     elif test == 'update':
       url = '{url_prefix}/tasks/{task_id}?newLeaseSeconds={newLeaseSeconds}'.\
-        format(url_prefix=url_prefix, task_id=key, newLeaseSeconds=180)
+        format(url_prefix=url_prefix, task_id=key, newLeaseSeconds=60)
       method = 'POST'
       payload = {
         'id': key,
@@ -329,7 +329,8 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
 
       if tq_response.status_code == 200:
-        self.response.out.write(json.dumps({'success': True}))
+        task_info = json.loads(tq_response.content)
+        self.response.out.write(json.dumps({'success': True, 'task': task_info}))
         return
       else:
         self.response.set_status(tq_response.status_code)
