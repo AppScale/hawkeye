@@ -245,17 +245,6 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertTrue(task_info['success'])
     self.assertEquals(len(task_info['tasks']), 1)
 
-    # Test default Pull Queue statistics.
-    response = self.http_get('/taskqueue/pull/rest?'
-                             'test=get-queue&getStats=true')
-    task_info = json.loads(response.payload)
-    self.assertEquals(response.status, 200)
-    self.assertTrue(task_info['success'])
-    self.assertIn('stats', task_info['queue'])
-    self.assertEquals(task_info['queue']['stats']['totalTasks'], 3)
-    self.assertEquals(task_info['queue']['stats']['leasedLastMinute'], 1)
-    self.assertEquals(task_info['queue']['stats']['leasedLastHour'], 1)
-
     # Update/Patch Pull tasks that are leased out of a TaskQueue.
     for index, task in enumerate(tasks):
       # Alternate between update and patch methods.
@@ -269,6 +258,23 @@ class RESTPullQueueTest(HawkeyeTestCase):
       task_info = json.loads(response.payload)
       self.assertEquals(response.status, 200)
       self.assertTrue(task_info['success'])
+
+      expected_eta = datetime.datetime.\
+        fromtimestamp(task[1]/1000000.0)+datetime.timedelta(seconds=60)
+      response_eta = datetime.datetime.\
+        fromtimestamp(task_info['task']['leaseTimestamp']/1000000.0)
+      self.assertLess(abs(response_eta-expected_eta).total_seconds(), 60)
+
+    # Test default Pull Queue statistics.
+    response = self.http_get('/taskqueue/pull/rest?'
+                             'test=get-queue&getStats=true')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertIn('stats', task_info['queue'])
+    self.assertEquals(task_info['queue']['stats']['totalTasks'], 3)
+    self.assertEquals(task_info['queue']['stats']['leasedLastMinute'], 1)
+    self.assertEquals(task_info['queue']['stats']['leasedLastHour'], 1)
 
     # List all enqueued Pull Tasks, leased/non-leased/expired.
     response = self.http_get('/taskqueue/pull/rest?test=list')
