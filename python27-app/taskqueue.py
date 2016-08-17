@@ -1,10 +1,13 @@
 import datetime
 import time
+import urllib
 import utils
 import webapp2
 import wsgiref
 
 from google.appengine.api import taskqueue
+from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch_errors
 from google.appengine.ext import deferred
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -42,16 +45,7 @@ class QueueHandler(webapp2.RequestHandler):
     results = {'queues': [], 'exists': []}
     self.response.set_status(200)
 
-    queue = 'default'
-    results['queues'].append(queue)
-    try:
-      taskqueue.Queue(queue).\
-        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
-      results['exists'].append(True)
-    except taskqueue.UnknownQueueError:
-      self.response.set_status(404)
-      results['exists'].append(False)
-
+    # Test default push queue.
     queue = DEFAULT_PUSH_QUEUE
     results['queues'].append(queue)
     try:
@@ -62,11 +56,23 @@ class QueueHandler(webapp2.RequestHandler):
       self.response.set_status(404)
       results['exists'].append(False)
 
+    # Test push queue.
+    queue = PUSH_QUEUE_NAME
+    results['queues'].append(queue)
+    try:
+      taskqueue.Queue(queue).\
+        add(taskqueue.Task(url='/python/taskqueue/clean_up'))
+      results['exists'].append(True)
+    except taskqueue.UnknownQueueError:
+      self.response.set_status(404)
+      results['exists'].append(False)
+
+    # Test pull queue.
     queue = PULL_QUEUE_NAME
     results['queues'].append(queue)
     try:
       taskqueue.Queue(queue).\
-        add(taskqueue.Task(payload='this is a fake payload'))
+        add(taskqueue.Task(payload='this is a fake payload', method='PULL'))
       results['exists'].append(True)
     except taskqueue.UnknownQueueError:
       self.response.set_status(404)
@@ -129,7 +135,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
 class PullTaskHandler(webapp2.RequestHandler):
   def get(self):
-    q = taskqueue.Queue('hawkeyepython-pull-queue')
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
     tasks = q.lease_tasks(3600, 100)
     result = []
     for task in tasks:
@@ -140,10 +146,219 @@ class PullTaskHandler(webapp2.RequestHandler):
 
   def post(self):
     key = self.request.get('key')
-    q = taskqueue.Queue('hawkeyepython-pull-queue')
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.add([taskqueue.Task(payload=key, method='PULL')])
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
+
+class RESTPullQueueHandler(webapp2.RequestHandler):
+  def get(self):
+    key = self.request.get('key', None)
+    test = self.request.get('test', None)
+    getStats = self.request.get('getStats', False)
+
+    url_prefix = '{scheme}://{host}:{port}' \
+      '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
+        scheme='http',
+        host='localhost',
+        port='64839',
+        app_id='hawkeyepython27',
+        queue=PULL_QUEUE_NAME)
+
+    # Test pull queue via REST API.
+    if test == 'get-queue':
+      url = url_prefix
+      if getStats:
+        url += '?getStats=true'
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        queue = json.loads(tq_response.content)
+        self.response.out.write(json.dumps({'success': True, 'queue': queue}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'get':
+      url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
+                                                  task_id=key)
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'list':
+      url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='GET')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        tasks = json.loads(tq_response.content)['items']
+        self.response.out.write(json.dumps({'success': True, 'tasks': tasks}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+
+  def post(self):
+    key = self.request.get('key', None)
+    test = self.request.get('test', None)
+    groupByTag = self.request.get('groupByTag', False)
+    tag = self.request.get('tag', None)
+    patch = self.request.get('patch', False)
+    leaseTimestamp = self.request.get('leaseTimestamp', None)
+
+    url_prefix = '{scheme}://{host}:{port}' \
+      '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
+        scheme='http',
+        host='localhost',
+        port='64839',
+        app_id='hawkeyepython27',
+        queue=PULL_QUEUE_NAME)
+
+    # Insert a Pull task.
+    if test == 'insert':
+      url = '{url_prefix}/tasks'.format(url_prefix=url_prefix)
+      payload = {"id": key, "payloadBase64": "1234", "retry_count": 1}
+      if tag:
+        payload['tag'] = tag
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url,
+                                     payload=json.dumps(payload),
+                                     method='POST')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'lease':
+      url = '{url_prefix}/tasks/lease'.format(url_prefix=url_prefix)
+      payload = {"leaseSecs": 60, "numTasks": 1000}
+      if groupByTag:
+        payload['groupByTag'] = groupByTag
+        if tag:
+          payload['tag'] = tag
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(
+          url,
+          payload=urllib.urlencode(payload),
+          method='POST',
+        )
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        tasks = json.loads(tq_response.content)['items']
+        self.response.out.write(
+          json.dumps({'success': True, 'tasks': tasks}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'update':
+      url = '{url_prefix}/tasks/{task_id}?newLeaseSeconds={newLeaseSeconds}'.\
+        format(url_prefix=url_prefix, task_id=key, newLeaseSeconds=60)
+      method = 'POST'
+      payload = {
+        'id': key,
+        'leaseTimestamp': leaseTimestamp
+      }
+      if patch:
+        method = 'PATCH'
+        payload['queueName'] = PULL_QUEUE_NAME
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url,
+                                     payload=json.dumps(payload),
+                                     method=method)
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        task_info = json.loads(tq_response.content)
+        self.response.out.write(json.dumps({'success': True, 'task': task_info}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+    elif test == 'delete':
+      url = '{url_prefix}/tasks/{task_id}'.format(url_prefix=url_prefix,
+                                                  task_id=key)
+
+      self.response.headers['Content-Type'] = "application/json"
+      try:
+        tq_response = urlfetch.fetch(url, method='DELETE')
+      except urlfetch_errors.DownloadError as download_error:
+        self.response.set_status(500)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': download_error.message}))
+        return
+
+      if tq_response.status_code == 200:
+        self.response.out.write(json.dumps({'success': True}))
+        return
+      else:
+        self.response.set_status(tq_response.status_code)
+        self.response.out.write(
+          json.dumps({'success': False, 'error': tq_response.content}))
+        return
+
 
 class TransactionalTaskHandler(webapp2.RequestHandler):
   def post(self):
@@ -186,8 +401,6 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
     self.response.out.write(json.dumps({ 'value' : value}))
     
 class TransactionalTaskWorker(webapp2.RequestHandler):
-  """ Working the streets for transactions. Just trying to get by. Don't judge. 
-  """
   def post(self):
     key = self.request.get('key')
     task_ent = TaskEntity.get_by_key_name(key)
@@ -233,11 +446,9 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/transworker', TransactionalTaskWorker),
   ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
+  ('/python/taskqueue/pull/rest', RESTPullQueueHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 
 if __name__ == '__main__':
   wsgiref.handlers.CGIHandler().run(application)
-
-
-
