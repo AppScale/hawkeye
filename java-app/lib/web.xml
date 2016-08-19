@@ -93,6 +93,14 @@
     </servlet>
 
     <servlet>
+        <servlet-name>QueueServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.QueueServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CleanupServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.CleanupServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>TaskCounterHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.taskqueue.TaskCounterHandlerServlet</servlet-class>
     </servlet>
@@ -234,6 +242,14 @@
         <url-pattern>/java/images/logo</url-pattern>
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>QueueServlet</servlet-name>
+        <url-pattern>/java/taskqueue/exists</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CleanupServlet</servlet-name>
+        <url-pattern>/java/taskqueue/clean_up</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>TaskCounterHandlerServlet</servlet-name>
         <url-pattern>/java/taskqueue/counter</url-pattern>
