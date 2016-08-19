@@ -103,10 +103,10 @@ tests.secure_url_tests.AlwaysSecureRegexTest, ok
 tests.secure_url_tests.AlwaysSecureTest, ok
 tests.secure_url_tests.NeverSecureRegexTest, ok
 tests.secure_url_tests.NeverSecureTest, ok
-tests.taskqueue_tests.QueueExistsTest, ok
 tests.taskqueue_tests.CleanUpTaskEntities, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
+tests.taskqueue_tests.QueueExistsTest, ok
 tests.taskqueue_tests.QueueStatisticsTest, ok
 tests.taskqueue_tests.RESTPullQueueTest, ok
 tests.taskqueue_tests.TaskRetryTest, ok
