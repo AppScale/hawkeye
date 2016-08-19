@@ -35,6 +35,9 @@ PUSH_QUEUE_NAME = "hawkeyepython-PushQueue-0"
 # The name of the queue that is used for pull queue operations.
 PULL_QUEUE_NAME = "hawkeyepython-PullQueue-0"
 
+# A separate pull queue used for testing the REST API.
+REST_PULL_QUEUE = 'rest-pull-queue'
+
 
 class TaskEntity(db.Model):
   value = db.StringProperty(required=True)
@@ -163,7 +166,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         host='localhost',
         port='64839',
         app_id='hawkeyepython27',
-        queue=PULL_QUEUE_NAME)
+        queue=REST_PULL_QUEUE)
 
     # Test pull queue via REST API.
     if test == 'get-queue':
@@ -246,7 +249,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         host='localhost',
         port='64839',
         app_id='hawkeyepython27',
-        queue=PULL_QUEUE_NAME)
+        queue=REST_PULL_QUEUE)
 
     # Insert a Pull task.
     if test == 'insert':
@@ -315,7 +318,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
       }
       if patch:
         method = 'PATCH'
-        payload['queueName'] = PULL_QUEUE_NAME
+        payload['queueName'] = REST_PULL_QUEUE
 
       self.response.headers['Content-Type'] = "application/json"
       try:
