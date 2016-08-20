@@ -154,6 +154,10 @@ class PullTaskHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'status' : True }))
 
+  def delete(self):
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
+    q.purge()
+
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key', None)
@@ -361,6 +365,10 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
         return
+
+  def delete(self):
+    q = taskqueue.Queue(REST_PULL_QUEUE)
+    q.purge()
 
 
 class TransactionalTaskHandler(webapp2.RequestHandler):
