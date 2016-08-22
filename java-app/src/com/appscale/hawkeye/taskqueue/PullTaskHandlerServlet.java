@@ -50,4 +50,10 @@ public class PullTaskHandlerServlet extends HttpServlet {
         map.put("tasks", results);
         JSONUtils.serialize(map, response);
     }
+
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        Queue queue = QueueFactory.getQueue(HAWKEYEJAVA_PULL_QUEUE);
+        queue.purge();
+    }
 }

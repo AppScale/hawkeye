@@ -135,6 +135,9 @@ class BackendTaskTest(PushQueueTest):
     self.get_and_assert_counter(key, 12)
 
 class QueueExistsTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/taskqueue/pull')
+
   def run_hawkeye_test(self):
     response = self.http_get('/taskqueue/exists')
     self.assertEquals(response.status, 200)
@@ -154,6 +157,9 @@ class QueueStatisticsTest(HawkeyeTestCase):
     self.assertEquals(task_info['queue'], 'default')
 
 class PullQueueTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/taskqueue/pull')
+
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     response = self.http_post('/taskqueue/pull', 'key={0}'.format(key))
@@ -177,6 +183,9 @@ class PullQueueTest(HawkeyeTestCase):
         sleep(2)
 
 class RESTPullQueueTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/taskqueue/pull/rest')
+
   def run_hawkeye_test(self):
     # Retrieve default Pull Queue information.
     response = self.http_get('/taskqueue/pull/rest?test=get-queue')
