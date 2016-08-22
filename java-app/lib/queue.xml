@@ -1,6 +1,10 @@
 <queue-entries>
     <queue>
-        <name>hawkeyejava-pull-queue</name>
+        <name>hawkeyejava-PushQueue-0</name>
+        <rate>5/s</rate>
+    </queue>
+    <queue>
+        <name>hawkeyejava-PullQueue-0</name>
         <mode>pull</mode>
     </queue>
 </queue-entries>
