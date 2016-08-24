@@ -1,11 +1,13 @@
 import datetime
 import time
+import unittest
 import urllib
 import utils
 import webapp2
 import wsgiref
 
 from google.appengine.api import taskqueue
+from google.appengine.api.taskqueue import TaskLeaseExpiredError
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
 from google.appengine.ext import deferred
@@ -25,6 +27,9 @@ UPDATED_BY_TQ = "TQ_UPDATE"
 
 # Default Push Queue.
 DEFAULT_PUSH_QUEUE = 'default'
+
+# A small interval to wait for a service.
+SMALL_WAIT = 5
 
 # From the GAE docs:
 # A queue name can contain uppercase and lowercase letters, numbers,
@@ -157,6 +162,41 @@ class PullTaskHandler(webapp2.RequestHandler):
   def delete(self):
     q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.purge()
+
+class LeaseModificationTest(unittest.TestCase):
+  def test_lease_modification(self):
+    payload = 'hello world'
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
+    q.add([taskqueue.Task(payload=payload, method='PULL')])
+
+    # Account for short delay between add and lease availability in GAE.
+    time.sleep(SMALL_WAIT)
+
+    # Make sure the task has been leased for the appropriate time.
+    duration = 120
+    task = q.lease_tasks(lease_seconds=duration, max_tasks=1)[0]
+    tz = task.eta.tzinfo
+    expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
+    self.assertLess(abs((task.eta - expected).total_seconds()), SMALL_WAIT)
+
+    # Make sure the lease time has been modified.
+    duration = 2
+    q.modify_task_lease(task, lease_seconds=duration)
+    expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
+    self.assertLess(abs((task.eta - expected).total_seconds()), SMALL_WAIT)
+
+    time.sleep(duration + 1)
+
+    self.assertRaises(TaskLeaseExpiredError, q.modify_task_lease, task, 240)
+
+class LeaseModificationHandler(webapp2.RequestHandler):
+  def get(self):
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(LeaseModificationTest))
+    result = unittest.TextTestRunner().run(suite)
+    if not result.wasSuccessful():
+      self.error(500)
+      self.response.write(utils.format_errors(result))
 
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
@@ -462,6 +502,7 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
   ('/python/taskqueue/pull/rest', RESTPullQueueHandler),
+  ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 
