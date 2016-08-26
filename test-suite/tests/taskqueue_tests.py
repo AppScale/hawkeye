@@ -193,6 +193,12 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
 
+    # Retrieve default Pull Queue information with app prefix (e.g. s~app-name).
+    response = self.http_get('/taskqueue/pull/rest?test=get-queue&prefix=true')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+
     key = str(uuid.uuid1())
 
     # Insert Pull task with tag 'oldest'.
