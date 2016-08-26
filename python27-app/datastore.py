@@ -902,7 +902,6 @@ class TestConcurrentTransactionHandler(webapp2.RequestHandler):
 # The following test checks if entities can be found even after a delete
 # succeeds in a failed transaction.
 class TestQueryingAfterFailedTxn(unittest.TestCase):
-  ids = ["save-time-single-ID"]
   fetchers = [
     ("Get (unordered)",
      lambda: TestModel.query().get()),
@@ -951,12 +950,12 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     return "\n{}:\n{}".format(context, "\n".join(self.errors))
 
   def _check_and_delete(self, id_, has_to_be):
+    time.sleep(SDK_CONSISTENCY_WAIT)
     gotten_by_id = TestModel.get_by_id(id_)
     if bool(gotten_by_id) != has_to_be:
       suffix = "(is not gotten)" if has_to_be else "(is gotten)"
       err = "    {} > Get by ID: Failed {}".format(id_, suffix)
       self.errors.append(err)
-    time.sleep(0.5)
     for fetcher_comment, fetcher in self.fetchers:
       result = fetcher()
       if bool(result) != has_to_be:
@@ -966,9 +965,9 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     ndb.Key(TestModel, id_).delete()
 
   def test_put_and_get_and_query(self):
-    for identifier in self.ids:
-      TestModel(id=identifier, field=self.rand_str()).put()
-      self._check_and_delete(identifier, True)
+    identifier = str(uuid.uuid4())
+    TestModel(id=identifier, field=self.rand_str()).put()
+    self._check_and_delete(identifier, True)
     ctx = "Create > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -977,9 +976,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     def create(id_):
       TestModel(id=id_, field=self.rand_str()).put()
       raise TestException("expected error")
-    for identifier in self.ids:
-      self.assertRaises(TestException, create, identifier)
-      self._check_and_delete(identifier, False)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create, identifier)
+    self._check_and_delete(identifier, False)
     ctx = "Create in failed txn (non-xg) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -989,9 +989,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
       TestModel(id=id_, field=self.rand_str()).put()
       TestModel(id="second-entity-group", field=self.rand_str()).put()
       raise TestException("expected error")
-    for identifier in self.ids:
-      self.assertRaises(TestException, create, identifier)
-      self._check_and_delete(identifier, False)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create, identifier)
+    self._check_and_delete(identifier, False)
     ctx = "Create in failed txn (valid-xg: 2 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1001,9 +1002,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
       TestModel(id=id_, field=self.rand_str()).put()
       for x in xrange(30):
         TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
-    for identifier in self.ids:
-      self.assertRaises(datastore_errors.Error, create, identifier)
-      self._check_and_delete(identifier, False)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(datastore_errors.Error, create, identifier)
+    self._check_and_delete(identifier, False)
     ctx = "Create in failed txn (invalid-xg: 30 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1015,9 +1017,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
         raise TestException("expected error")
       TestModel(id=id_, field=self.rand_str()).put()
       update()
-    for identifier in self.ids:
-      self.assertRaises(TestException, create_and_update, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create_and_update, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Update in failed txn (non-xg) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1030,9 +1033,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
         raise TestException("expected error")
       TestModel(id=id_, field=self.rand_str()).put()
       update()
-    for identifier in self.ids:
-      self.assertRaises(TestException, create_and_update, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create_and_update, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Update in failed txn (valid-xg: 2 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1045,9 +1049,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
           TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
       TestModel(id=id_, field=self.rand_str()).put()
       update()
-    for identifier in self.ids:
-      self.assertRaises(datastore_errors.Error, create_and_update, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(datastore_errors.Error, create_and_update, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Update in failed txn (invalid-xg: 30 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1059,9 +1064,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
         raise TestException("expected error")
       TestModel(id=id_, field=self.rand_str()).put()
       delete()
-    for identifier in self.ids:
-      self.assertRaises(TestException, create_and_delete, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create_and_delete, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Delete in failed txn (non-xg) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1074,9 +1080,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
         raise TestException("expected error")
       TestModel(id=id_, field=self.rand_str()).put()
       delete()
-    for identifier in self.ids:
-      self.assertRaises(TestException, create_and_delete, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(TestException, create_and_delete, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Delete in failed txn (valid-xg: 2 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
@@ -1089,9 +1096,10 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
           TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
       TestModel(id=id_, field=self.rand_str()).put()
       delete()
-    for identifier in self.ids:
-      self.assertRaises(datastore_errors.Error, create_and_delete, identifier)
-      self._check_and_delete(identifier, True)
+
+    identifier = str(uuid.uuid4())
+    self.assertRaises(datastore_errors.Error, create_and_delete, identifier)
+    self._check_and_delete(identifier, True)
     ctx = "Create > Delete in failed txn (invalid-xg: 30 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
