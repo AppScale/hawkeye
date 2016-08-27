@@ -163,13 +163,17 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
     key = self.request.get('key', None)
     test = self.request.get('test', None)
     getStats = self.request.get('getStats', False)
+    prefix_on = self.request.get('prefix', False)
 
+    app_id = 'hawkeyepython27'
+    if prefix_on:
+      app_id = 's~{}'.format(app_id)
     url_prefix = '{scheme}://{host}:{port}' \
       '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
         scheme='http',
         host='localhost',
         port='17446',
-        app_id='hawkeyepython27',
+        app_id=app_id,
         queue=REST_PULL_QUEUE)
 
     # Test pull queue via REST API.
