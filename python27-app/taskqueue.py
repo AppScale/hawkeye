@@ -1,6 +1,5 @@
 import datetime
 import time
-import unittest
 import urllib
 import utils
 import webapp2
@@ -163,8 +162,8 @@ class PullTaskHandler(webapp2.RequestHandler):
     q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.purge()
 
-class LeaseModificationTest(unittest.TestCase):
-  def test_lease_modification(self):
+class LeaseModificationHandler(webapp2.RequestHandler):
+  def get(self):
     payload = 'hello world'
     q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.add([taskqueue.Task(payload=payload, method='PULL')])
@@ -177,26 +176,36 @@ class LeaseModificationTest(unittest.TestCase):
     task = q.lease_tasks(lease_seconds=duration, max_tasks=1)[0]
     tz = task.eta.tzinfo
     expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
-    self.assertLess(abs((task.eta - expected).total_seconds()), SMALL_WAIT)
+    try:
+      assert abs((task.eta - expected).total_seconds()) < SMALL_WAIT
+    except AssertionError:
+      self.error(500)
+      self.response.write(
+        'Initial Lease: ETA={}, Expected={}'.format(task.eta, expected))
+      return
 
     # Make sure the lease time has been modified.
     duration = 2
     q.modify_task_lease(task, lease_seconds=duration)
     expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
-    self.assertLess(abs((task.eta - expected).total_seconds()), SMALL_WAIT)
+    try:
+      assert abs((task.eta - expected).total_seconds()) < SMALL_WAIT
+    except AssertionError:
+      self.error(500)
+      self.response.write(
+        'Lease Update: ETA={}, Expected={}'.format(task.eta, expected))
+      return
 
     time.sleep(duration + 1)
 
-    self.assertRaises(TaskLeaseExpiredError, q.modify_task_lease, task, 240)
-
-class LeaseModificationHandler(webapp2.RequestHandler):
-  def get(self):
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(LeaseModificationTest))
-    result = unittest.TextTestRunner().run(suite)
-    if not result.wasSuccessful():
+    # Make sure the lease can't be modified after expiration.
+    try:
+      q.modify_task_lease(task, 240)
+    except TaskLeaseExpiredError:
+      pass
+    else:
       self.error(500)
-      self.response.write(utils.format_errors(result))
+      self.response.write('Task lease was modified after expiration.')
 
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
