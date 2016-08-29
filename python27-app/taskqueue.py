@@ -172,7 +172,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
       '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
         scheme='http',
         host='localhost',
-        port='64839',
+        port='17446',
         app_id=app_id,
         queue=REST_PULL_QUEUE)
 
@@ -255,7 +255,7 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
       '/taskqueue/v1beta2/projects/{app_id}/taskqueues/{queue}'.format(
         scheme='http',
         host='localhost',
-        port='64839',
+        port='17446',
         app_id='hawkeyepython27',
         queue=REST_PULL_QUEUE)
 
