@@ -275,9 +275,9 @@ class RESTPullQueueTest(HawkeyeTestCase):
       self.assertTrue(task_info['success'])
 
       expected_eta = datetime.datetime.\
-        fromtimestamp(task[1]/1000000.0)+datetime.timedelta(seconds=60)
+        fromtimestamp(long(task[1])/1000000.0)+datetime.timedelta(seconds=60)
       response_eta = datetime.datetime.\
-        fromtimestamp(task_info['task']['leaseTimestamp']/1000000.0)
+        fromtimestamp(long(task_info['task']['leaseTimestamp'])/1000000.0)
       self.assertLess(abs(response_eta-expected_eta).total_seconds(), 60)
 
     # Test default Pull Queue statistics.
