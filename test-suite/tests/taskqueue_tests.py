@@ -182,6 +182,14 @@ class PullQueueTest(HawkeyeTestCase):
       else:
         sleep(2)
 
+class LeaseModificationTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/taskqueue/pull')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/taskqueue/pull/lease_modification')
+    self.assertEquals(response.status, 200)
+
 class RESTPullQueueTest(HawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/taskqueue/pull/rest')
@@ -389,6 +397,7 @@ def suite(lang):
   suite.addTest(TaskEtaTest())
 
   if lang == 'python':
+    suite.addTest(LeaseModificationTest())
     suite.addTest(RESTPullQueueTest())
     suite.addTest(TransactionalTaskTest())
     suite.addTest(TransactionalFailedTaskTest())

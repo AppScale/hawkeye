@@ -6,6 +6,7 @@ import webapp2
 import wsgiref
 
 from google.appengine.api import taskqueue
+from google.appengine.api.taskqueue import TaskLeaseExpiredError
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
 from google.appengine.ext import deferred
@@ -25,6 +26,9 @@ UPDATED_BY_TQ = "TQ_UPDATE"
 
 # Default Push Queue.
 DEFAULT_PUSH_QUEUE = 'default'
+
+# A small interval to wait for a service.
+SMALL_WAIT = 5
 
 # From the GAE docs:
 # A queue name can contain uppercase and lowercase letters, numbers,
@@ -157,6 +161,51 @@ class PullTaskHandler(webapp2.RequestHandler):
   def delete(self):
     q = taskqueue.Queue(PULL_QUEUE_NAME)
     q.purge()
+
+class LeaseModificationHandler(webapp2.RequestHandler):
+  def get(self):
+    payload = 'hello world'
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
+    q.add([taskqueue.Task(payload=payload, method='PULL')])
+
+    # Account for short delay between add and lease availability in GAE.
+    time.sleep(SMALL_WAIT)
+
+    # Make sure the task has been leased for the appropriate time.
+    duration = 120
+    task = q.lease_tasks(lease_seconds=duration, max_tasks=1)[0]
+    tz = task.eta.tzinfo
+    expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
+    try:
+      assert abs((task.eta - expected).total_seconds()) < SMALL_WAIT
+    except AssertionError:
+      self.error(500)
+      self.response.write(
+        'Initial Lease: ETA={}, Expected={}'.format(task.eta, expected))
+      return
+
+    # Make sure the lease time has been modified.
+    duration = 2
+    q.modify_task_lease(task, lease_seconds=duration)
+    expected = datetime.datetime.now(tz) + datetime.timedelta(seconds=duration)
+    try:
+      assert abs((task.eta - expected).total_seconds()) < SMALL_WAIT
+    except AssertionError:
+      self.error(500)
+      self.response.write(
+        'Lease Update: ETA={}, Expected={}'.format(task.eta, expected))
+      return
+
+    time.sleep(duration + 1)
+
+    # Make sure the lease can't be modified after expiration.
+    try:
+      q.modify_task_lease(task, 240)
+    except TaskLeaseExpiredError:
+      pass
+    else:
+      self.error(500)
+      self.response.write('Task lease was modified after expiration.')
 
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
@@ -462,6 +511,7 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/trans', TransactionalTaskHandler),
   ('/python/taskqueue/pull', PullTaskHandler),
   ('/python/taskqueue/pull/rest', RESTPullQueueHandler),
+  ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 
