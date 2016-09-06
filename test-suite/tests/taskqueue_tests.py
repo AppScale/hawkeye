@@ -207,6 +207,20 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
 
+    # List all enqueued Pull tasks. Should return nothing.
+    response = self.http_get('/taskqueue/pull/rest?test=list')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertIsNone(task_info['tasks'])
+
+    # Lease Pull tasks. Should return nothing.
+    response = self.http_post('/taskqueue/pull/rest', 'test=lease')
+    task_info = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(task_info['success'])
+    self.assertIsNone(task_info['tasks'])
+
     key = str(uuid.uuid1())
 
     # Insert Pull task with tag 'oldest'.
