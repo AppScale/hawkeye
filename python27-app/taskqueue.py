@@ -283,7 +283,10 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
 
       if tq_response.status_code == 200:
-        tasks = json.loads(tq_response.content)['items']
+        content = json.loads(tq_response.content)
+        tasks = None
+        if 'items' in content:
+          tasks = content['items']
         self.response.out.write(json.dumps({'success': True, 'tasks': tasks}))
         return
       else:
@@ -356,7 +359,10 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         return
 
       if tq_response.status_code == 200:
-        tasks = json.loads(tq_response.content)['items']
+        content = json.loads(tq_response.content)
+        tasks = None
+        if 'items' in content:
+          tasks = content['items']
         self.response.out.write(
           json.dumps({'success': True, 'tasks': tasks}))
         return
