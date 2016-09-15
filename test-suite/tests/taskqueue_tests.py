@@ -157,28 +157,67 @@ class QueueStatisticsTest(HawkeyeTestCase):
     self.assertEquals(task_info['queue'], 'default')
 
 class PullQueueTest(HawkeyeTestCase):
+  def setup(self):
+    self.key = str(uuid.uuid1())
+    self.key_async = str(uuid.uuid1())
+
   def tearDown(self):
     self.http_delete('/taskqueue/pull')
 
   def run_hawkeye_test(self):
-    key = str(uuid.uuid1())
-    response = self.http_post('/taskqueue/pull', 'key={0}'.format(key))
-    task_info = json.loads(response.payload)
-    self.assertEquals(response.status, 200)
-    self.assertTrue(task_info['status'])
+    self.setup()
+    self.run_insert_test()
+    self.run_lease_by_tag_and_delete_test()
+    self.run_lease_and_delete_test()
 
+  def run_insert_test(self):
+    # Add pull task.
+    response = self.http_post('/taskqueue/pull', 'key={0}&action=add'.\
+      format(self.key))
+    result = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(result['success'])
+
+    # Add pull task (async).
+    response = self.http_post('/taskqueue/pull', 'key={0}&action=add_async'.\
+      format(self.key_async))
+    result = json.loads(response.payload)
+    self.assertEquals(response.status, 200)
+    self.assertTrue(result['success'])
+
+  def run_lease_and_delete_test(self):
+    # Lease and delete.
     start = datetime.datetime.now()
     end = start + datetime.timedelta(0, 30)
     while True:
-      response = self.http_get('/taskqueue/pull')
+      response = self.http_get('/taskqueue/pull?action=lease')
       self.assertEquals(response.status, 200)
       task_info = json.loads(response.payload)
 
-      if len(task_info['tasks']) == 1 and key in task_info['tasks']:
+      if len(task_info['tasks']) == 1 and self.key in task_info['tasks']:
         break
 
       if datetime.datetime.now() > end:
-        self.fail('Pull queue deadline exceeded with no result')
+        self.fail('Pull queue lease_tasks operation deadline exceeded with no '
+                  'result')
+      else:
+        sleep(2)
+
+  def run_lease_by_tag_and_delete_test(self):
+    # Lease by tag and delete by name.
+    start = datetime.datetime.now()
+    end = start + datetime.timedelta(0, 30)
+    while True:
+      response = self.http_get('/taskqueue/pull?action=lease_by_tag&tag=newest')
+      self.assertEquals(response.status, 200)
+      task_info = json.loads(response.payload)
+
+      if len(task_info['tasks']) == 1 and self.key_async in task_info['tasks']:
+        break
+
+      if datetime.datetime.now() > end:
+        self.fail('Pull queue lease_by_tag operation deadline exceeded with no '
+                  'result')
       else:
         sleep(2)
 
