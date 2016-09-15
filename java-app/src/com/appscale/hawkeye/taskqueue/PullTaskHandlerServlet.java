@@ -68,7 +68,6 @@ public class PullTaskHandlerServlet extends HttpServlet {
         List<String> results = new ArrayList<String>();
 
         if ("lease".equals(action)) {
-            logger.log(Level.INFO, "Action: leaseTasks & deleteTaskAsync");
             List<TaskHandle> tasks = queue.leaseTasks(3600, TimeUnit.SECONDS, 100);
             for (TaskHandle task : tasks) {
                 results.add(new String(task.getPayload()));
@@ -85,7 +84,6 @@ public class PullTaskHandlerServlet extends HttpServlet {
                 }
             }
         } else if ("lease_by_tag".equals(action)) {
-            logger.log(Level.INFO, "Action: leaseTasksByTag & deleteTask by name");
             List<TaskHandle> tasks = queue.leaseTasksByTag(3600, TimeUnit.SECONDS, 100, tag);
             for (TaskHandle task : tasks) {
                 results.add(new String(task.getPayload()));
