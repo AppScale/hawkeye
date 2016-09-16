@@ -141,26 +141,58 @@ class TaskCounterHandler(webapp2.RequestHandler):
     db.delete(utils.TaskCounter.all())
 
 class PullTaskHandler(webapp2.RequestHandler):
+  QUEUE = taskqueue.Queue(PULL_QUEUE_NAME)
+
   def get(self):
-    q = taskqueue.Queue(PULL_QUEUE_NAME)
-    tasks = q.lease_tasks(3600, 100)
-    result = []
-    for task in tasks:
-      result.append(task.payload)
-    q.delete_tasks(tasks)
+    action = self.request.get('action', None)
+    tag = self.request.get('tag', None)
+
     self.response.headers['Content-Type'] = "application/json"
-    self.response.out.write(json.dumps({ 'tasks' : result }))
+    result = []
+    if action == "lease":
+      tasks = self.QUEUE.lease_tasks(3600, 100)
+      for task in tasks:
+        result.append(task.payload)
+        rpc = self.QUEUE.delete_tasks_async(task)
+        if rpc:
+          rpc.wait()
+          deleted_task = rpc.get_result()
+          if not deleted_task.was_deleted:
+            self.response.out.write('delete_tasks_async failed')
+            return
+    elif action == "lease_by_tag":
+      tasks = self.QUEUE.lease_tasks_by_tag(3600, 100, tag=tag)
+      for task in tasks:
+        result.append(task.payload)
+        deleted_task = self.QUEUE.delete_tasks_by_name(task.name)
+        if not deleted_task.was_deleted:
+          self.response.out.write('delete_task_by_name failed')
+          return
+
+    self.response.out.write(json.dumps({'success': True, 'tasks': result}))
 
   def post(self):
     key = self.request.get('key')
-    q = taskqueue.Queue(PULL_QUEUE_NAME)
-    q.add([taskqueue.Task(payload=key, method='PULL')])
-    self.response.headers['Content-Type'] = "application/json"
-    self.response.out.write(json.dumps({ 'status' : True }))
+    action = self.request.get('action', None)
+
+    if action == "add":
+      task = taskqueue.Task(payload=key, method='PULL')
+      self.QUEUE.add(task)
+      self.response.out.write(json.dumps({'success': True}))
+    elif action == "add_async":
+      task = taskqueue.Task(payload=key, method="PULL", tag='newest',
+        countdown=10)
+      rpc = self.QUEUE.add_async(task)
+      if rpc is not None:
+        rpc.wait()
+        task = rpc.get_result()
+        self.response.out.write(
+          json.dumps({'success': True}))
+      else:
+        self.response.out.write(json.dumps({'success': False}))
 
   def delete(self):
-    q = taskqueue.Queue(PULL_QUEUE_NAME)
-    q.purge()
+    self.QUEUE.purge()
 
 class LeaseModificationHandler(webapp2.RequestHandler):
   def get(self):
