@@ -446,11 +446,11 @@ def suite(lang):
   suite.addTest(DeferredTaskTest())
   suite.addTest(QueueStatisticsTest())
   suite.addTest(PullQueueTest())
+  suite.addTest(LeaseModificationTest())
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
 
   if lang == 'python':
-    suite.addTest(LeaseModificationTest())
     suite.addTest(RESTPullQueueTest())
     suite.addTest(TransactionalTaskTest())
     suite.addTest(TransactionalFailedTaskTest())
