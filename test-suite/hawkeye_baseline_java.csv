@@ -57,6 +57,7 @@ tests.memcache_tests.MemcacheMultiSetTest, ok
 tests.memcache_tests.MemcacheSetTest, ok
 tests.memcache_tests.SimpleJCacheTest, ok
 tests.taskqueue_tests.DeferredTaskTest, ok
+tests.taskqueue_tests.LeaseModificationTest, ok
 tests.taskqueue_tests.PullQueueTest, ok
 tests.taskqueue_tests.PushQueueTest, ok
 tests.taskqueue_tests.QueueExistsTest, ok
