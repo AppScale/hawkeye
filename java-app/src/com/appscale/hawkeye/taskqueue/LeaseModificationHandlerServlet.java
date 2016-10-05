@@ -69,7 +69,7 @@ public class LeaseModificationHandlerServlet extends HttpServlet {
         }
 
         try {
-            Thread.sleep(duration*1000);
+            Thread.sleep(duration*1000 + 1000);
         } catch (InterruptedException e ){}
 
         try {
