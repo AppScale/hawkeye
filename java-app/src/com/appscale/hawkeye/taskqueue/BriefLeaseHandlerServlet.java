@@ -23,9 +23,8 @@ public class BriefLeaseHandlerServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String payload = "hello world";
-        TaskOptions genericTaskParams = TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).payload(payload);
-        queue.add(genericTaskParams);
-        queue.add(genericTaskParams);
+        queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).payload(payload));
+        queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).payload(payload));
 
         try {
             Thread.sleep(SMALL_WAIT);
