@@ -456,6 +456,32 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
         return
+    elif test == 'payload-validity':
+      url = '{}/tasks'.format(url_prefix)
+
+      # Payloads containing invalid characters should be rejected.
+      payload = {'payloadBase64': 'invalid#payload'}
+      result = urlfetch.fetch(url, json.dumps(payload), 'POST')
+      if result.status_code != 400:
+        self.response.set_status(500)
+        error = 'Received {} with invalid payload'.format(result.status_code)
+        self.response.out.write(error)
+        return
+
+      # Payloads with incorrect padding should still be accepted.
+      payload = {'payloadBase64': 'asdf123'}
+      result = urlfetch.fetch(url, json.dumps(payload), 'POST')
+      if result.status_code != 200:
+        self.response.set_status(500)
+        self.response.out.write(result.content)
+        return
+
+      task = json.loads(result.content)
+      if task['payloadBase64'] != 'asdf120=':
+        self.response.set_status(500)
+        error = 'Received payload: {}'.format(task['payloadBase64'])
+        self.response.out.write(error)
+        return
 
   def delete(self):
     q = taskqueue.Queue(REST_PULL_QUEUE)

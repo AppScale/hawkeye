@@ -388,6 +388,9 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
     self.assertTrue(task_info['success'])
 
+    response = self.http_post('/taskqueue/pull/rest', 'test=payload-validity')
+    self.assertEquals(response.status, 200)
+
 
 class TransactionalTaskTest(HawkeyeTestCase):
   def run_hawkeye_test(self):
