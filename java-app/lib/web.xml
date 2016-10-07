@@ -116,6 +116,10 @@
         <servlet-name>LeaseModificationHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.taskqueue.LeaseModificationHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>BriefLeaseHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.BriefLeaseHandlerServlet</servlet-class>
+    </servlet>
 
     <servlet>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -269,6 +273,10 @@
     <servlet-mapping>
         <servlet-name>LeaseModificationHandlerServlet</servlet-name>
         <url-pattern>/java/taskqueue/pull/lease_modification</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BriefLeaseHandlerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/pull/brief_lease</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

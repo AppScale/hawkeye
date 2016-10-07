@@ -239,6 +239,24 @@ class LeaseModificationHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write('Task lease was modified after expiration.')
 
+class BriefLeaseHandler(webapp2.RequestHandler):
+  def get(self):
+    payload = 'hello world'
+    q = taskqueue.Queue(PULL_QUEUE_NAME)
+    to_add = [taskqueue.Task(payload=payload, method='PULL'),
+              taskqueue.Task(payload=payload, method='PULL')]
+    q.add(to_add)
+
+    # Account for short delay between add and lease availability in GAE.
+    time.sleep(SMALL_WAIT)
+
+    # Only 2 tasks should be leased despite asking for 3.
+    duration = .001  # 1 nanosecond.
+    tasks = q.lease_tasks(lease_seconds=duration, max_tasks=3)
+    if len(tasks) > 2:
+      self.error(500)
+      self.response.write('Leased: {}, Expected: {}'.format(tasks, to_add))
+
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key', None)
@@ -605,6 +623,7 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/pull', PullTaskHandler),
   ('/python/taskqueue/pull/rest', RESTPullQueueHandler),
   ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
+  ('/python/taskqueue/pull/brief_lease', BriefLeaseHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
 ], debug=True)
 

@@ -229,6 +229,15 @@ class LeaseModificationTest(HawkeyeTestCase):
     response = self.http_get('/taskqueue/pull/lease_modification')
     self.assertEquals(response.status, 200)
 
+class BriefLeaseTest(HawkeyeTestCase):
+  """ Ensures the same task is not leased twice in the same request. """
+  def tearDown(self):
+    self.http_delete('/taskqueue/pull')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/taskqueue/pull/brief_lease')
+    self.assertEquals(response.status, 200)
+
 class RESTPullQueueTest(HawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/taskqueue/pull/rest')
@@ -452,6 +461,7 @@ def suite(lang):
   suite.addTest(LeaseModificationTest())
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
+  suite.addTest(BriefLeaseTest())
 
   if lang == 'python':
     suite.addTest(RESTPullQueueTest())
