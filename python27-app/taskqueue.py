@@ -326,6 +326,9 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
         return
+    else:
+      self.response.set_status(500)
+      self.response.out.write('Test was not specified.')
 
   def post(self):
     key = self.request.get('key', None)
@@ -482,6 +485,9 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         error = 'Received payload: {}'.format(task['payloadBase64'])
         self.response.out.write(error)
         return
+    else:
+      self.response.set_status(500)
+      self.response.out.write('Test was not specified.')
 
   def delete(self):
     q = taskqueue.Queue(REST_PULL_QUEUE)
