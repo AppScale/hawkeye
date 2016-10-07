@@ -326,6 +326,9 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
         self.response.out.write(
           json.dumps({'success': False, 'error': tq_response.content}))
         return
+    else:
+      self.response.set_status(500)
+      self.response.out.write('Test was not specified.')
 
   def post(self):
     key = self.request.get('key', None)
@@ -464,7 +467,28 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
       result = urlfetch.fetch(url, json.dumps(payload), 'POST')
       if result.status_code != 400:
         self.response.set_status(500)
-        error = 'Received {} with invalid payload'.format(result.status_code)
+        error = 'Received {} with invalid payload: {}'.format(
+          result.status_code, repr(payload['payloadBase64']))
+        self.response.out.write(error)
+        return
+
+      # Payloads containing non-urlsafe characters should be rejected.
+      payload = {'payloadBase64': '/NDQaWRvMm/1UQ=='}
+      result = urlfetch.fetch(url, json.dumps(payload), 'POST')
+      if result.status_code != 400:
+        self.response.set_status(500)
+        error = 'Received {} with invalid payload: {}'.format(
+          result.status_code, repr(payload['payloadBase64']))
+        self.response.out.write(error)
+        return
+
+      # Payloads containing urlsafe replacements should be accepted.
+      payload = {'payloadBase64': '_NDQaWRvMm_1UQ=='}
+      result = urlfetch.fetch(url, json.dumps(payload), 'POST')
+      if result.status_code != 200:
+        self.response.set_status(500)
+        error = 'Received {} with valid payload: {}'.format(
+          result.status_code, repr(payload['payloadBase64']))
         self.response.out.write(error)
         return
 
@@ -473,15 +497,20 @@ class RESTPullQueueHandler(webapp2.RequestHandler):
       result = urlfetch.fetch(url, json.dumps(payload), 'POST')
       if result.status_code != 200:
         self.response.set_status(500)
-        self.response.out.write(result.content)
+        error = 'Error for payload {}: {}'.format(
+          repr(payload['payloadBase64']), result.content)
+        self.response.out.write(error)
         return
 
       task = json.loads(result.content)
       if task['payloadBase64'] != 'asdf120=':
         self.response.set_status(500)
-        error = 'Received payload: {}'.format(task['payloadBase64'])
+        error = 'Received payload: {}'.format(repr(task['payloadBase64']))
         self.response.out.write(error)
         return
+    else:
+      self.response.set_status(500)
+      self.response.out.write('Test was not specified.')
 
   def delete(self):
     q = taskqueue.Queue(REST_PULL_QUEUE)
