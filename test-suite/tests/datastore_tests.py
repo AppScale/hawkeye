@@ -516,6 +516,16 @@ class IndexVersatility(HawkeyeTestCase):
     response = self.http_get('/datastore/index_versatility')
     self.assertEquals(response.status, 200)
 
+class JavaProjectionQueryTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/projection_query')
+
+  def run_hawkeye_test(self):
+    response = self.http_post('/datastore/projection_query', '')
+    self.assertEquals(response.status, 200)
+    response = self.http_get('/datastore/projection_query')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -556,5 +566,6 @@ def suite(lang):
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
+    suite.addTest(JavaProjectionQueryTest())
 
   return suite

@@ -13,6 +13,7 @@ tests.datastore_tests.CrossGroupTransactionTest, ok
 tests.datastore_tests.DataStoreCleanupTest, ok
 tests.datastore_tests.JDOIntegrationTest, ok
 tests.datastore_tests.JPAIntegrationTest, ok
+tests.datastore_tests.JavaProjectionQueryTest, ok
 tests.datastore_tests.KindAwareInsertWithParentTest, ok
 tests.datastore_tests.KindlessAncestorQueryTest, ok
 tests.datastore_tests.KindlessQueryTest, ok
