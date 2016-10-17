@@ -49,7 +49,20 @@ public class ProjectionQueryServlet extends HttpServlet {
         }
         out.println("Fetched " + entities.size() + " entities with kind query.");
 
+        // There should be no results when projecting unindexed properties.
+        query = new Query(kind).addProjection(new PropertyProjection("unindexed_property", String.class));
+        pq = datastore.prepare(null, query);
+        entities = new ArrayList<>();
+        entities.addAll(pq.asList(fetchOptions));
+        if (entities.size() != 0) {
+            response.setStatus(500);
+            out.println("Fetched " + entities.size() + " entities with kind query. Expected 0.");
+            return;
+        }
+        out.println("Fetched 0 entities with kind query.");
+
         // Test single-property projection query.
+        query = new Query(kind).addProjection(new PropertyProjection("first_property", String.class));
         query.setFilter(new Query.FilterPredicate("first_property", Query.FilterOperator.GREATER_THAN_OR_EQUAL, "0"));
         pq = datastore.prepare(null, query);
         entities = new ArrayList<>();
@@ -113,6 +126,7 @@ public class ProjectionQueryServlet extends HttpServlet {
             String value = Integer.toString(i);
             e.setProperty("first_property", value);
             e.setProperty("second_property", value);
+            e.setUnindexedProperty("unindexed_property", value);
             datastore.put(null, e);
         }
         out.println("Inserted " + totalEntities + " " + kind + " entities.");
