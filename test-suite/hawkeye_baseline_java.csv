@@ -23,6 +23,7 @@ tests.datastore_tests.OrderedResultQueryTest, ok
 tests.datastore_tests.ProjectionQueryTest, ok
 tests.datastore_tests.QueryByKeyNameTest, ok
 tests.datastore_tests.QueryCursorTest, ok
+tests.datastore_tests.QueryLimitTest, ok
 tests.datastore_tests.SimpleKindAwareInsertTest, ok
 tests.datastore_tests.SimpleKindAwareQueryTest, ok
 tests.datastore_tests.SimpleTransactionTest, ok
