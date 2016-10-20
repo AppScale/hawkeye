@@ -516,6 +516,14 @@ class IndexVersatility(HawkeyeTestCase):
     response = self.http_get('/datastore/index_versatility')
     self.assertEquals(response.status, 200)
 
+class QueryLimitTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/limit_test')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/limit_test')
+    self.assertEquals(response.status, 200)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -556,5 +564,6 @@ def suite(lang):
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
+    suite.addTest(QueryLimitTest())
 
   return suite
