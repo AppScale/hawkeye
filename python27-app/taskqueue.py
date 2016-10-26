@@ -186,8 +186,9 @@ class PullTaskHandler(webapp2.RequestHandler):
       if rpc is not None:
         rpc.wait()
         task = rpc.get_result()
-        self.response.out.write(
-          json.dumps({'success': True}))
+        if not task.name:
+          self.response.write('Task name missing')
+        self.response.out.write(json.dumps({'success': True}))
       else:
         self.response.out.write(json.dumps({'success': False}))
 
