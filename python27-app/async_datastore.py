@@ -3,26 +3,16 @@ try:
 except ImportError:
   import simplejson as json
 
-from google.appengine.ext import webapp, db
 import time
 import uuid
 import webapp2
-import wsgiref
 
-class Project(db.Model):
-  project_id = db.StringProperty(required=True)
-  name = db.StringProperty(required=True)
-  description = db.StringProperty(required=True)
-  rating = db.IntegerProperty(required=True)
-  license = db.StringProperty(required=True)
+from datastore import (Counter,
+                       Module,
+                       Project)
 
-class Module(db.Model):
-  module_id = db.StringProperty(required=True)
-  name = db.StringProperty(required=True)
-  description = db.StringProperty(required=True)
-
-class Counter(db.Model):
-  counter = db.IntegerProperty(required=True)
+from google.appengine.ext import (db,
+                                  webapp)
 
 class Text(db.Model):
   text = db.StringProperty(required=True)
