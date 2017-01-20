@@ -136,12 +136,9 @@ class MemcacheCasHandler(webapp2.RequestHandler):
         self.response.out.write(json.dumps({ 'success' : True}))
     
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/memcache', MemcacheHandler),
   ('/python/memcache/multi', MemcacheMultiKeyHandler),
   ('/python/memcache/incr', MemcacheIncrHandler),
   ('/python/memcache/cas', MemcacheCasHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

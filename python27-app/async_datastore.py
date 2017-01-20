@@ -508,7 +508,7 @@ class Company(db.Model):
 class PhoneNumber(db.Model):
   work = db.StringProperty(required=True)
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/async_datastore/project', ProjectHandler),
   ('/python/async_datastore/multi', GetPutMultiHandler),
   ('/python/async_datastore/module', ModuleHandler),
@@ -522,7 +522,4 @@ application = webapp.WSGIApplication([
   ('/python/async_datastore/complex_cursor', ComplexCursorHandler),
   ('/python/async_datastore/count_query', CountQueryHandler),
   ('/python/async_datastore/transactions', TransactionHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

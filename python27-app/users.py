@@ -35,10 +35,7 @@ class LoginURLHandler(webapp2.RequestHandler):
       }
     self.response.out.write(json.dumps(info))
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/users/secure', AuthorizedAccessHandler),
   ('/python/users/home', LoginURLHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

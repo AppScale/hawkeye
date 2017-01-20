@@ -46,9 +46,6 @@ class CronHandler(webapp2.RequestHandler):
       return True
  
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/cron', CronHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]
