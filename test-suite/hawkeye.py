@@ -10,7 +10,7 @@ if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 import hawkeye_utils
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
+from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, search_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
 from tests import cron_tests
@@ -59,6 +59,7 @@ def init_test_suites(lang):
     'users' : user_tests.suite(lang),
     'xmpp' : xmpp_tests.suite(lang),
     'cron' : cron_tests.suite(lang),
+    'search' : search_tests.suite(lang),
   }
 
 def print_usage_and_exit(msg, myparser):
