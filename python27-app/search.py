@@ -73,7 +73,7 @@ class GetDocumentsRangeHandler(webapp2.RequestHandler):
     payload = json.loads(self.request.body)
     index = payload['index']
     start_id = payload['start_id']
-    limit = payload['limit']
+    limit = payload.get('limit')
     index = search.Index(name=index)
     documents = index.get_range(start_id=start_id, limit=limit)
     response = {'documents': [render_doc(document) for document in documents]}
