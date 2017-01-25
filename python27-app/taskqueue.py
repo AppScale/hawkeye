@@ -615,7 +615,7 @@ class CleanUpTaskEntities(webapp2.RequestHandler):
         break
     self.response.set_status(200)
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
   ('/python/taskqueue/worker', TaskCounterWorker),
@@ -626,7 +626,4 @@ application = webapp.WSGIApplication([
   ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
   ('/python/taskqueue/pull/brief_lease', BriefLeaseHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

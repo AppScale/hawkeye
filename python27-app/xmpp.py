@@ -169,10 +169,7 @@ class XmppReceiveHandler(xmpp_handlers.CommandHandler):
       'state': metadata.state
     }))
 
-application = webapp.WSGIApplication([
+urls = [
   (r'/python/xmpp/?', XmppGetHandler),
   (r'/_ah/xmpp/message/chat/?', XmppReceiveHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

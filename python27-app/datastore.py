@@ -1802,7 +1802,7 @@ class TestCompositeProjectionHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
   ('/python/datastore/project_modules', ProjectModuleHandler),
@@ -1828,7 +1828,4 @@ application = webapp.WSGIApplication([
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler)
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

@@ -51,10 +51,7 @@ class MirrorHandler(webapp2.RequestHandler):
   def delete(self):
     self.repulse()
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/env/var', GetConfigEnvironmentVariableHandler),
   ('/python/env/mirror', MirrorHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

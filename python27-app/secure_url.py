@@ -20,12 +20,9 @@ class NeverSecureHandler(webapp2.RequestHandler):
     self.response.out.write(json.dumps({ 'success' : True }))
 
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/secure/always', AlwaysSecureHandler),
   ('/python/secure/never', NeverSecureHandler),
   ('/python/secure/always/regex1/regex2', AlwaysSecureHandler),
   ('/python/secure/never/regex1/regex2', NeverSecureHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

@@ -285,7 +285,7 @@ class NDBProjectCursorHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(output))
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/ndb/project', NDBProjectHandler),
   ('/python/ndb/module', NDBModuleHandler),
   ('/python/ndb/project_modules', NDBProjectModuleHandler),
@@ -295,7 +295,4 @@ application = webapp.WSGIApplication([
   ('/python/ndb/project_license_filter', NDBProjectLicenseFilterHandler),
   ('/python/ndb/transactions', NDBTransactionHandler),
   ('/python/ndb/project_cursor', NDBProjectCursorHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]
