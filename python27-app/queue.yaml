@@ -15,3 +15,13 @@ queue:
 
 - name: rest-pull-queue
   mode: pull
+
+# Tasks with specified target
+- name: tasks-related-to-deprecated-version
+  target: previous.module_a
+
+- name: tasks-related-to-current-version
+  target: current.module_a
+
+- name: tasks-related-to-module_a
+  target: module_a    # default verion (current) expected to be used

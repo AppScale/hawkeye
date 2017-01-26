@@ -4,3 +4,6 @@
 logs
 out
 war
+.idea
+test-suite/hawkeye-logs
+test-suite/hawkeye_output.csv
