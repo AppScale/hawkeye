@@ -25,6 +25,15 @@ and deploy the Java, and Python 2.7 versions:
 appscale deploy hawkeye/java-app
 appscale deploy hawkeye/python27-app
 ```
+additionally you need to deploy two versions of module_a:
+```
+appscale deploy hawkeye/python27-app/module_a_previous.yaml
+appscale deploy hawkeye/python27-app/module_a_current.yaml
+```
+and finally mark v2 as default version for module_a:
+```
+appscale set-default-version module_a v2
+```
 
 Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Java running at 192.168.33.10:8080, and Hawkeye Python 2.7 running at 192.168.33.10:8081.
 

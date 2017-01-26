@@ -1,0 +1,13 @@
+application: hawkeyepython27
+service: module-a
+version: v2
+runtime: python27
+api_version: 1
+threadsafe: false
+
+builtins:
+- deferred: on
+
+handlers:
+- url: /python/modules/(.*)
+  script: modules_a_v2.app
