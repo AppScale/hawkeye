@@ -1,7 +1,15 @@
-from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
+import hawkeye_utils
 import json
-from time import sleep
+import Queue
+import urllib2
 import uuid
+
+from hawkeye_utils import (HawkeyeTestCase,
+                           HawkeyeConstants,
+                           HawkeyeTestSuite)
+
+from threading import Thread
+from time import sleep
 
 __author__ = 'hiranya'
 
@@ -533,6 +541,37 @@ class QueryLimitTest(HawkeyeTestCase):
     response = self.http_get('/datastore/limit_test')
     self.assertEquals(response.status, 200)
 
+class LongTxRead(HawkeyeTestCase):
+  ID = 'long-tx-test'
+  RESPONSES = Queue.Queue()
+
+  def tearDown(self):
+    self.http_delete('/datastore/long_tx_read?id={}'.format(self.ID))
+
+  def setUp(self):
+    self.http_post('/datastore/long_tx_read', 'id={}'.format(self.ID))
+
+  def run_hawkeye_test(self):
+    def fetch_succeeded(url):
+      try:
+        urllib2.urlopen(url)
+        self.RESPONSES.put(True)
+      except urllib2.HTTPError:
+        self.RESPONSES.put(False)
+
+    url = 'http://{}:{}/python/datastore/long_tx_read?id={}'.format(
+      hawkeye_utils.HOST, hawkeye_utils.PORT, self.ID)
+    thread1 = Thread(target=fetch_succeeded, args=(url,))
+    thread2 = Thread(target=fetch_succeeded, args=(url,))
+
+    thread1.start()
+    thread2.start()
+    thread1.join()
+    thread2.join()
+
+    self.assertTrue(self.RESPONSES.get())
+    self.assertTrue(self.RESPONSES.get())
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -570,6 +609,7 @@ def suite(lang):
     suite.addTest(RepeatedProperties())
     suite.addTest(CompositeProjection())
     suite.addTest(CursorQueries())
+    suite.addTest(LongTxRead())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())
