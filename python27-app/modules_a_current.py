@@ -12,22 +12,47 @@ class Entity(ndb.Model):
   """
   module = ndb.StringProperty(indexed=False)
   version = ndb.StringProperty(indexed=False)
-  new_field = ndb.StringProperty(default="new", indexed=False)
+  new_field = ndb.StringProperty(indexed=False)
+
+
+def render_entity(entity):
+  if not entity:
+    return None
+  return {
+    'id': entity.key.id(),
+    'module': entity.module,
+    'version': entity.version,
+    'new_field': entity.new_field
+  }
 
 
 class GetEntityHandler(webapp2.RequestHandler):
   """
-  New version of module-a has extended version of Entity model
-  and /get-entity handler returns entity with new field
+  This handler is implemented here and in modules_a_current.py
+  (there Entity class has new field, so handler is also updated to include it).
+  This implementation is also imported in modules_a_previous.py
   """
   def get(self):
-    entity_id = self.request.GET.get("id")
+    entity_id = self.request.get("id")
     entity = Entity.get_by_id(entity_id)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({
-      'module': entity.module,
-      'version': entity.version,
-      'new_field': entity.new_field,
+      'entity': render_entity(entity)
+    }))
+
+
+class GetEntitiesHandler(webapp2.RequestHandler):
+  """
+  This handler is implemented here and in modules_a_current.py
+  (there Entity class has new field, so handler is also updated to include it).
+  This implementation is also imported in modules_a_previous.py
+  """
+  def get(self):
+    entity_ids = self.request.get_all("id")
+    entities = ndb.get_multi([ndb.Key(Entity, id_) for id_ in entity_ids])
+    self.response.headers['Content-Type'] = "application/json"
+    self.response.out.write(json.dumps({
+      'entities': [render_entity(entity) for entity in entities]
     }))
 
 
@@ -35,14 +60,16 @@ class CreateEntityHandler(webapp2.RequestHandler):
   """
   For testing purposes it's also expected to be invoked using task queue.
   """
-  def post(self):
-    entity_id = self.request.POST.get("id")
-    Entity(id=entity_id, module="module-a", version="v2").put()
+  def get(self):
+    entity_id = self.request.get("id")
+    Entity(id=entity_id, module="module-a",
+           version="v2", new_field="new").put()
 
 
 # The second version of separate module "a"
 app = webapp2.WSGIApplication([
-  ('/python/modules/version-details', GetVersionDetailsHandler),
+  ('/python/modules/versions-details', GetVersionDetailsHandler),
   ('/python/modules/get-entity', GetEntityHandler),
+  ('/python/modules/get-entities', GetEntitiesHandler),
   ('/python/modules/create-entity', CreateEntityHandler),
 ])

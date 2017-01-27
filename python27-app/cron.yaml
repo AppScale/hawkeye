@@ -5,6 +5,6 @@ cron:
 
 # Default version of module_a should be called
 - description: module job
-  url: /python/modules/create_entity?id=cron
-  target: module_a
+  url: /python/modules/create-entity?id=cron
+  target: module-a
   schedule: every 1 minutes

@@ -3,11 +3,8 @@ module: module-a
 version: v1
 runtime: python27
 api_version: 1
-threadsafe: false
-
-builtins:
-- deferred: on
+threadsafe: true
 
 handlers:
 - url: /python/modules/(.*)
-  script: modules_a_v1.app
+  script: modules_a_previous.app
