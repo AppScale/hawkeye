@@ -10,10 +10,13 @@ queue:
 
 # Tasks with specified target
 - name: tasks-related-to-deprecated-version
-  target: previous.module_a
+  target: previous.module-a
+  rate: 1/s
 
 - name: tasks-related-to-current-version
-  target: current.module_a
+  target: current.module-a
+  rate: 1/s
 
-- name: tasks-related-to-module_a
-  target: module_a    # default verion (current) expected to be used
+- name: tasks-related-to-module-a
+  target: module-a    # default verion (current) expected to be used
+  rate: 1/s
