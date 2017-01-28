@@ -7,13 +7,18 @@ __author__ = 'hiranya'
 class TaskCounter(db.Model):
   count = db.IntegerProperty(indexed=False)
 
-def process(key):
-  counter = TaskCounter.get_by_key_name(key)
-  if counter is None:
-    counter = TaskCounter(key_name=key, count=1)
-  else:
+@db.transactional
+def increment_counter(key):
+  counter = db.get(key)
+  if counter is not None:
     counter.count += 1
+  else:
+    counter = TaskCounter(key_name=key.id_or_name(), count=1)
   counter.put()
+
+def process(key):
+  counter_key = db.Key.from_path('TaskCounter', key)
+  increment_counter(counter_key)
 
 def processEta(key, eta):
   actual = time.time()
