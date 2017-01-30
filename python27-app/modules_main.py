@@ -32,7 +32,7 @@ class GetVersionDetailsHandler(webapp2.RequestHandler):
   return different responses
   """
   def get(self):
-    self.response.headers['Content-Type'] = "application/json"
+    self.response.headers['Content-Type'] = 'application/json'
     current_module = get_current_module_name()
     self.response.out.write(json.dumps({
       'modules': get_modules(),
@@ -51,9 +51,9 @@ class GetEntityHandler(webapp2.RequestHandler):
   This implementation is also imported in modules_a_previous.py
   """
   def get(self):
-    entity_id = self.request.get("id")
+    entity_id = self.request.get('id')
     entity = Entity.get_by_id(entity_id)
-    self.response.headers['Content-Type'] = "application/json"
+    self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
       'entity': render_entity(entity)
     }))
@@ -66,9 +66,9 @@ class GetEntitiesHandler(webapp2.RequestHandler):
   This implementation is also imported in modules_a_previous.py
   """
   def get(self):
-    entity_ids = self.request.get_all("id")
+    entity_ids = self.request.get_all('id')
     entities = ndb.get_multi([ndb.Key(Entity, id_) for id_ in entity_ids])
-    self.response.headers['Content-Type'] = "application/json"
+    self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
       'entities': [render_entity(entity) for entity in entities]
     }))
@@ -82,14 +82,14 @@ class TaskCreateEntityHandler(webapp2.RequestHandler):
   entities will be created
   """
   def get(self):
-    entity_id = self.request.get("id")
-    queue = self.request.params.get("queue")
-    target = self.request.params.get("target")
+    entity_id = self.request.get('id')
+    queue = self.request.params.get('queue')
+    target = self.request.params.get('target')
     task = taskqueue.Task(
       url='/python/modules/create-entity',
       target=target,
-      method="GET",
-      params={"id": entity_id})
+      method='GET',
+      params={'id': entity_id})
     if queue:
       taskqueue.Queue(queue).add(task)
     else:
@@ -101,18 +101,17 @@ class CreateEntityHandler(webapp2.RequestHandler):
   For testing purposes it's also expected to be invoked using task queue.
   """
   def get(self):
-    entity_id = self.request.get("id")
-    Entity(id=entity_id, module="default", version="1").put()
+    entity_id = self.request.get('id')
+    Entity(id=entity_id, module='default', version='1').put()
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):
   def get(self):
-    entity_id = self.request.params.get("id")
-    queue_name = self.request.params.get("queue")
-    target = self.request.params.get("target")
+    entity_id = self.request.params.get('id')
+    queue_name = self.request.params.get('queue')
+    target = self.request.params.get('target')
     if queue_name:
       deferred.defer(deferred_create_entity, entity_id=entity_id,
-
                      _queue=queue_name, _target=target)
     else:
       deferred.defer(deferred_create_entity, entity_id=entity_id,
@@ -131,11 +130,11 @@ class CleanUpHandler(webapp2.RequestHandler):
 
 # URLs to be added to the main App (see main.py)
 urls = [
-  ('/python/modules/versions-details', GetVersionDetailsHandler),
-  ('/python/modules/get-entity', GetEntityHandler),
-  ('/python/modules/get-entities', GetEntitiesHandler),
-  ('/python/modules/create-entity', CreateEntityHandler),
-  ('/python/modules/add-task', TaskCreateEntityHandler),
-  ('/python/modules/defer-task', DeferredCreateEntityHandler),
-  ('/python/modules/clean-up', CleanUpHandler),
+  ('/modules/versions-details', GetVersionDetailsHandler),
+  ('/modules/get-entity', GetEntityHandler),
+  ('/modules/get-entities', GetEntitiesHandler),
+  ('/modules/create-entity', CreateEntityHandler),
+  ('/modules/add-task', TaskCreateEntityHandler),
+  ('/modules/defer-task', DeferredCreateEntityHandler),
+  ('/modules/clean-up', CleanUpHandler),
 ]
