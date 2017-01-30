@@ -33,9 +33,9 @@ class GetEntityHandler(webapp2.RequestHandler):
   This implementation is also imported in modules_a_previous.py
   """
   def get(self):
-    entity_id = self.request.get("id")
+    entity_id = self.request.get('id')
     entity = Entity.get_by_id(entity_id)
-    self.response.headers['Content-Type'] = "application/json"
+    self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
       'entity': render_entity(entity)
     }))
@@ -48,9 +48,9 @@ class GetEntitiesHandler(webapp2.RequestHandler):
   This implementation is also imported in modules_a_previous.py
   """
   def get(self):
-    entity_ids = self.request.get_all("id")
+    entity_ids = self.request.get_all('id')
     entities = ndb.get_multi([ndb.Key(Entity, id_) for id_ in entity_ids])
-    self.response.headers['Content-Type'] = "application/json"
+    self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
       'entities': [render_entity(entity) for entity in entities]
     }))
@@ -61,15 +61,15 @@ class CreateEntityHandler(webapp2.RequestHandler):
   For testing purposes it's also expected to be invoked using task queue.
   """
   def get(self):
-    entity_id = self.request.get("id")
-    Entity(id=entity_id, module="module-a",
-           version="v2", new_field="new").put()
+    entity_id = self.request.get('id')
+    Entity(id=entity_id, module='module-a',
+           version='v2', new_field='new').put()
 
 
-# The second version of separate module "a"
+# The second version of separate module 'a'
 app = webapp2.WSGIApplication([
-  ('/python/modules/versions-details', GetVersionDetailsHandler),
-  ('/python/modules/get-entity', GetEntityHandler),
-  ('/python/modules/get-entities', GetEntitiesHandler),
-  ('/python/modules/create-entity', CreateEntityHandler),
+  ('/modules/versions-details', GetVersionDetailsHandler),
+  ('/modules/get-entity', GetEntityHandler),
+  ('/modules/get-entities', GetEntitiesHandler),
+  ('/modules/create-entity', CreateEntityHandler),
 ])

@@ -1,6 +1,9 @@
 import requests
 
 
+DEFAULT_MODULE = "default"
+
+
 class UnknownVersion(Exception):
   pass
 
@@ -71,7 +74,6 @@ class AppURLBuilder(object):
   """
 
   versions_api_method = "/api/versions"
-  DEFAULT_MODULE = "default"
 
   class AppVersion(object):
     def __init__(self, version_details):
@@ -119,7 +121,7 @@ class AppURLBuilder(object):
     }
     self.app_default_versions = {
       app_version.app_id: app_version for app_version in app_versions
-      if app_version.module == self.DEFAULT_MODULE and app_version.is_default
+      if app_version.module == DEFAULT_MODULE and app_version.is_default
     }
 
     self.dashboard_host = dashboard_host
