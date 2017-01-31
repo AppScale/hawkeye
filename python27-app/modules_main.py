@@ -86,7 +86,7 @@ class TaskCreateEntityHandler(webapp2.RequestHandler):
     queue = self.request.params.get('queue')
     target = self.request.params.get('target')
     task = taskqueue.Task(
-      url='/python/modules/create-entity',
+      url='/modules/create-entity',
       target=target,
       method='GET',
       params={'id': entity_id})

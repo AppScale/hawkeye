@@ -10,11 +10,11 @@ queue:
 
 # Tasks with specified target
 - name: tasks-related-to-deprecated-version
-  target: previous.module-a
+  target: v1.module-a
   rate: 1/s
 
 - name: tasks-related-to-current-version
-  target: current.module-a
+  target: v2.module-a
   rate: 1/s
 
 - name: tasks-related-to-module-a
