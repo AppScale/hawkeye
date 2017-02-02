@@ -1,16 +1,11 @@
-import wsgiref
-from google.appengine.api import xmpp
+import json
+import logging
 import os
+import time
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
-
+from google.appengine.api import xmpp
 from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import xmpp_handlers
-
-__author__ = 'chris'
 
 # To send XMPP messages to ourself, we need to know our
 # own hostname. For App Engine, it's always a constant,
