@@ -4,7 +4,8 @@ import uuid
 from time import sleep
 
 from hawkeye_utils import HawkeyeTestCase
-from hawkeye_utils import HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestSuite
+
 
 class PushQueueTest(HawkeyeTestCase):
   def run_hawkeye_test(self):

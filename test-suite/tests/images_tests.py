@@ -2,6 +2,8 @@ import json
 from PIL import Image
 from time import sleep
 import StringIO
+
+import hawkeye_test_runner
 from hawkeye_utils import HawkeyeTestCase
 import hawkeye_utils
 
@@ -82,7 +84,7 @@ class ImageRotateTransformTest(HawkeyeTestCase):
     self.assertEquals(logo_info['format'], 0)
 
 def suite(lang):
-  suite = hawkeye_utils.HawkeyeTestSuite('Images Test Suite', 'images')
+  suite = hawkeye_test_runner.HawkeyeTestSuite('Images Test Suite', 'images')
   suite.addTest(ImageDeleteTest())
   suite.addTest(ImageUploadTest())
   suite.addTest(ImageLoadTest())

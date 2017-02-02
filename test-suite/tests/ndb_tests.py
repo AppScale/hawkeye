@@ -1,4 +1,5 @@
-from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants, HawkeyeTestSuite
+from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants
+from hawkeye_test_runner import HawkeyeTestSuite
 import json
 from time import sleep
 import uuid

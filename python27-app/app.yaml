@@ -71,9 +71,6 @@ handlers:
 - url: /_ah/xmpp/message/chat/?
   script: xmpp.py
 
-- url: /python/search/(.*)
-  script: search.py
-
 inbound_services:
 - xmpp_message
 
