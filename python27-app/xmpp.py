@@ -79,17 +79,20 @@ class XmppGetHandler(webapp.RequestHandler):
       }))
 
   def post(self):
-    """Sends an XMPP from this app to itself.
-    """
-    # send the message
-    xmpp.send_message(MY_JABBER_ID, self.MESSAGE)
+    """Sends an XMPP from this app to itself. """
+    @db.transactional
+    def update_state(key):
+      metadata = db.get(key)
+      if metadata is None:
+        XmppMetadata(key_name=TEST_KEYNAME, state=XmppMessages.SENT).put()
+      else:
+        # The 'received' handler may have already updated the state.
+        assert metadata.state == XmppMessages.RECEIVED
 
-    # update our metadata
-    # TODO(cgb): Add a try/except on this and return
-    # status=False if we run into a Datastore exception
-    metadata = XmppMetadata(key_name = self.TEST_KEYNAME,
-      state = self.MESSAGE_SENT)
-    metadata.put()
+    xmpp.send_message(MY_JABBER_ID, XmppMessages.HELLO)
+
+    entity_key = db.Key.from_path('XmppMetadata', TEST_KEYNAME)
+    update_state(entity_key)
 
     # write out the result, in json
     self.response.headers['Content-Type'] = "application/json"
