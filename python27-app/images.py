@@ -65,9 +65,6 @@ class ProjectLogoHandler(webapp2.RequestHandler):
   def delete(self):
     db.delete(ProjectLogo.all())
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/images/logo', ProjectLogoHandler),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

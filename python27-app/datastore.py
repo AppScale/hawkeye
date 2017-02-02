@@ -1802,7 +1802,25 @@ class TestCompositeProjectionHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write(utils.format_errors(result))
 
-application = webapp.WSGIApplication([
+class LongTransactionRead(webapp2.RequestHandler):
+  def get(self):
+    entity_key = ndb.Key(TestModel, self.request.get('id'))
+
+    @ndb.transactional
+    def get_in_tx():
+      entity = entity_key.get()
+      time.sleep(3)
+
+    get_in_tx()
+
+  def post(self):
+    TestModel(id=self.request.get('id')).put()
+
+  def delete(self):
+    entity_key = ndb.Key(TestModel, self.request.get('id'))
+    entity_key.delete()
+
+urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
   ('/python/datastore/project_modules', ProjectModuleHandler),
@@ -1827,8 +1845,6 @@ application = webapp.WSGIApplication([
   ('/python/datastore/multiple_equality_filters', TestMultipleEqualityFiltersHandler),
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
-  ('/python/datastore/composite_projection', TestCompositeProjectionHandler)
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+  ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
+  ('/python/datastore/long_tx_read', LongTransactionRead)
+]
