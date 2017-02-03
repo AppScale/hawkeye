@@ -1,6 +1,8 @@
 import hawkeye_utils
 import json
 import Queue
+import time
+import urllib
 import urllib2
 import uuid
 
@@ -572,6 +574,35 @@ class LongTxRead(HawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class TxInvalidation(HawkeyeTestCase):
+  KEY = 'tx-invalidation-test'
+  RESPONSE = None
+
+  def tearDown(self):
+    self.http_delete('/datastore/tx_invalidation?key={}'.format(self.KEY))
+
+  def run_hawkeye_test(self):
+    def tx_succeeded(url, payload):
+      response = urllib2.urlopen(url, payload)
+      self.RESPONSE = response.read()
+
+    url = 'http://{}:{}/python/datastore/tx_invalidation'.format(
+      hawkeye_utils.HOST, hawkeye_utils.PORT)
+
+    tx_payload = urllib.urlencode({'key': self.KEY, 'txn': True})
+    thread = Thread(target=tx_succeeded, args=(url, tx_payload))
+    thread.start()
+
+    time.sleep(.5)
+
+    non_tx_payload = urllib.urlencode({'key': self.KEY, 'txn': False})
+    urllib2.urlopen(url, non_tx_payload)
+
+    thread.join()
+    response = json.loads(self.RESPONSE)
+    # The first transaction should be invalidated by the concurrent put.
+    self.assertFalse(response['txnSucceeded'])
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -610,6 +641,7 @@ def suite(lang):
     suite.addTest(CompositeProjection())
     suite.addTest(CursorQueries())
     suite.addTest(LongTxRead())
+    suite.addTest(TxInvalidation())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())

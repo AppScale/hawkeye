@@ -1814,6 +1814,29 @@ class LongTransactionRead(webapp2.RequestHandler):
     entity_key = ndb.Key(TestModel, self.request.get('id'))
     entity_key.delete()
 
+class TxInvalidation(webapp2.RequestHandler):
+  def post(self):
+    @ndb.transactional(retries=0)
+    def get_and_put(key):
+      key.get()
+      time.sleep(1)
+      TestModel(key=key, field='transactional').put()
+
+    transactional = self.request.get('txn').lower() == 'true'
+    entity_key = ndb.Key(TestModel, self.request.get('key'))
+    if transactional:
+      try:
+        get_and_put(entity_key)
+        response = {'txnSucceeded': True}
+      except db.TransactionFailedError:
+        response = {'txnSucceeded': False}
+      self.response.write(json.dumps(response))
+    else:
+      TestModel(key=entity_key, field='outside transaction').put()
+
+  def delete(self):
+    ndb.Key(TestModel, self.request.get('key')).delete()
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1840,5 +1863,6 @@ urls = [
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
-  ('/python/datastore/long_tx_read', LongTransactionRead)
+  ('/python/datastore/long_tx_read', LongTransactionRead),
+  ('/python/datastore/tx_invalidation', TxInvalidation)
 ]

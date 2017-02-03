@@ -48,6 +48,7 @@ tests.datastore_tests.KindlessAncestorQueryTest, ok
 tests.datastore_tests.KindlessQueryTest, ok
 tests.datastore_tests.LimitedResultQueryTest, ok
 tests.datastore_tests.LongTxRead, ok
+tests.datastore_tests.TxInvalidation, ok
 tests.datastore_tests.MaxGroupsInTxn, ok
 tests.datastore_tests.MultipleEqualityFilters, ok
 tests.datastore_tests.OrderedKindAncestorQueryTest, ok
