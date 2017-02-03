@@ -1,24 +1,18 @@
-try:
-  import json
-except ImportError:
-  import simplejson as json
-
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
 import datetime
+import json
 import logging
 import random
 import string
 import time
 import unittest
+import utils
 import uuid
 import webapp2
-import wsgiref
-
-import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
