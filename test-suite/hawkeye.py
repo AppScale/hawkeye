@@ -22,9 +22,13 @@ SUPPORTED_LANGUAGES = ['java', 'python']
 
 def build_suites_list(lang, include, exclude):
   """
-  :param lang: language to test, either 'python' or 'java'
-  :param include: suites to return (use empty list to include all)
-  :param exclude: suites to skip (is ignored if 'include' is specified)
+  Args:
+    lang: language to test, either 'python' or 'java'
+    include: a list of str - suites to return (use empty list to include all)
+    exclude: a list of str - suites to skip
+      ('exclude' is ignored if 'include' is specified)
+  Returns:
+    a list of HawkeyeTestSuite for specified language
   """
   defined_suites  = {
     'blobstore' : blobstore_tests.suite(lang),
@@ -62,9 +66,11 @@ def build_suites_list(lang, include, exclude):
 def print_usage_and_exit(msg):
   """
   Print out usage for this program and  and exit.
-  :param msg: error message to print out.
+
+  Args:
+    msg: error message to print out.
   """
-  print msg
+  print(msg)
   build_option_parser().print_help()
   exit(1)
 

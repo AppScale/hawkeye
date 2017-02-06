@@ -10,10 +10,12 @@ except ImportError:
   def cprint(msg, **kwargs):
     """
     Fallback definition of cprint in case the termcolor module is not available.
-    :param msg: string to be printed stdout.
-    :param kwargs: arguments for cprint. It is ignored.
+
+    Args:
+      msg: a str to be printed stdout.
+      kwargs: keyword arguments for cprint. It is ignored in dummy cprint
     """
-    print msg
+    print(msg)
 
 
 class HawkeyeTestSuite(unittest.TestSuite):
@@ -23,11 +25,13 @@ class HawkeyeTestSuite(unittest.TestSuite):
 
   def __init__(self, name, short_name, **kwargs):
     """
-    :param name: A descriptive name for the test suite
-    :param short_name: A shorter but unique name for the test suite.
-             Should be ideally just one word. This short name is used to name
-             log files and other command line options related to this
-             test suite.
+    Args:
+      name: A descriptive name for the test suite
+      short_name: A shorter but unique name for the test suite.
+        Should be ideally just one word. This short name is used to name
+        log files and other command line options related to this
+        test suite.
+      kwargs: keyword arguments to be passed to super __init__
     """
     super(HawkeyeTestSuite, self).__init__(**kwargs)
     self.name = name
@@ -95,8 +99,11 @@ class HawkeyeTestResult(unittest.TextTestResult):
 
 def save_report_dict_to_csv(report_dict, file_name):
   """
-  :param report_dict: dictionary with statuses of tests (<test_id>: <status>)
-  :param file_name: name of csv file where report should be saved
+  Persists dictionary to csv file in alphabetical order of keys
+
+  Args:
+    report_dict: a dict with statuses of tests (<test_id>: <status>)
+    file_name: a string - name of csv file where report should be saved
   """
   with open(file_name, "w") as csv_file:
     csv_writer = csv.writer(csv_file)
@@ -107,14 +114,20 @@ def save_report_dict_to_csv(report_dict, file_name):
 def load_report_dict_from_csv(file_name):
   """
   Loads test statuses report from csv file
-  :param file_name: name of source csv file
-  :return: dictionary with statuses of tests (<test_id>: <status>)
+
+  Args:
+    file_name: name of source csv file
+  Returns:
+    a dictionary with statuses of tests (<test_id>: <status>)
   """
   with open(file_name, "r") as csv_file:
     return {test_id: result for test_id, result in csv.reader(csv_file)}
 
 
 class ReportsDiff(object):
+  """
+  Util class which defines structure for storing difference between test reports
+  """
   def __init__(self):
     self.match = []   # tuples (test_id, status)
     self.do_not_match = []   # tuples (test_id, first, second)
@@ -126,9 +139,12 @@ def compare_test_reports(first_report_dict, second_report_dict):
   """
   Compares two reports and returns ReportsDiff with detailed difference of
   two reports. Supposed to be used for comparison to baseline.
-  :param first_report_dict: dict with statuses of tests (<test_id>: <status>)
-  :param second_report_dict: dict with statuses of tests (<test_id>: <status>)
-  :return: ReportDiff
+
+  Args:
+    first_report_dict: a dict with statuses of tests (<test_id>: <status>)
+    second_report_dict: a dict with statuses of tests (<test_id>: <status>)
+  Returns:
+    A ReportDiff with details about difference between 1st and 2nd reports
   """
   diff = ReportsDiff()
 
@@ -160,11 +176,12 @@ class HawkeyeSuitesRunner(object):
 
   def __init__(self, language, logs_dir, baseline_file, verbosity=1):
     """
-    :param language: 'python' or 'java' - is used to build filename of error log
-    :param logs_dir: Directory to save files with errors report
-    :param baseline_file: name of baseline file to compare results with
-    :param verbosity: is passed to TextTestRunner and HawkeyeTestResult. Defines
-      how many details will be written to stdout
+    Args:
+      language: 'python' or 'java' - is used to build filename of error log
+      logs_dir: a string - path to directory to save files with errors report
+      baseline_file: name of baseline file to compare results with
+      verbosity: is passed to TextTestRunner and HawkeyeTestResult. Defines
+        how many details will be written to stdout
     """
     self.language = language
     self.logs_dir = logs_dir
@@ -176,12 +193,14 @@ class HawkeyeSuitesRunner(object):
     """
     Iterates through hawkeye_suites and executes containing tests.
     For each failed suite file with error details is saved.
-    Summarized report is build.
-    :param hawkeye_suites: list of HawkeyeTestSuite objects
+    Summarized report is built.
+
+    Args:
+      hawkeye_suites: list of HawkeyeTestSuite objects
     """
     for suite in hawkeye_suites:
-      print "\n{}".format(suite.name)
-      print "=" * len(suite.name)
+      print("\n{}".format(suite.name))
+      print("=" * len(suite.name))
       test_runner = unittest.TextTestRunner(resultclass=HawkeyeTestResult,
                                             verbosity=self.verbosity,
                                             stream=sys.stdout)
@@ -190,7 +209,7 @@ class HawkeyeSuitesRunner(object):
 
       self.suites_report.update(result.report_dict)
       if result.errors or result.failures:
-        self.save_error_details(suite.short_name, result)
+        self._save_error_details(suite.short_name, result)
 
   ERR_TEMPLATE = (
     "======================================================================\n"
@@ -199,12 +218,14 @@ class HawkeyeSuitesRunner(object):
     "{error}\n"
   )
 
-  def save_error_details(self, suite_short_name, text_test_result):
+  def _save_error_details(self, suite_short_name, text_test_result):
     """
     Saves error details (related to specific suite)
     to a file in logs directory
-    :param suite:
-    :param text_test_result:
+
+    Args:
+      suite_short_name: a string - short name of HawkeyeTestSuite
+      text_test_result: a HawkeyeTestResult - test result with errors
     """
     error_details_file = "{logs_dir}/{suite}-{lang}-errors.log".format(
       logs_dir=self.logs_dir, suite=suite_short_name, lang=self.language)
@@ -221,7 +242,9 @@ class HawkeyeSuitesRunner(object):
   def print_summary(self, verbose):
     """
     Prints comparison to baseline.
-    :param verbose: If verbose is True - details about difference is printed
+
+    Args:
+      verbose: If verbose is True - details about difference is printed
     """
     baseline_report = load_report_dict_from_csv(self.baseline_file)
     diff = compare_test_reports(baseline_report, self.suites_report)
