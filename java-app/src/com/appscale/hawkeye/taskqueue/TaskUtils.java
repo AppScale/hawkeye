@@ -23,8 +23,8 @@ public class TaskUtils {
     public synchronized static void process(String keyString) {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-        int retries = 5;
-        while (true) {
+        int maxTries = 5;
+        for (int tryNum=1; tryNum<=maxTries; tryNum++) {
             Transaction txn = datastore.beginTransaction();
             try {
                 Key counterKey = KeyFactory.createKey(TASK_COUNTER, keyString);
@@ -43,9 +43,8 @@ public class TaskUtils {
                 txn.commit();
                 break;
             } catch (ConcurrentModificationException e) {
-                if (retries == 0) { throw e; }
+                if (tryNum == maxTries) { throw e; }
             }
-            --retries;
         }
     }
 
