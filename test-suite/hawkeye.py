@@ -1,10 +1,34 @@
 #!/usr/bin/python
-""" hawkeye.py: Run API fidelity tests on AppScale. """
+"""
+hawkeye.py: Run API fidelity tests on AppScale.
+
+Usage:
+  hawkeye.py [options]
+
+Options:
+  -h, --help            # show this help message and exit
+  -s SERVER --server=SERVER  #Hostname of the target AppEngine server
+  -p PORT --port=PORT  # Port of the target AppEngine server
+  -l LANG --lang=LANG  # Language binding to test (eg: python, python27, java)
+  --user=USER          # Admin username (defaults to a@a.com)
+  --pass=PASSWORD      # Admin password (defaults to aaaaaa)
+  -c, --console        # Log errors and failures to console
+  --suites=SUITES      # A comma separated list of suites to run
+  --exclude-suites=EXCLUDE_SUITES # A comma separated list of suites to exclude
+  --baseline           # Turn on verbose reporting for baseline comparison
+  --log-dir=BASE_DIR   # Directory to store error logs.
+  --keep-old-logs      # Keep existing hawkeye logs
+
+TODO: https://pypi.python.org/pypi/docopt
+"""
 
 import optparse
 import os
 import sys
 
+from application import Application, AppURLBuilder
+from application_versions import get_versions_list_from_csv
+from hawkeye_shared import shared
 from hawkeye_test_runner import HawkeyeSuitesRunner, save_report_dict_to_csv
 
 if not sys.version_info[:2] > (2, 6):
@@ -18,6 +42,10 @@ from tests import (
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
+APP_IDS = {
+  'java': 'hawkeyejava',
+  'python': 'hawkeyepython27'
+}
 
 
 def build_suites_list(lang, include, exclude):
@@ -77,6 +105,7 @@ def print_usage_and_exit(msg):
 
 def build_option_parser():
   parser = optparse.OptionParser()
+  # https://www.youtube.com/watch?v=pXhcPJK5cMc&feature=youtu.be
   parser.add_option('-s', '--server', action='store',
     type='string', dest='server',
     help='Hostname of the target AppEngine server')
@@ -142,6 +171,18 @@ if __name__ == '__main__':
   hawkeye_utils.HOST = options.server
   hawkeye_utils.PORT = options.port
   hawkeye_utils.LANG = options.lang
+
+  # Initialize Application object for communication with GAE app
+  app_versions = get_versions_list_from_csv("versions.csv", options.server)
+  url_builder = AppURLBuilder(app_versions)
+  app_id = APP_IDS[options.lang]
+  application = Application(app_id, url_builder)
+
+  # Set hawkeye shared parameters
+  shared.app = application
+  shared.language = options.lang
+  shared.user = options.user
+  shared.password = options.password
 
   if options.console:
     hawkeye_utils.CONSOLE_MODE = True

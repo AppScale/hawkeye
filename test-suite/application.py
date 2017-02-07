@@ -1,5 +1,8 @@
 import requests
 
+from application_versions import AppVersion
+from hawkeye_shared import shared
+
 
 class UnknownVersion(Exception):
   pass
@@ -23,64 +26,90 @@ class Application(object):
     self._url_builder = url_builder
     self._verify_certificate = verify_certificate
 
+  @property
+  def app_id(self):
+    return self._app_id
+
   def _put_kwargs_defaults(self, kwargs):
     if "verify" not in kwargs:
         kwargs["verify"] = self._verify_certificate
     return kwargs
 
   def get(self, path, module=None, version=None, https=False, **kwargs):
-    return requests.get(
-        self._url_builder.build_url(self._app_id, module, version, path, https),
-        **self._put_kwargs_defaults(kwargs)
-    )
+    """
+    Sends GET request to specified module and version of application.
+    If module or version are missed, then default one will be used.
+
+    Args:
+      path: a string - path to http method. It can contain '{lang}'
+            which will be replaced with application language
+      module: a string - identifies which module should be used
+      version: a string - identifies which version of module should be used
+      https: a boolean - determines if https should be used
+      kwargs: kwargs to be passed to requests.get function
+    Returns:
+       request.Response object
+    """
+    url = self._url_builder.build_url(
+      self._app_id, module, version, path, https)
+    return requests.get(url, **self._put_kwargs_defaults(kwargs))
 
   def post(self, path, module=None, version=None, https=False, **kwargs):
-    return requests.post(
-        self._url_builder.build_url(self._app_id, module, version, path, https),
-        **self._put_kwargs_defaults(kwargs)
-    )
+    """
+    Sends POST request to specified module and version of application.
+    If module or version are missed, then default one will be used.
+
+    Args:
+      path: a string - path to http method. It can contain '{lang}'
+            which will be replaced with application language
+      module: a string - identifies which module should be used
+      version: a string - identifies which version of module should be used
+      https: a boolean - determines if https should be used
+      kwargs: kwargs to be passed to requests.post function
+    Returns:
+       request.Response object
+    """
+    url = self._url_builder.build_url(
+      self._app_id, module, version, path, https)
+    return requests.post(url, **self._put_kwargs_defaults(kwargs))
 
   def put(self, path, module=None, version=None, https=False, **kwargs):
-    return requests.put(
-        self._url_builder.build_url(self._app_id, module, version, path, https),
-        **self._put_kwargs_defaults(kwargs)
-    )
+    """
+    Sends PUT request to specified module and version of application.
+    If module or version are missed, then default one will be used.
+
+    Args:
+      path: a string - path to http method. It can contain '{lang}'
+            which will be replaced with application language
+      module: a string - identifies which module should be used
+      version: a string - identifies which version of module should be used
+      https: a boolean - determines if https should be used
+      kwargs: kwargs to be passed to requests.put function
+    Returns:
+       request.Response object
+    """
+    url = self._url_builder.build_url(
+      self._app_id, module, version, path, https)
+    return requests.put(url, **self._put_kwargs_defaults(kwargs))
 
   def delete(self, path, module=None, version=None, https=False, **kwargs):
-    return requests.delete(
-        self._url_builder.build_url(self._app_id, module, version, path, https),
-        **self._put_kwargs_defaults(kwargs)
-    )
+    """
+    Sends DELETE request to specified module and version of application.
+    If module or version are missed, then default one will be used.
 
-
-class AppVersion(object):
-
-  DEFAULT_MODULE = "default"
-
-  def __init__(self, app_id, version, module,
-               http_url, https_url, is_default_for_module):
-    self.app_id = app_id
-    self.version = version
-    self.module = module
-    self.http_url = http_url
-    self.https_url = https_url
-    self.is_default_for_module = is_default_for_module
-    self.full_name = self.get_full_name(self.app_id, self.module, self.version)
-
-  @property
-  def is_default_module(self):
-    return self.module == self.DEFAULT_MODULE
-
-  @staticmethod
-  def get_full_name(app_id, module, version):
-    if version and not module:
-      raise TypeError("Argument 'module' is required if version is specified")
-
-    if version:
-      return "{v}.{m}.{app}".format(v=version, m=module, app=app_id)
-    if module:
-      return "{m}.{app}".format(m=module, app=app_id)
-    return app_id
+    Args:
+      path: a string - path to http method. It can contain '{lang}'
+            which will be replaced with application language
+      module: a string - identifies which module should be used
+      version: a string - identifies which version of module should be used
+      https: a boolean - determines if https should be used
+      kwargs: kwargs to be passed to requests.delete function
+    Returns:
+       request.Response object
+    """
+    url = self._url_builder.build_url(
+      self._app_id, module, version, path, https)
+    return requests.delete(url, **self._put_kwargs_defaults(kwargs))
 
 
 class AppURLBuilder(object):
@@ -93,35 +122,85 @@ class AppURLBuilder(object):
   """
 
   def __init__(self, app_versions):
-    # Save version details into dict for quick access
-    self.versions_dict = {
+    """
+    Args:
+      app_versions: a list of AppVersion - description of application versions
+        available for test cases.
+    """
+    # Find default versions for modules and globally for applications
+    modules = set((v.module for v in app_versions))
+    module_default_versions = [
+      v for v in app_versions if v.is_default_for_module
+    ]
+    app_default_versions = [
+      v for v in module_default_versions if v.is_default_module
+    ]
+
+    # Verify if every single module has default version
+    if len(modules) != len(module_default_versions):
+      raise ImproperVersionsList("Some of modules doesn't have default version")
+
+    # Save version details into dict for a quick access
+    self._versions_dict = {
       app_version.full_name: app_version for app_version in app_versions
     }
-    # TODO
-    # Add moduleX.appY and appY full_names with link to default versions
 
-    # TODO
-    # Verify if default versions are specified for each Module!
-    self.app_default_versions = {
-      app_version.app_id: app_version for app_version in app_versions
-      if app_version.is_default_module and app_version.is_default_for_module
-    }
+    # Add short links to module default versions
+    self._versions_dict.update({
+                                 AppVersion.get_version_alias(v.app_id, v.module)
+                                 for v in module_default_versions
+                                 })
+
+    # Add shorter links to application default versions
+    self._versions_dict.update({
+                                 AppVersion.get_version_alias(v.app_id)
+                                 for v in app_default_versions
+                                 })
+
+    # Finally self.versions_dict contains items like these:
+    #       "old-version.moduleA.appX": <AppVersion objectA>,
+    #   "default-version.moduleA.appX": <AppVersion objectB>,
+    #                   "moduleA.appX": <AppVersion objectB>,
+    #      "main-version.default.appX": <AppVersion objectC>,
+    #                   "default.appX": <AppVersion objectC>,
+    #                           "appX": <AppVersion objectC>
 
   def build_url(self, app_id, module, version, path, https):
-    # Get full name of specific version
-    version_full_name = AppVersion.get_full_name(app_id, module, version)
+    """
+    Like DNS returns IP for domain name, build_url returns full URL for app_id,
+    module, version, path and schema (http/https)
 
-    app_version = self.versions_dict.get(version_full_name)
+    Args:
+      app_id: a string - application ID of running app
+      module: a string - module name; can be None if version is None,
+          in this case default version of default module will be used)
+      version: a string - version name ;can be None,
+          in this case default version of module will be used
+      path: a string - path to http method, it can contain '{lang}' which
+          will be converted to current hawkeye language (shared.language)
+          e.g.: /{lang}/product/add
+      https: a boolean - shows if https should be used instead of http
+
+    Returns:
+      Full URL, e.g. "https://192.168.33.10:8082/api/product/add"
+    """
+    # Allow testcases to leave a placeholder for language in path
+    path = path.format(lang=shared.language)
+
+    # Get full (or short if module/version is None) name of specific version
+    version_full_name = AppVersion.get_version_alias(app_id, module, version)
+
+    app_version = self._versions_dict.get(version_full_name)
     if not app_version:
-      available = sorted(self.versions_dict)
+      known = sorted(self._versions_dict)
       raise UnknownVersion(
         "Unknown version '{v}' for module '{m}'. Available versions are:\n"
-        "  {availalbe}"
-        .format(v=version, m=module, availalbe="\n  ".join(available))
+        "  {known}".format(v=version, m=module, known="\n  ".join(known))
       )
 
     if https:
       base_url = app_version.https_url
     else:
       base_url = app_version.http_url
-    return base_url + path.strip("/")
+    return "{base}/{path}".format(
+      base=base_url.rstrip("/"), path=path.lstrip("/"))
