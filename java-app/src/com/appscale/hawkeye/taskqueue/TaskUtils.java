@@ -2,6 +2,8 @@ package com.appscale.hawkeye.taskqueue;
 
 import com.google.appengine.api.datastore.*;
 
+import java.util.ConcurrentModificationException;
+
 public class TaskUtils {
 
     private static final String TASK_COUNTER = "TaskCounter";
@@ -19,15 +21,31 @@ public class TaskUtils {
     }
 
     public synchronized static void process(String keyString) {
-        long counter = getCountByKey(keyString);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Entity entity = new Entity(TASK_COUNTER, keyString);
-        if (counter == -1) {
-            entity.setProperty(COUNT, 1);
-        } else {
-            entity.setProperty(COUNT, counter + 1);
+
+        int maxTries = 5;
+        for (int tryNum=1; tryNum<=maxTries; tryNum++) {
+            Transaction txn = datastore.beginTransaction();
+            try {
+                Key counterKey = KeyFactory.createKey(TASK_COUNTER, keyString);
+
+                Entity counter;
+                try {
+                    counter = datastore.get(counterKey);
+                    long count = (Long) counter.getProperty(COUNT);
+                    counter.setProperty(COUNT, count + 1);
+                } catch (EntityNotFoundException e) {
+                    counter = new Entity(TASK_COUNTER, keyString);
+                    counter.setProperty(COUNT, 1);
+                }
+
+                datastore.put(txn, counter);
+                txn.commit();
+                break;
+            } catch (ConcurrentModificationException e) {
+                if (tryNum == maxTries) { throw e; }
+            }
         }
-        datastore.put(entity);
     }
 
     public synchronized static void process(String keyString, String eta) {
