@@ -1,7 +1,8 @@
 import json
 import time
 
-from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
+from hawkeye_utils import HawkeyeTestCase
+from hawkeye_test_runner import HawkeyeTestSuite
 
 __author__ = 'chris'
 
@@ -37,18 +38,19 @@ class SendAndReceiveTest(HawkeyeTestCase):
     self.assertTrue(xmpp_info['status'])
     self.assertEquals(xmpp_info['state'], 'message sent!')
 
-    # wait a moment for the message to be sent and the
-    # datastore operation to occur
-    time.sleep(5)
+    # Ensure the XMPP message has been received by the application.
+    message_received = False
+    for _ in range(5):
+      response = self.http_get('/xmpp')
+      xmpp_info = json.loads(response.payload)
+      self.assertEquals(response.status, 200)
+      self.assertTrue(xmpp_info['status'])
+      if xmpp_info['state'] == 'message received!':
+        message_received = True
+        break
+      time.sleep(1)
 
-    # the sending of the XMPP message should have been
-    # received by the app, which then causes the datastore
-    # entry to be updated. let's make sure that update happened!
-    response = self.http_get('/xmpp')
-    xmpp_info = json.loads(response.payload)
-    self.assertEquals(response.status, 200)
-    self.assertTrue(xmpp_info['status'])
-    self.assertEquals(xmpp_info['state'], 'message received!')
+    self.assertTrue(message_received)
 
     # finally, clean up the mess we made for this test
     response = self.http_delete('/xmpp')

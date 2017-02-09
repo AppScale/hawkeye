@@ -1,17 +1,16 @@
-import hawkeye_utils
 import json
 import Queue
 import time
 import urllib
 import urllib2
 import uuid
-
-from hawkeye_utils import (HawkeyeTestCase,
-                           HawkeyeConstants,
-                           HawkeyeTestSuite)
-
 from threading import Thread
 from time import sleep
+
+import hawkeye_utils
+from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_utils import (HawkeyeTestCase,
+                           HawkeyeConstants)
 
 __author__ = 'hiranya'
 
