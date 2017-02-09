@@ -7,12 +7,8 @@ import sys
 from unittest.case import TestCase
 from unittest.runner import TextTestResult, TextTestRunner
 
-HOST = None
-PORT = -1
-LANG = None
-CONSOLE_MODE = False
+from hawkeye_test_runner import HawkeyeTestCase
 
-SSL_PORT_OFFSET = 3700
 
 class ResponseInfo:
   """
@@ -26,13 +22,12 @@ class ResponseInfo:
     Create a new instance of ResponseInfo using the given HTTPResponse
     object.
     """
-    self.status = response.status
-    self.headers = {}
-    for header in response.getheaders():
-      self.headers[header[0]] = header[1]
-    self.payload = response.read()
+    self.status = response.status_code
+    self.headers = response.headers
+    self.payload = response.text()
 
-class HawkeyeTestCase(TestCase):
+
+class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
   """
   This abstract class provides a skeleton to implement actual
   Hawkeye test cases. To implement a test case, this class must
@@ -41,22 +36,15 @@ class HawkeyeTestCase(TestCase):
   endpoints. All the HTTP calls performed via these methods are
   traced and logged to hawkeye-logs/http.log.
   """
+  LANG = None
 
-  def __init__(self, log_base_dir=None):
-    """Create a new instance of HawkeyeTestCase.
-
-    Args:
-      log_base_dir: A str indicating the directory the logs should be stored in.
+  def __init__(self, application):
     """
-    TestCase.__init__(self)
+    Args:
+      application: Application object
+    """
+    super(DeprecatedHawkeyeTestCase, self).__init__(application)
     self.description_printed = False
-    if log_base_dir is None:
-      if 'LOG_BASE_DIR' in os.environ:
-        self.log_base_dir = os.environ['LOG_BASE_DIR']
-      else:
-        self.log_base_dir = 'logs'
-    else:
-      self.log_base_dir = log_base_dir
 
   def runTest(self):
     """
@@ -163,27 +151,6 @@ class HawkeyeTestCase(TestCase):
     """
     return self.__make_request('DELETE', path, prepend_lang=prepend_lang)
 
-  def file_upload(self, path, payload, headers, prepend_lang=False):
-    """
-    Perform a HTTP POST request on the specified URL path and uploads
-    the specified payload as a HTTP form based file upload..
-    The hostname and port segments of the URL are inferred from
-    the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT.
-
-    Args:
-      path          A URL path fragment (eg: /foo)
-      payload       Payload string content to be uploaded
-      headers       A dictionary to be sent as HTTP headers
-      prepend_lang  If True the value of hawkeye_utils.LANG will be
-                    prepended to the provided URL path. Default is
-                    False.
-
-    Returns:
-      An instance of ResponseInfo
-    """
-    return self.__make_request('POST', path, payload, headers, prepend_lang)
-
   def assert_and_get_list(self, path):
     """
     Executes a HTTP GET on the specified URL path and parse the output
@@ -225,49 +192,13 @@ class HawkeyeTestCase(TestCase):
     Returns:
       An instance of ResponseInfo
     """
-    http_log = open('{0}/http-{1}.log'.format(self.log_base_dir, LANG), 'a')
-    if not self.description_printed:
-      http_log.write('\n' + str(self) + '\n')
-      http_log.write('=' * 70)
-      self.description_printed = True
-
-    original = sys.stdout
-    sys.stdout = http_log
-    try:
-      print
-      if prepend_lang:
-        path = "/" + LANG + path
-      if use_ssl:
-        try:
-          conn = httplib.HTTPSConnection(
-            HOST + ':' + str(PORT - SSL_PORT_OFFSET),
-            context=ssl._create_unverified_context())
-        except AttributeError:
-          conn = httplib.HTTPSConnection(
-            HOST + ':' + str(PORT - SSL_PORT_OFFSET))
-      else:
-        conn = httplib.HTTPConnection(HOST + ':' + str(PORT))
-      conn.set_debuglevel(1)
-      if method == 'POST' or method == 'PUT':
-        if headers is not None:
-          conn.request(method, path, payload, headers)
-        else:
-          conn.request(method, path, payload)
-        print 'req-body: ' + payload
-      else:
-        if headers is not None:
-          conn.request(method, path, headers=headers)
-        else:
-          conn.request(method, path)
-      response = conn.getresponse()
-      response_info = ResponseInfo(response)
-      conn.close()
-      if response_info.payload is not None and len(response_info.payload) > 0:
-        print 'resp-body: ' + response_info.payload
-      return response_info
-    finally:
-      sys.stdout = original
-      http_log.close()
+    if prepend_lang:
+      path = "/" + self.LANG + path
+    response = self.app.logged_request(
+      method, path, https=use_ssl, data=payload, headers=headers
+    )
+    response_info = ResponseInfo(response)
+    return response_info
 
 
 class HawkeyeConstants:
@@ -277,41 +208,3 @@ class HawkeyeConstants:
 
   MOD_CORE = 'Core'
   MOD_NHTTP = 'NHTTP'
-
-
-def encode (file_name, content):
-  """
-  Encode the specified file name and content payload into a HTTP
-  file upload request.
-
-  Args:
-    file_name Name of the file
-    content   String payload to be uploaded
-
-  Returns:
-    A HTTP multipart form request encoded payload string
-  """
-
-  # Thanks Pietro Abate for the helpful post at:
-  # http://mancoosi.org/~abate/upload-file-using-httplib
-  boundary = '----------boundary------'
-  delimiter = '\r\n'
-  body = []
-  body.extend(
-    ['--' + boundary,
-     'Content-Disposition: form-data; name="file"; filename="%s"'
-     % file_name,
-     # The upload server determines the mime-type, no need to set it.
-     'Content-Type: application/octet-stream',
-     '',
-     content,
-     ])
-  # Finalize the form body
-  body.extend(['--' + boundary + '--', ''])
-  return 'multipart/form-data; boundary=%s' % boundary, delimiter.join(body)
-
-def encode_file(file_path):
-  file_data = open(file_path, 'rb')
-  content = file_data.read()
-  file_data.close()
-  return encode(os.path.basename(file_path), content)

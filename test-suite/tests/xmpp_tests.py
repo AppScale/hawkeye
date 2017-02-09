@@ -1,12 +1,12 @@
 import json
 import time
 
-from hawkeye_utils import HawkeyeTestCase
+from hawkeye_utils import DeprecatedHawkeyeTestCase
 from hawkeye_test_runner import HawkeyeTestSuite
 
 __author__ = 'chris'
 
-class SendAndReceiveTest(HawkeyeTestCase):
+class SendAndReceiveTest(DeprecatedHawkeyeTestCase):
   """This test exercises the XMPP API by sending a message and
   ensuring that the side-effect caused by the message's receipt
   occurs.
@@ -62,7 +62,7 @@ class SendAndReceiveTest(HawkeyeTestCase):
     self.assertTrue(xmpp_info['status'])
     self.assertEquals(xmpp_info['state'], 'non-existent')
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('XMPP Test Suite', 'xmpp')
-  suite.addTest(SendAndReceiveTest())
+  suite.addTest(SendAndReceiveTest(app))
   return suite

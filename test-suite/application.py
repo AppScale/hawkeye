@@ -1,7 +1,9 @@
+import json
+
 import requests
 
 from application_versions import AppVersion
-from hawkeye_shared import shared
+from logger import logger
 
 
 class UnknownVersion(Exception):
@@ -50,9 +52,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self._url_builder.build_url(
-      self._app_id, module, version, path, https)
-    return requests.get(url, **self._put_kwargs_defaults(kwargs))
+    self.logged_request('get', path, module, version, https, **kwargs)
 
   def post(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -69,9 +69,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self._url_builder.build_url(
-      self._app_id, module, version, path, https)
-    return requests.post(url, **self._put_kwargs_defaults(kwargs))
+    self.logged_request('post', path, module, version, https, **kwargs)
 
   def put(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -88,9 +86,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self._url_builder.build_url(
-      self._app_id, module, version, path, https)
-    return requests.put(url, **self._put_kwargs_defaults(kwargs))
+    self.logged_request('put', path, module, version, https, **kwargs)
 
   def delete(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -107,9 +103,68 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self._url_builder.build_url(
-      self._app_id, module, version, path, https)
-    return requests.delete(url, **self._put_kwargs_defaults(kwargs))
+    self.logged_request('delete', path, module, version, https, **kwargs)
+
+  def logged_request(self, method, path, module=None, version=None,
+                     https=False, **kwargs):
+    url = self.build_url(path, module, version, https)
+    try:
+      response = requests.request(
+        method, url, **self._put_kwargs_defaults(kwargs)
+      )
+      # Use real request which was sent by requests lib
+      request_headers = response.request.headers
+      request_body = response.request.body
+    except:
+      # Okay. Try to recover request which was tried to be sent by requests lib
+      request_headers = kwargs.get("headers")
+      if "data" in kwargs:
+        request_body = kwargs.get("data")
+      elif "json" in kwargs:
+        request_body = json.dumps(kwargs.get("json"))
+      elif "files":
+        request_body = "LOGGING STUB: Files are here"
+      else:
+        request_body = None
+      raise
+    finally:
+      # Anyway log request
+      self._log_request(method, url, request_headers, request_body)
+    self._log_response(response.status_code, response.headers, response.content)
+    return response
+
+  @staticmethod
+  def _log_request(method, url, headers, body):
+    headers = headers or {}
+    body = body or ""
+    req_formatted_headers = [
+      "{header}: {value}".format(header=name, value=value)
+      for name, value in headers.iteritems()
+    ]
+    logger.info(
+      "Sending request:\n{method} {url}\n{headers}\n\n{body}"
+      .format(method=method.upper(),
+              url=url,
+              headers="\n".join(req_formatted_headers),
+              body=body))
+
+  @staticmethod
+  def _log_response(status, headers, content):
+    headers = headers or {}
+    content = content or ""
+    resp_formatted_headers = [
+      "{header}: {value}".format(header=name, value=value)
+      for name, value in headers.iteritems()
+    ]
+    logger.info(
+      "Received response: {status}\n{headers}\n\n{content}"
+      .format(status=status,
+              headers="\n".join(resp_formatted_headers),
+              content=content))
+
+  def build_url(self, path, module=None, version=None, https=True):
+    return self._url_builder.build_url(
+      self.app_id, path, module, version, https)
 
 
 class AppURLBuilder(object):
@@ -121,12 +176,15 @@ class AppURLBuilder(object):
   and not care about building specific URL.
   """
 
-  def __init__(self, app_versions):
+  def __init__(self, app_versions, language):
     """
     Args:
       app_versions: a list of AppVersion - description of application versions
         available for test cases.
+      language:  a string - name of language which is currently being tested
     """
+    self.language = language
+
     # Find default versions for modules and globally for applications
     modules = set((v.module for v in app_versions))
     module_default_versions = [
@@ -147,15 +205,15 @@ class AppURLBuilder(object):
 
     # Add short links to module default versions
     self._versions_dict.update({
-                                 AppVersion.get_version_alias(v.app_id, v.module)
-                                 for v in module_default_versions
-                                 })
+      AppVersion.get_version_alias(v.app_id, v.module): v
+      for v in module_default_versions
+    })
 
     # Add shorter links to application default versions
     self._versions_dict.update({
-                                 AppVersion.get_version_alias(v.app_id)
-                                 for v in app_default_versions
-                                 })
+      AppVersion.get_version_alias(v.app_id): v
+      for v in app_default_versions
+    })
 
     # Finally self.versions_dict contains items like these:
     #       "old-version.moduleA.appX": <AppVersion objectA>,
@@ -165,27 +223,27 @@ class AppURLBuilder(object):
     #                   "default.appX": <AppVersion objectC>,
     #                           "appX": <AppVersion objectC>
 
-  def build_url(self, app_id, module, version, path, https):
+  def build_url(self, app_id, path, module, version, https):
     """
     Like DNS returns IP for domain name, build_url returns full URL for app_id,
     module, version, path and schema (http/https)
 
     Args:
       app_id: a string - application ID of running app
+      path: a string - path to http method, it can contain '{lang}' which
+          will be converted to current hawkeye language (shared.language)
+          e.g.: /{lang}/product/add
       module: a string - module name; can be None if version is None,
           in this case default version of default module will be used)
       version: a string - version name ;can be None,
           in this case default version of module will be used
-      path: a string - path to http method, it can contain '{lang}' which
-          will be converted to current hawkeye language (shared.language)
-          e.g.: /{lang}/product/add
       https: a boolean - shows if https should be used instead of http
 
     Returns:
       Full URL, e.g. "https://192.168.33.10:8082/api/product/add"
     """
     # Allow testcases to leave a placeholder for language in path
-    path = path.format(lang=shared.language)
+    path = path.format(lang=self.language)
 
     # Get full (or short if module/version is None) name of specific version
     version_full_name = AppVersion.get_version_alias(app_id, module, version)

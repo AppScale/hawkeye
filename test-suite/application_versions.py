@@ -55,37 +55,3 @@ class AppVersion(object):
     if module:
       return "{m}.{app}".format(m=module, app=app_id)
     return app_id
-
-
-def get_versions_list_from_csv(csv_file_name, server):
-  """
-  Read CSV table with the following row format:
-    version.module.app-id, http-port, https-port, 'default' (or empty string)
-  Basing on the table content a list of AppVersion is created.
-
-  Args:
-    csv_file_name: path to file to be read
-    server: a string representing server IP or domain name
-  Returns:
-    a list of AppVersion
-  """
-  versions_list = []
-  with open(csv_file_name) as csv_file:
-    for row in csv.reader(csv_file, skipinitialspace=True):
-      try:
-        version_alias, http_port, https_port, is_default = row
-        http_url = "http://{host}:{port}".format(host=server, port=http_port)
-        https_url = "https://{host}:{port}".format(host=server, port=https_port)
-        version, module, app = version_alias.split(".")
-        app_version = AppVersion(
-          app, module, version, http_url, https_url, bool(is_default)
-        )
-        versions_list.append(app_version)
-      except ValueError:
-        # Too many or too few values to unpack
-        raise InvalidVersionsCSVFileFormat(
-          "Row '{}' is invalid. Following format is expected: "
-          "(<version>.<module>.<app-id>, <http-port>, <https-port>, default) "
-          "OR (<version>.<module>.<app-id>, <http-URL>, <https-URL>, )"
-        )
-  return versions_list

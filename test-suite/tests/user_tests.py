@@ -1,6 +1,7 @@
 import json
 import urlparse
-from hawkeye_utils import HawkeyeTestCase
+
+from hawkeye_utils import DeprecatedHawkeyeTestCase
 from hawkeye_test_runner import HawkeyeTestSuite
 
 __author__ = 'hiranya'
@@ -10,14 +11,14 @@ LOGIN_COOKIES = {}
 USER_EMAIL = 'a@a.com'
 USER_PASSWORD = 'aaaaaa'
 
-class LoginURLTest(HawkeyeTestCase):
+class LoginURLTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/home')
     self.assertEquals(response.status, 200)
     url_info = json.loads(response.payload)
     self.assertEquals(url_info['type'], 'login')
 
-class UserLoginTest(HawkeyeTestCase):
+class UserLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
@@ -44,7 +45,7 @@ class UserLoginTest(HawkeyeTestCase):
     self.assertEquals(user_info['email'], USER_EMAIL)
     self.assertFalse(user_info['admin'])
 
-class AdminLoginTest(HawkeyeTestCase):
+class AdminLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
@@ -71,7 +72,7 @@ class AdminLoginTest(HawkeyeTestCase):
     self.assertEquals(user_info['email'], USER_EMAIL)
     self.assertTrue(user_info['admin'])
 
-class LogoutURLTest(HawkeyeTestCase):
+class LogoutURLTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     headers = { 'Cookie' : LOGIN_COOKIES['user'] }
     response = self.http_get('/users/home', headers=headers)
@@ -79,11 +80,11 @@ class LogoutURLTest(HawkeyeTestCase):
     url_info = json.loads(response.payload)
     self.assertEquals(url_info['type'], 'logout')
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('User API Test Suite', 'users')
-  suite.addTest(LoginURLTest())
-  suite.addTest(UserLoginTest())
-  suite.addTest(AdminLoginTest())
-  suite.addTest(LogoutURLTest())
+  suite.addTest(LoginURLTest(app))
+  suite.addTest(UserLoginTest(app))
+  suite.addTest(AdminLoginTest(app))
+  suite.addTest(LogoutURLTest(app))
   return suite
 
