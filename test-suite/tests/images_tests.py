@@ -18,7 +18,7 @@ class ImageDeleteTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
 
 class ImageUploadTest(HawkeyeTestCase):
-  def run_hawkeye_test(self):
+  def test_image_upload(self):
     with open('resources/logo.png', 'rb') as logo_png:
       response = self.app.post(
         '/{lang}/images/logo', files={'resources/logo.png': logo_png}
@@ -87,17 +87,17 @@ class ImageRotateTransformTest(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = hawkeye_test_runner.HawkeyeTestSuite('Images Test Suite', 'images')
-  suite.addTest(ImageDeleteTest(app))
-  suite.addTest(ImageUploadTest(app))
-  suite.addTest(ImageLoadTest(app))
-  suite.addTest(ImageMetadataTest(app))
-  suite.addTest(ImageResizeTest(app))
-  suite.addTest(ImageRotateTest(app))
+  suite.addTests(ImageDeleteTest.all_cases(app))
+  suite.addTests(ImageUploadTest.all_cases(app))
+  suite.addTests(ImageLoadTest.all_cases(app))
+  suite.addTests(ImageMetadataTest.all_cases(app))
+  suite.addTests(ImageResizeTest.all_cases(app))
+  suite.addTests(ImageRotateTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(ImageResizeTransformTest(app))
-    suite.addTest(ImageRotateTransformTest(app))
+    suite.addTests(ImageResizeTransformTest.all_cases(app))
+    suite.addTests(ImageRotateTransformTest.all_cases(app))
 
   # Clean up entities. They can affect later tests.
-  suite.addTest(ImageDeleteTest(app))
+  suite.addTests(ImageDeleteTest.all_cases(app))
   return suite

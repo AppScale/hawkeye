@@ -106,7 +106,7 @@ class Application(object):
     self.logged_request('delete', path, module, version, https, **kwargs)
 
   def logged_request(self, method, path, module=None, version=None,
-                     https=False, **kwargs):
+                     https=False, verbosity=2, **kwargs):
     url = self.build_url(path, module, version, https)
     try:
       response = requests.request(
@@ -129,12 +129,16 @@ class Application(object):
       raise
     finally:
       # Anyway log request
-      self._log_request(method, url, request_headers, request_body)
-    self._log_response(response.status_code, response.headers, response.content)
+      self._log_request(
+        method, url, request_headers, request_body, verbosity)
+    self._log_response(
+      response.status_code, response.headers, response.content, verbosity)
     return response
 
   @staticmethod
-  def _log_request(method, url, headers, body):
+  def _log_request(method, url, headers, body, verbosity):
+    if verbosity < 1:
+      return
     headers = headers or {}
     body = body or ""
     req_formatted_headers = [
@@ -149,9 +153,11 @@ class Application(object):
               body=body))
 
   @staticmethod
-  def _log_response(status, headers, content):
+  def _log_response(status, headers, content, verbosity):
+    if verbosity < 1:
+      return
     headers = headers or {}
-    content = content or ""
+    content = content if content and verbosity > 1 else ""
     resp_formatted_headers = [
       "{header}: {value}".format(header=name, value=value)
       for name, value in headers.iteritems()

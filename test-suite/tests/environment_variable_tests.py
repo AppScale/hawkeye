@@ -29,8 +29,8 @@ class RequestAPI(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Config Environment Variable Test Suite', 'env_var')
-  suite.addTest(GetConfigEnvironmentVariableTest(app))
+  suite.addTests(GetConfigEnvironmentVariableTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(RequestAPI(app))
+    suite.addTests(RequestAPI.all_cases(app))
   return suite

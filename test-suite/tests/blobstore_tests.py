@@ -21,7 +21,7 @@ FILE2 = StringIO('AppScale Rocks!!!')
 FILE3 = StringIO('ASYNC FILE UPLOAD CONTENT')
 
 class UploadBlobTest(HawkeyeTestCase):
-  def run_hawkeye_test(self):
+  def test_blobstore_upload_handler(self):
     response = self.app.get('/blobstore/url')
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
@@ -130,7 +130,7 @@ class DeleteBlobTest(DeprecatedHawkeyeTestCase):
     self.assertTrue(response.status == 500 or response.status == 404)
 
 class AsyncUploadBlobTest(HawkeyeTestCase):
-  def run_hawkeye_test(self):
+  def test_blob_creation(self):
     response = self.app.get('/blobstore/url?async=true')
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
@@ -162,7 +162,7 @@ class AsyncDeleteBlobTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 500)
 
 class CreateURLScheme(HawkeyeTestCase):
-  def run_hawkeye_test(self):
+  def test_different_schemas(self):
     path = '/python/blobstore/create_url'
     response = self.app.get(path, https=False)
     self.assertTrue(response.url.startswith('http:'))
@@ -171,16 +171,16 @@ class CreateURLScheme(HawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Blobstore Test Suite', 'blobstore')
-  suite.addTest(UploadBlobTest(app))
-  suite.addTest(DownloadBlobTest(app))
-  suite.addTest(QueryBlobDataTest(app))
-  suite.addTest(QueryBlobByKeyTest(app))
-  suite.addTest(QueryBlobByPropertyTest(app))
-  suite.addTest(DeleteBlobTest(app))
+  suite.addTests(UploadBlobTest.all_cases(app))
+  suite.addTests(DownloadBlobTest.all_cases(app))
+  suite.addTests(QueryBlobDataTest.all_cases(app))
+  suite.addTests(QueryBlobByKeyTest.all_cases(app))
+  suite.addTests(QueryBlobByPropertyTest.all_cases(app))
+  suite.addTests(DeleteBlobTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(AsyncUploadBlobTest(app))
-    suite.addTest(AsyncQueryBlobDataTest(app))
-    suite.addTest(AsyncDeleteBlobTest(app))
-    suite.addTest(CreateURLScheme(app))
+    suite.addTests(AsyncUploadBlobTest.all_cases(app))
+    suite.addTests(AsyncQueryBlobDataTest.all_cases(app))
+    suite.addTests(AsyncDeleteBlobTest.all_cases(app))
+    suite.addTests(CreateURLScheme.all_cases(app))
   return suite

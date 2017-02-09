@@ -26,5 +26,5 @@ class CronTest(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Cron Test Suite', 'cron')
-  suite.addTest(CronTest(app))
+  suite.addTests(CronTest.all_cases(app))
   return suite

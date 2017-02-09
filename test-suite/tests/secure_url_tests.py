@@ -50,8 +50,8 @@ class NeverSecureRegexTest(DeprecatedHawkeyeTestCase):
 def suite(lang, app):
   suite = HawkeyeTestSuite('Secure URL Test Suite', 'secure_url')
   if lang == 'python':
-    suite.addTest(NeverSecureTest(app))
-    suite.addTest(AlwaysSecureTest(app))
-    suite.addTest(NeverSecureRegexTest(app))
-    suite.addTest(AlwaysSecureRegexTest(app))
+    suite.addTests(NeverSecureTest.all_cases(app))
+    suite.addTests(AlwaysSecureTest.all_cases(app))
+    suite.addTests(NeverSecureRegexTest.all_cases(app))
+    suite.addTests(AlwaysSecureRegexTest.all_cases(app))
   return suite

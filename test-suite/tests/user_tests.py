@@ -20,7 +20,7 @@ class LoginURLTest(DeprecatedHawkeyeTestCase):
 
 class UserLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
-    response = self.http_get('/users/secure')
+    response = self.http_get('/users/secure', verbosity=1)
     self.assertEquals(response.status, 302)
     self.assertTrue(response.headers.has_key('location'))
 
@@ -28,7 +28,8 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
     login_url = parser.path + '?' + parser.query
     payload = 'email={0}&password={1}&action=Login'.format(
       USER_EMAIL, USER_PASSWORD)
-    response = self.http_post(login_url, payload, prepend_lang=False)
+    response = self.http_post(
+      login_url, payload, prepend_lang=False, verbosity=1)
     self.assertEquals(response.status, 302)
     self.assertTrue(response.headers.has_key('location'))
     self.assertTrue(response.headers.has_key('set-cookie'))
@@ -38,7 +39,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
 
     LOGIN_COOKIES['user'] = response.headers['set-cookie']
     headers = { 'Cookie' : LOGIN_COOKIES['user'] }
-    response = self.http_get('/users/secure', headers=headers)
+    response = self.http_get('/users/secure', headers=headers, verbosity=1)
     self.assertEquals(response.status, 200)
     user_info = json.loads(response.payload)
     self.assertTrue(user_info['user'] is not None)
@@ -47,7 +48,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
 
 class AdminLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
-    response = self.http_get('/users/secure')
+    response = self.http_get('/users/secure', verbosity=1)
     self.assertEquals(response.status, 302)
     self.assertTrue(response.headers.has_key('location'))
 
@@ -65,7 +66,7 @@ class AdminLoginTest(DeprecatedHawkeyeTestCase):
 
     LOGIN_COOKIES['main'] = response.headers['set-cookie']
     headers = { 'Cookie' : LOGIN_COOKIES['main'] }
-    response = self.http_get('/users/secure', headers=headers)
+    response = self.http_get('/users/secure', headers=headers, verbosity=1)
     self.assertEquals(response.status, 200)
     user_info = json.loads(response.payload)
     self.assertTrue(user_info['user'] is not None)
@@ -82,9 +83,9 @@ class LogoutURLTest(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('User API Test Suite', 'users')
-  suite.addTest(LoginURLTest(app))
-  suite.addTest(UserLoginTest(app))
-  suite.addTest(AdminLoginTest(app))
-  suite.addTest(LogoutURLTest(app))
+  suite.addTests(LoginURLTest.all_cases(app))
+  suite.addTests(UserLoginTest.all_cases(app))
+  suite.addTests(AdminLoginTest.all_cases(app))
+  suite.addTests(LogoutURLTest.all_cases(app))
   return suite
 

@@ -24,7 +24,7 @@ class ResponseInfo:
     """
     self.status = response.status_code
     self.headers = response.headers
-    self.payload = response.text()
+    self.payload = response.text
 
 
 class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
@@ -38,12 +38,12 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
   """
   LANG = None
 
-  def __init__(self, application):
+  def __init__(self, methodName, application):
     """
     Args:
       application: Application object
     """
-    super(DeprecatedHawkeyeTestCase, self).__init__(application)
+    super(DeprecatedHawkeyeTestCase, self).__init__(methodName, application)
     self.description_printed = False
 
   def runTest(self):
@@ -59,7 +59,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     """
     raise NotImplementedError
 
-  def http_get(self, path, headers=None, prepend_lang=True, use_ssl=False):
+  def http_get(self, path, headers=None, prepend_lang=True,
+               use_ssl=False, **kwargs):
     """
     Perform a HTTP GET request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -79,9 +80,9 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
       An instance of ResponseInfo
     """
     return self.__make_request('GET', path, headers=headers,
-      prepend_lang=prepend_lang, use_ssl=use_ssl)
+      prepend_lang=prepend_lang, use_ssl=use_ssl, **kwargs)
 
-  def http_post(self, path, payload, headers=None, prepend_lang=True):
+  def http_post(self, path, payload, headers=None, prepend_lang=True, **kwargs):
     """
     Perform a HTTP POST request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -105,9 +106,9 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     elif not headers.has_key('Content-Type'):
       headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return self.__make_request('POST', path, payload, headers=headers,
-      prepend_lang=prepend_lang)
+      prepend_lang=prepend_lang, **kwargs)
 
-  def http_put(self, path, payload, headers=None, prepend_lang=True):
+  def http_put(self, path, payload, headers=None, prepend_lang=True, **kwargs):
     """
     Perform a HTTP PUT request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -131,9 +132,9 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     elif not headers.has_key('Content-Type'):
       headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return self.__make_request('PUT', path, payload, headers=headers,
-      prepend_lang=prepend_lang)
+      prepend_lang=prepend_lang, **kwargs)
 
-  def http_delete(self, path, prepend_lang=True):
+  def http_delete(self, path, prepend_lang=True, **kwargs):
     """
     Perform a HTTP DELETE request on the specified URL path.
     The hostname and port segments of the URL are inferred from
@@ -149,7 +150,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     Returns:
       An instance of ResponseInfo
     """
-    return self.__make_request('DELETE', path, prepend_lang=prepend_lang)
+    return self.__make_request(
+      'DELETE', path, prepend_lang=prepend_lang, **kwargs)
 
   def assert_and_get_list(self, path):
     """
@@ -175,7 +177,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     return list
 
   def __make_request(self, method, path, payload=None, headers=None,
-                     prepend_lang=True, use_ssl=False):
+                     prepend_lang=True, use_ssl=False, **kwargs):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
     are traced and logged to hawkeye-logs/http.log.
@@ -195,7 +197,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     if prepend_lang:
       path = "/" + self.LANG + path
     response = self.app.logged_request(
-      method, path, https=use_ssl, data=payload, headers=headers
+      method, path, https=use_ssl, data=payload, headers=headers, **kwargs
     )
     response_info = ResponseInfo(response)
     return response_info

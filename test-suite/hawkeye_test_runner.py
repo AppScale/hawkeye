@@ -1,4 +1,5 @@
 import csv
+import inspect
 import sys
 import traceback
 import unittest
@@ -22,10 +23,22 @@ from logger import logger
 
 
 class HawkeyeTestCase(unittest.TestCase):
-  def __init__(self, application):
+  def __init__(self, methodName, application):
     """ :type application: application.Application """
-    super(HawkeyeTestCase, self).__init__()
+    super(HawkeyeTestCase, self).__init__(methodName)
     self.app = application
+
+  @classmethod
+  def all_cases(cls, app):
+    return [cls(method_name, app) for method_name in cls.cases_names()]
+
+  @classmethod
+  def cases_names(cls):
+    return [
+      name for name, _ in inspect.getmembers(cls, predicate=inspect.ismethod)
+      if name.startswith("test") or name == "runTest"
+    ]
+
 
 
 class HawkeyeTestSuite(unittest.TestSuite):

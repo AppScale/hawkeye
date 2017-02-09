@@ -454,23 +454,23 @@ class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
-  suite.addTest(QueueExistsTest(app))
-  suite.addTest(PushQueueTest(app))
-  suite.addTest(DeferredTaskTest(app))
-  suite.addTest(QueueStatisticsTest(app))
-  suite.addTest(PullQueueTest(app))
-  suite.addTest(LeaseModificationTest(app))
-  suite.addTest(TaskRetryTest(app))
-  suite.addTest(TaskEtaTest(app))
-  suite.addTest(BriefLeaseTest(app))
+  suite.addTests(QueueExistsTest.all_cases(app))
+  suite.addTests(PushQueueTest.all_cases(app))
+  suite.addTests(DeferredTaskTest.all_cases(app))
+  suite.addTests(QueueStatisticsTest.all_cases(app))
+  suite.addTests(PullQueueTest.all_cases(app))
+  suite.addTests(LeaseModificationTest.all_cases(app))
+  suite.addTests(TaskRetryTest.all_cases(app))
+  suite.addTests(TaskEtaTest.all_cases(app))
+  suite.addTests(BriefLeaseTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(RESTPullQueueTest(app))
-    suite.addTest(TransactionalTaskTest(app))
-    suite.addTest(TransactionalFailedTaskTest(app))
-    suite.addTest(CleanUpTaskEntities(app))
+    suite.addTests(RESTPullQueueTest.all_cases(app))
+    suite.addTests(TransactionalTaskTest.all_cases(app))
+    suite.addTests(TransactionalFailedTaskTest.all_cases(app))
+    suite.addTests(CleanUpTaskEntities.all_cases(app))
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
-  #suite.addTest(BackendTaskTest(app))
+  #suite.addTests(BackendTaskTest.all_cases(app))
   return suite

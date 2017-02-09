@@ -149,8 +149,8 @@ def process_command_line_options():
     app_id=APP_IDS[language],
     module="default",
     version="1",      # Predefined application version
-    http_url="http://{}:{}".format(host, port),
-    https_url="https://{}:{}".format(host, port),
+    http_url="http://test-modules-and-versions.appspot.com",
+    https_url="https://test-modules-and-versions.appspot.com",
     is_default_for_module=True
   )
   url_builder = AppURLBuilder([app_version], language)

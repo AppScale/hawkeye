@@ -64,5 +64,5 @@ class SendAndReceiveTest(DeprecatedHawkeyeTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('XMPP Test Suite', 'xmpp')
-  suite.addTest(SendAndReceiveTest(app))
+  suite.addTests(SendAndReceiveTest.all_cases(app))
   return suite
