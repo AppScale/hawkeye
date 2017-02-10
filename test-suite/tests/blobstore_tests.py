@@ -22,7 +22,7 @@ FILE3 = StringIO('ASYNC FILE UPLOAD CONTENT')
 
 class UploadBlobTest(HawkeyeTestCase):
   def test_blobstore_upload_handler(self):
-    response = self.app.get('/blobstore/url')
+    response = self.app.get('/{lang}/blobstore/url')
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
@@ -33,7 +33,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
     FILE_UPLOADS[FILE1_NAME] = blob_key
 
-    response = self.app.get('/blobstore/url')
+    response = self.app.get('/{lang}/blobstore/url')
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
@@ -131,7 +131,7 @@ class DeleteBlobTest(DeprecatedHawkeyeTestCase):
 
 class AsyncUploadBlobTest(HawkeyeTestCase):
   def test_blob_creation(self):
-    response = self.app.get('/blobstore/url?async=true')
+    response = self.app.get('/{lang}/blobstore/url?async=true')
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
