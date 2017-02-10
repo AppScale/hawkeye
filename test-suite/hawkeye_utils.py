@@ -103,7 +103,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     """
     if headers is None:
       headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
-    elif not headers.has_key('Content-Type'):
+    elif 'Content-Type' not in headers:
       headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return self.__make_request('POST', path, payload, headers=headers,
       prepend_lang=prepend_lang, **kwargs)
@@ -129,7 +129,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     """
     if headers is None:
       headers = { 'Content-Type' : 'application/x-www-form-urlencoded' }
-    elif not headers.has_key('Content-Type'):
+    elif 'Content-Type' not in headers:
       headers['Content-Type'] = 'application/x-www-form-urlencoded'
     return self.__make_request('PUT', path, payload, headers=headers,
       prepend_lang=prepend_lang, **kwargs)

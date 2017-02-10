@@ -1,4 +1,5 @@
 import json
+import urlparse
 
 import requests
 
@@ -110,11 +111,18 @@ class Application(object):
     self.logged_request('delete', path, module, version, https, **kwargs)
 
   def logged_request(self, method, path, module=None, version=None,
-                     https=False, verbosity=2, **kwargs):
+                     params=None, https=False, verbosity=2, **kwargs):
     url = self.build_url(path, module, version, https)
+    if "?" in url:
+      parsed = urlparse.urlparse(url)
+      qs_params = urlparse.parse_qs(parsed.query)
+      if params:
+        # params dict is more explicit so it overwrites query-string parameters
+        qs_params.update(params)
+      params = qs_params
     try:
       response = requests.request(
-        method, url, **self._put_kwargs_defaults(kwargs)
+        method, url, params=params, **self._put_kwargs_defaults(kwargs)
       )
       # Use real request which was sent by requests lib
       request_headers = response.request.headers

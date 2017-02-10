@@ -291,10 +291,8 @@ class ProjectionQueryTest(DeprecatedHawkeyeTestCase):
                                            'fields=project_id,name')
     self.assertEquals(len(entity_list), 3)
     for entity in entity_list:
-      self.assertTrue(not entity.has_key('rating') or
-                      entity['rating'] is None)
-      self.assertTrue(not entity.has_key('description') or
-                      entity['description'] is None)
+      self.assertTrue(entity.get('rating') is None)
+      self.assertTrue(entity.get('description') is None)
       self.assertTrue(entity['project_id'] is not None)
       self.assertTrue(entity['name'] is not None)
 
@@ -303,10 +301,8 @@ class ProjectionQueryTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(len(entity_list), 2)
     for entity in entity_list:
       self.assertTrue(entity['rating'] is not None)
-      self.assertTrue(not entity.has_key('description') or
-                      entity['description'] is None)
-      self.assertTrue(not entity.has_key('project_id') or
-                      entity['project_id'] is None)
+      self.assertTrue(entity.get('description') is None)
+      self.assertTrue(entity.get('project_id') is None)
       self.assertTrue(entity['name'] is not None)
       self.assertNotEquals(entity['name'], HawkeyeConstants.PROJECT_XERCES)
 
@@ -317,10 +313,8 @@ class GQLProjectionQueryTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(len(entity_list), 3)
     for entity in entity_list:
       self.assertTrue(entity['rating'] is not None)
-      self.assertTrue(not entity.has_key('description') or
-                      entity['description'] is None)
-      self.assertTrue(not entity.has_key('project_id') or
-                      entity['project_id'] is None)
+      self.assertTrue(entity.get('description') is None)
+      self.assertTrue(entity.get('project_id') is None)
       self.assertTrue(entity['name'] is not None)
 
 class CompositeQueryTest(DeprecatedHawkeyeTestCase):
