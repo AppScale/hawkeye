@@ -24,7 +24,6 @@ from logger import logger
 
 class HawkeyeTestCase(unittest.TestCase):
   def __init__(self, methodName, application):
-    """ :type application: application.Application """
     super(HawkeyeTestCase, self).__init__(methodName)
     self.app = application
 
@@ -38,7 +37,6 @@ class HawkeyeTestCase(unittest.TestCase):
       name for name, _ in inspect.getmembers(cls, predicate=inspect.ismethod)
       if name.startswith("test") or name == "runTest"
     ]
-
 
 
 class HawkeyeTestSuite(unittest.TestSuite):

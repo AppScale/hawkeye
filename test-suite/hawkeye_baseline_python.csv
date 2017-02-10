@@ -21,14 +21,14 @@ tests.async_datastore_tests.SimpleTransactionTest.runTest,ok
 tests.async_datastore_tests.SinglePropertyBasedQueryTest.runTest,ok
 tests.blobstore_tests.AsyncDeleteBlobTest.runTest,ok
 tests.blobstore_tests.AsyncQueryBlobDataTest.runTest,ok
-tests.blobstore_tests.AsyncUploadBlobTest.runTest,ok
-tests.blobstore_tests.CreateURLScheme.runTest,ok
+tests.blobstore_tests.AsyncUploadBlobTest.test_blob_creation,ok
+tests.blobstore_tests.CreateURLScheme.test_different_schemas,ok
 tests.blobstore_tests.DeleteBlobTest.runTest,ok
 tests.blobstore_tests.DownloadBlobTest.runTest,ok
 tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
 tests.blobstore_tests.QueryBlobByPropertyTest.runTest,ok
 tests.blobstore_tests.QueryBlobDataTest.runTest,ok
-tests.blobstore_tests.UploadBlobTest.runTest,ok
+tests.blobstore_tests.UploadBlobTest.test_blobstore_upload_handler,ok
 tests.cron_tests.CronTest.runTest,ok
 tests.datastore_tests.AncestorQueryTest.runTest,ok
 tests.datastore_tests.ComplexQueryCursorTest.runTest,ok
@@ -71,7 +71,7 @@ tests.images_tests.ImageResizeTest.runTest,ok
 tests.images_tests.ImageResizeTransformTest.runTest,ok
 tests.images_tests.ImageRotateTest.runTest,ok
 tests.images_tests.ImageRotateTransformTest.runTest,ok
-tests.images_tests.ImageUploadTest.runTest,ok
+tests.images_tests.ImageUploadTest.test_image_upload,ok
 tests.memcache_tests.MemcacheAddTest.runTest,ok
 tests.memcache_tests.MemcacheCasTest.runTest,ok
 tests.memcache_tests.MemcacheDecrTest.runTest,ok

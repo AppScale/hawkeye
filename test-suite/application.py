@@ -23,10 +23,12 @@ class Application(object):
   It's based on requests library and is actually some kind of proxy for it.
   """
 
-  def __init__(self, app_id, url_builder, verify_certificate=False):
+  def __init__(self, app_id, url_builder, verify_certificate=False,
+               allow_redirects=False):
     self._app_id = app_id
     self._url_builder = url_builder
     self._verify_certificate = verify_certificate
+    self._allow_redirects = allow_redirects
 
   @property
   def app_id(self):
@@ -34,7 +36,9 @@ class Application(object):
 
   def _put_kwargs_defaults(self, kwargs):
     if "verify" not in kwargs:
-        kwargs["verify"] = self._verify_certificate
+      kwargs["verify"] = self._verify_certificate
+    if "allow_redirects" not in kwargs:
+      kwargs["allow_redirects"] = self._allow_redirects
     return kwargs
 
   def get(self, path, module=None, version=None, https=False, **kwargs):
