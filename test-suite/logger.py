@@ -1,12 +1,24 @@
 from datetime import datetime
 import logging
 import os
+import re
 try:
     from http.client import HTTPConnection # py3
 except ImportError:
     from httplib import HTTPConnection # py2
 
 logger = logging.getLogger("hawkeye")
+
+
+class StopwordsFilter(logging.Filter):
+  def __init__(self, stopwords):
+    super(StopwordsFilter, self).__init__()
+    escaped = (re.escape(word) for word in stopwords)
+    pattern = "({options})".format(options="|".join(escaped))
+    self.compiled_pattern = re.compile(pattern)
+
+  def filter(self, record):
+    return self.compiled_pattern.search(record) is not None
 
 
 def configure_hawkeye_logging(hawkeye_logs_dir, language):
@@ -43,4 +55,5 @@ def configure_hawkeye_logging(hawkeye_logs_dir, language):
   requests_logger = logging.getLogger("requests")
   requests_logger.addHandler(handler)
   requests_logger.setLevel(logging.WARN)
+  requests_logger.addFilter(StopwordsFilter(["InsecureRequestWarning"]))
 

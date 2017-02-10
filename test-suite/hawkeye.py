@@ -23,7 +23,6 @@ import os
 import sys
 
 import docopt
-import requests
 
 import logger
 from application import Application, AppURLBuilder
@@ -149,8 +148,8 @@ def process_command_line_options():
     app_id=APP_IDS[language],
     module="default",
     version="1",      # Predefined application version
-    http_url="http://test-modules-and-versions.appspot.com",
-    https_url="https://test-modules-and-versions.appspot.com",
+    http_url="http://{}:{}".format(host, port),
+    https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
     is_default_for_module=True
   )
   url_builder = AppURLBuilder([app_version], language)
