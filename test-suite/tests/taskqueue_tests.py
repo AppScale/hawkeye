@@ -463,10 +463,10 @@ def suite(lang):
   suite.addTest(TaskRetryTest())
   suite.addTest(TaskEtaTest())
   suite.addTest(BriefLeaseTest())
+  suite.addTest(TransactionalTaskTest())
 
   if lang == 'python':
     suite.addTest(RESTPullQueueTest())
-    suite.addTest(TransactionalTaskTest())
     suite.addTest(TransactionalFailedTaskTest())
     suite.addTest(CleanUpTaskEntities())
 
