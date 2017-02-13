@@ -22,7 +22,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure', verbosity=1)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
+    self.assertTrue('location' in response.headers)
 
     parser = urlparse.urlparse(response.headers['location'])
     login_url = parser.path + '?' + parser.query
@@ -31,8 +31,8 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
     response = self.http_post(
       login_url, payload, prepend_lang=False, verbosity=1)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
-    self.assertTrue(response.headers.has_key('set-cookie'))
+    self.assertTrue('location' in response.headers)
+    self.assertTrue('set-cookie' in response.headers)
     parser = urlparse.urlparse(response.headers['location'])
     continue_url = parser.path
     self.assertTrue(continue_url, '/users/secure')
@@ -50,7 +50,7 @@ class AdminLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure', verbosity=1)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
+    self.assertTrue('location' in response.headers)
 
     parser = urlparse.urlparse(response.headers['location'])
     login_url = parser.path + '?' + parser.query
@@ -58,8 +58,8 @@ class AdminLoginTest(DeprecatedHawkeyeTestCase):
       USER_EMAIL, USER_PASSWORD)
     response = self.http_post(login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
-    self.assertTrue(response.headers.has_key('set-cookie'))
+    self.assertTrue('location' in response.headers)
+    self.assertTrue('set-cookie' in response.headers)
     parser = urlparse.urlparse(response.headers['location'])
     continue_url = parser.path
     self.assertTrue(continue_url, '/users/secure')

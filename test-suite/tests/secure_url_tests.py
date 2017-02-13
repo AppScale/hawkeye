@@ -7,7 +7,7 @@ class NeverSecureTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/secure/never', use_ssl=True)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
+    self.assertTrue('location' in response.headers)
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('http:'))
 
@@ -18,7 +18,7 @@ class AlwaysSecureTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/secure/always')
     self.assertEquals(response.status, 302)
-    self.assertTrue(response.headers.has_key('location'))
+    self.assertTrue('location' in response.headers)
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('https:'))
 
@@ -29,7 +29,7 @@ class AlwaysSecureRegexTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/secure/always/regex1/regex2')
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
+    self.assertTrue('location' in response.headers)
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('https:'))
 
@@ -40,7 +40,7 @@ class NeverSecureRegexTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/secure/never/regex1/regex2', use_ssl=True)
     self.assertEquals(response.status, 302)
-    self.assertTrue('location' not in response.headers)
+    self.assertTrue('location' in response.headers)
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('http:'))
 
