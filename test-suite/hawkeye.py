@@ -24,7 +24,7 @@ import sys
 
 import docopt
 
-import logger
+import hawkeye_utils
 from application import Application, AppURLBuilder
 from application_versions import AppVersion
 from hawkeye_test_runner import HawkeyeSuitesRunner, save_report_dict_to_csv
@@ -174,24 +174,24 @@ def process_command_line_options():
   return hawkeye_params
 
 
-def run_hawkeye_tests(parameters):
+def run_hawkeye_tests(params):
   # Configure logging
-  logger.configure_hawkeye_logging(parameters.log_dir, parameters.language)
+  hawkeye_utils.configure_hawkeye_logging(params.log_dir, params.language)
 
-  DeprecatedHawkeyeTestCase.LANG = parameters.language
+  DeprecatedHawkeyeTestCase.LANG = params.language
 
   # Prepare and start testing suites
   test_runner = HawkeyeSuitesRunner(
-    parameters.language,
-    parameters.log_dir,
-    parameters.baseline_file,
-    parameters.test_result_verbosity
+    params.language,
+    params.log_dir,
+    params.baseline_file,
+    params.test_result_verbosity
   )
-  test_runner.run_suites(parameters.suites)
-  test_runner.print_summary(parameters.baseline_verbosity)
-  save_report_dict_to_csv(test_runner.suites_report, parameters.output_file)
+  test_runner.run_suites(params.suites)
+  test_runner.print_summary(params.baseline_verbosity)
+  save_report_dict_to_csv(test_runner.suites_report, params.output_file)
 
 
 if __name__ == '__main__':
-  params = process_command_line_options()
-  run_hawkeye_tests(params)
+  hawkeye_parameters = process_command_line_options()
+  run_hawkeye_tests(hawkeye_parameters)

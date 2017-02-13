@@ -4,7 +4,7 @@ import urlparse
 import requests
 
 from application_versions import AppVersion
-from logger import logger
+from hawkeye_utils import logger, hawkeye_request
 
 
 class UnknownVersion(Exception):
@@ -24,23 +24,13 @@ class Application(object):
   It's based on requests library and is actually some kind of proxy for it.
   """
 
-  def __init__(self, app_id, url_builder, verify_certificate=False,
-               allow_redirects=False):
+  def __init__(self, app_id, url_builder):
     self._app_id = app_id
     self._url_builder = url_builder
-    self._verify_certificate = verify_certificate
-    self._allow_redirects = allow_redirects
 
   @property
   def app_id(self):
     return self._app_id
-
-  def _put_kwargs_defaults(self, kwargs):
-    if "verify" not in kwargs:
-      kwargs["verify"] = self._verify_certificate
-    if "allow_redirects" not in kwargs:
-      kwargs["allow_redirects"] = self._allow_redirects
-    return kwargs
 
   def get(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -57,7 +47,8 @@ class Application(object):
     Returns:
        request.Response object
     """
-    return self.logged_request('get', path, module, version, https, **kwargs)
+    url = self.build_url(path, module, version, https)
+    return hawkeye_request('get', url, **kwargs)
 
   def post(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -74,6 +65,7 @@ class Application(object):
     Returns:
        request.Response object
     """
+    url = self.build_url(path, module, version, https)
     return self.logged_request('post', path, module, version, https, **kwargs)
 
   def put(self, path, module=None, version=None, https=False, **kwargs):
@@ -91,6 +83,7 @@ class Application(object):
     Returns:
        request.Response object
     """
+    url = self.build_url(path, module, version, https)
     return self.logged_request('put', path, module, version, https, **kwargs)
 
   def delete(self, path, module=None, version=None, https=False, **kwargs):
@@ -108,77 +101,15 @@ class Application(object):
     Returns:
        request.Response object
     """
+    url = self.build_url(path, module, version, https)
     return self.logged_request('delete', path, module, version, https, **kwargs)
 
   def logged_request(self, method, path, module=None, version=None,
                      params=None, https=False, verbosity=2, **kwargs):
     url = self.build_url(path, module, version, https)
-    if "?" in url:
-      parsed = urlparse.urlparse(url)
-      qs_params = urlparse.parse_qs(parsed.query)
-      if params:
-        # params dict is more explicit so it overwrites query-string parameters
-        qs_params.update(params)
-      params = qs_params
-    try:
-      response = requests.request(
-        method, url, params=params, **self._put_kwargs_defaults(kwargs)
-      )
-      # Use real request which was sent by requests lib
-      request_headers = response.request.headers
-      request_body = response.request.body
-    except:
-      # Okay. Try to recover request which was tried to be sent by requests lib
-      request_headers = kwargs.get("headers")
-      if "data" in kwargs:
-        request_body = kwargs.get("data")
-      elif "json" in kwargs:
-        request_body = json.dumps(kwargs.get("json"))
-      elif "files":
-        request_body = "LOGGING STUB: Files are here"
-      else:
-        request_body = None
-      raise
-    finally:
-      # Anyway log request
-      self._log_request(
-        method, url, request_headers, request_body, verbosity)
-    self._log_response(
-      response.status_code, response.headers, response.content, verbosity)
-    return response
-
-  @staticmethod
-  def _log_request(method, url, headers, body, verbosity):
-    if verbosity < 1:
-      return
-    headers = headers or {}
-    body = body or ""
-    req_formatted_headers = [
-      "{header}: {value}".format(header=name, value=value)
-      for name, value in headers.iteritems()
-    ]
-    logger.info(
-      "Sending request:\n{method} {url}\n{headers}\n\n{body}"
-      .format(method=method.upper(),
-              url=url,
-              headers="\n".join(req_formatted_headers),
-              body=body))
-
-  @staticmethod
-  def _log_response(status, headers, content, verbosity):
-    if verbosity < 1:
-      return
-    headers = headers or {}
-    content = content if content and verbosity > 1 else ""
-    resp_formatted_headers = [
-      "{header}: {value}".format(header=name, value=value)
-      for name, value in headers.iteritems()
-    ]
-    logger.info(
-      "Received response: {status}\n{headers}\n\n{content}"
-      .format(status=status,
-              headers="\n".join(resp_formatted_headers),
-              content=content))
+    return hawkeye_request(
+      method, url, params=params, verbosity=verbosity, **kwargs
+    )
 
   def build_url(self, path, module=None, version=None, https=True):
     return self._url_builder.build_url(
