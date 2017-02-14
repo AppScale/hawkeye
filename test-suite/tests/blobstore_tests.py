@@ -23,7 +23,8 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    response = hawkeye_request('POST', url, files={FILE1_NAME: FILE1})
+    files = {FILE1_NAME: (FILE1_NAME, FILE1, 'application/octet-stream')}
+    response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
@@ -33,7 +34,8 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    response = hawkeye_request('POST', url, files={FILE2_NAME: FILE2})
+    files = {FILE2_NAME: (FILE2_NAME, FILE2, 'application/octet-stream')}
+    response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
@@ -130,7 +132,8 @@ class AsyncUploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    response = hawkeye_request('POST', url, files={FILE3_NAME: FILE3})
+    files = {FILE3_NAME: (FILE3_NAME, FILE3, 'application/octet-stream')}
+    response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)

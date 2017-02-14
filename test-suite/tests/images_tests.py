@@ -17,10 +17,10 @@ class ImageDeleteTest(DeprecatedHawkeyeTestCase):
 
 class ImageUploadTest(HawkeyeTestCase):
   def test_image_upload(self):
-    with open('resources/logo.png', 'rb') as logo_png:
-      response = self.app.post(
-        '/{lang}/images/logo', files={'resources/logo.png': logo_png}
-      )
+    file_path = 'resources/logo.png'
+    with open(file_path, 'rb') as logo_png:
+      files = {file_path: ('logo.png', logo_png, 'application/octet-stream')}
+      response = self.app.post('/{lang}/images/logo', files=files)
     self.assertEquals(response.status_code, 201)
     project_info = response.json()
     self.assertTrue(project_info['success'])

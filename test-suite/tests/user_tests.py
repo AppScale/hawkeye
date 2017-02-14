@@ -27,8 +27,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
     login_url = parser.path + '?' + parser.query
     payload = 'email={0}&password={1}&action=Login'.format(
       USER_EMAIL, USER_PASSWORD)
-    response = self.http_post(
-      login_url, payload, prepend_lang=False)
+    response = self.http_post(login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
     self.assertTrue('location' in response.headers)
     self.assertTrue('set-cookie' in response.headers)

@@ -98,14 +98,21 @@ def _log_request(method, url, headers, body, verbosity):
       "Request: {method} {url}\n{headers}"
       .format(method=method.upper(), url=url, headers=header_lines)
     )
-  if verbosity == 3:
-    body = body[:LIMITED_BODY_LENGTH] if body else ""
+  if verbosity == 3 and body and len(body) > LIMITED_BODY_LENGTH:
+    body = body[:LIMITED_BODY_LENGTH]
+    cut_report = (
+      "Only first {n} (of {total}) symbols of request body were shown"
+      .format(n=LIMITED_BODY_LENGTH, total=len(body))
+    )
   else:
     body = body or ""
+    cut_report = None
   logger.info(
-    "Sending request:\n{method} {url}\n{headers}\n\n{body}"
+    "Request: {method} {url}\n{headers}\n\n{body}"
     .format(method=method.upper(), url=url, headers=header_lines, body=body)
   )
+  if cut_report:
+    logger.info(cut_report)
 
 
 def _log_response(status, url, headers, content, verbosity):
@@ -125,14 +132,21 @@ def _log_response(status, url, headers, content, verbosity):
       "Response: {status} {url}\n{headers}"
       .format(status=status, url=url, headers=header_lines)
     )
-  if verbosity == 3:
-    content = content[:LIMITED_BODY_LENGTH] if content else ""
+  if verbosity == 3 and content and len(content) > LIMITED_BODY_LENGTH:
+    content = content[:LIMITED_BODY_LENGTH]
+    cut_report = (
+      "Only first {n} (of {total}) symbols of response content were shown"
+      .format(n=LIMITED_BODY_LENGTH, total=len(content))
+    )
   else:
     content = content or ""
+    cut_report = None
   logger.info(
-    "Sending request:\n{method} {url}\n{headers}\n\n{content}"
-    .format(method=status, url=url, headers=header_lines, content=content)
+    "Response: {status} {url}\n{headers}\n\n{content}"
+    .format(status=status, url=url, headers=header_lines, content=content)
   )
+  if cut_report:
+    logger.info(cut_report)
 
 
 def configure_hawkeye_logging(hawkeye_logs_dir, language):
