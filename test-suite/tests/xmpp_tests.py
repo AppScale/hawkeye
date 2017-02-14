@@ -2,7 +2,7 @@ import json
 import time
 
 from hawkeye_utils import DeprecatedHawkeyeTestCase
-from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 __author__ = 'chris'
 

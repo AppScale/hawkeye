@@ -6,7 +6,7 @@ from threading import Thread
 from time import sleep
 
 import hawkeye_utils
-from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 from hawkeye_utils import (DeprecatedHawkeyeTestCase,
                            HawkeyeConstants)
 

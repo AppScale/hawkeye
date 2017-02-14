@@ -5,7 +5,8 @@ import urlparse
 from StringIO import StringIO
 
 from hawkeye_utils import DeprecatedHawkeyeTestCase
-from hawkeye_test_runner import HawkeyeTestSuite, HawkeyeTestCase
+from hawkeye_test_runner import HawkeyeTestSuite, HawkeyeTestCase, \
+  DeprecatedHawkeyeTestCase
 import hawkeye_utils
 
 __author__ = 'hiranya'

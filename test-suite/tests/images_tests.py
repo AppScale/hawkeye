@@ -4,7 +4,7 @@ from time import sleep
 import StringIO
 
 import hawkeye_test_runner
-from hawkeye_test_runner import HawkeyeTestCase
+from hawkeye_test_runner import HawkeyeTestCase, DeprecatedHawkeyeTestCase
 from hawkeye_utils import DeprecatedHawkeyeTestCase
 import hawkeye_utils
 
