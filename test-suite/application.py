@@ -66,7 +66,7 @@ class Application(object):
        request.Response object
     """
     url = self.build_url(path, module, version, https)
-    return self.logged_request('post', path, module, version, https, **kwargs)
+    return self.logged_request('post', url, **kwargs)
 
   def put(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -84,7 +84,7 @@ class Application(object):
        request.Response object
     """
     url = self.build_url(path, module, version, https)
-    return self.logged_request('put', path, module, version, https, **kwargs)
+    return self.logged_request('put', url, **kwargs)
 
   def delete(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -102,7 +102,7 @@ class Application(object):
        request.Response object
     """
     url = self.build_url(path, module, version, https)
-    return self.logged_request('delete', path, module, version, https, **kwargs)
+    return self.logged_request('delete', url, **kwargs)
 
   def logged_request(self, method, path, module=None, version=None,
                      params=None, https=False, verbosity=2, **kwargs):

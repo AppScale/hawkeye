@@ -19,7 +19,7 @@ except ImportError:
     """
     print(msg)
 
-from logger import logger
+from hawkeye_utils import logger
 
 
 class HawkeyeTestCase(unittest.TestCase):
