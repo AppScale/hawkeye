@@ -5,10 +5,8 @@ import uuid
 from threading import Thread
 from time import sleep
 
-import hawkeye_utils
 from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
-from hawkeye_utils import (DeprecatedHawkeyeTestCase,
-                           HawkeyeConstants)
+from hawkeye_utils import HawkeyeConstants
 
 __author__ = 'hiranya'
 

@@ -29,7 +29,6 @@ from application import Application, AppURLBuilder
 from application_versions import AppVersion
 from hawkeye_test_runner import HawkeyeSuitesRunner, save_report_dict_to_csv, \
   DeprecatedHawkeyeTestCase
-from hawkeye_utils import DeprecatedHawkeyeTestCase
 
 if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")

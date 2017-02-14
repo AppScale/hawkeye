@@ -1,9 +1,4 @@
 import json
-import ssl
-import urllib2
-
-import hawkeye_utils
-from hawkeye_utils import DeprecatedHawkeyeTestCase
 from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 

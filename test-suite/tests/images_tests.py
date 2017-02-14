@@ -5,8 +5,6 @@ import StringIO
 
 import hawkeye_test_runner
 from hawkeye_test_runner import HawkeyeTestCase, DeprecatedHawkeyeTestCase
-from hawkeye_utils import DeprecatedHawkeyeTestCase
-import hawkeye_utils
 
 __author__ = 'hiranya'
 

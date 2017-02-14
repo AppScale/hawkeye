@@ -1,8 +1,5 @@
-from hawkeye_utils import DeprecatedHawkeyeTestCase, HawkeyeConstants
 from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
-import json
 from time import sleep
-import uuid
 import datetime
 
 __author__ = 'jovan'

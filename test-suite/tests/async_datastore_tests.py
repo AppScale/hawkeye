@@ -1,4 +1,4 @@
-from hawkeye_utils import DeprecatedHawkeyeTestCase, HawkeyeConstants
+from hawkeye_utils import HawkeyeConstants
 from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 import json
 from time import sleep
