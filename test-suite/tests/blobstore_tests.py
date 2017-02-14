@@ -1,9 +1,9 @@
 import json
-import urlparse
 from StringIO import StringIO
 
 from hawkeye_test_runner import HawkeyeTestSuite, HawkeyeTestCase, \
   DeprecatedHawkeyeTestCase
+from hawkeye_utils import hawkeye_request
 
 __author__ = 'hiranya'
 
@@ -23,8 +23,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    parser = urlparse.urlparse(url)
-    response = self.app.post(parser.path, files={FILE1_NAME: FILE1})
+    response = hawkeye_request('POST', url, files={FILE1_NAME: FILE1})
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
@@ -34,8 +33,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    parser = urlparse.urlparse(url)
-    response = self.app.post(parser.path, files={FILE2_NAME: FILE2})
+    response = hawkeye_request('POST', url, files={FILE2_NAME: FILE2})
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)
@@ -132,8 +130,7 @@ class AsyncUploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    parser = urlparse.urlparse(url)
-    response = self.app.post(parser.path, files={FILE3_NAME: FILE3})
+    response = hawkeye_request('POST', url, files={FILE3_NAME: FILE3})
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
     self.assertTrue(blob_key is not None and len(blob_key) > 0)

@@ -35,7 +35,7 @@ class HawkeyeConstants:
   MOD_NHTTP = 'NHTTP'
 
 
-def hawkeye_request(method, url, params=None, verbosity=2, verify=False,
+def hawkeye_request(method, url, params=None, verbosity=3, verify=False,
                     allow_redirects=False, **kwargs):
   """
   Wrapper of requests.request. It writes logs about request sent and

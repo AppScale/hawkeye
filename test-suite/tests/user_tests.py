@@ -19,7 +19,7 @@ class LoginURLTest(DeprecatedHawkeyeTestCase):
 
 class UserLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
-    response = self.http_get('/users/secure', verbosity=1)
+    response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
     self.assertTrue('location' in response.headers)
 
@@ -28,7 +28,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
     payload = 'email={0}&password={1}&action=Login'.format(
       USER_EMAIL, USER_PASSWORD)
     response = self.http_post(
-      login_url, payload, prepend_lang=False, verbosity=1)
+      login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
     self.assertTrue('location' in response.headers)
     self.assertTrue('set-cookie' in response.headers)
@@ -38,7 +38,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
 
     LOGIN_COOKIES['user'] = response.headers['set-cookie']
     headers = { 'Cookie' : LOGIN_COOKIES['user'] }
-    response = self.http_get('/users/secure', headers=headers, verbosity=1)
+    response = self.http_get('/users/secure', headers=headers)
     self.assertEquals(response.status, 200)
     user_info = json.loads(response.payload)
     self.assertTrue(user_info['user'] is not None)
@@ -47,7 +47,7 @@ class UserLoginTest(DeprecatedHawkeyeTestCase):
 
 class AdminLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
-    response = self.http_get('/users/secure', verbosity=1)
+    response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
     self.assertTrue('location' in response.headers)
 
@@ -65,7 +65,7 @@ class AdminLoginTest(DeprecatedHawkeyeTestCase):
 
     LOGIN_COOKIES['main'] = response.headers['set-cookie']
     headers = { 'Cookie' : LOGIN_COOKIES['main'] }
-    response = self.http_get('/users/secure', headers=headers, verbosity=1)
+    response = self.http_get('/users/secure', headers=headers)
     self.assertEquals(response.status, 200)
     user_info = json.loads(response.payload)
     self.assertTrue(user_info['user'] is not None)

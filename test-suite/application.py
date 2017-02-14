@@ -1,10 +1,5 @@
-import json
-import urlparse
-
-import requests
-
 from application_versions import AppVersion
-from hawkeye_utils import logger, hawkeye_request
+from hawkeye_utils import hawkeye_request
 
 
 class UnknownVersion(Exception):
