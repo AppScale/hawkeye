@@ -89,33 +89,20 @@ def _log_request(method, url, headers, body, verbosity):
       "Request: {method} {url}".format(method=method.upper(), url=url)
     )
   # More verbose message will contain headers
-  header_lines = "\n".join([
-    "{header}: {value}".format(header=name, value=value)
-    for name, value in headers.iteritems()
-  ])
+  header_lines = _headers_to_log_string(headers)
   if verbosity == 2:
     return logger.info(
       "Request: {method} {url}\n{headers}"
       .format(method=method.upper(), url=url, headers=header_lines)
     )
-  if verbosity == 3 and body and len(body) > LIMITED_BODY_LENGTH:
-    body = body[:LIMITED_BODY_LENGTH]
-    cut_report = (
-      "Only first {n} (of {total}) symbols of request body were shown"
-      .format(n=LIMITED_BODY_LENGTH, total=len(body))
-    )
-  else:
-    body = body or ""
-    cut_report = None
+  body = _body_to_log_string(body, verbosity)
   logger.info(
     "Request: {method} {url}\n{headers}\n\n{body}"
     .format(method=method.upper(), url=url, headers=header_lines, body=body)
   )
-  if cut_report:
-    logger.info(cut_report)
 
 
-def _log_response(status, url, headers, content, verbosity):
+def _log_response(status, url, headers, body, verbosity):
   if verbosity < 1:
     return
   if verbosity == 1:
@@ -123,30 +110,36 @@ def _log_response(status, url, headers, content, verbosity):
       "Response: {status} {url}".format(status=status, url=url)
     )
   # More verbose message will contain headers
-  header_lines = "\n".join([
-    "{header}: {value}".format(header=name, value=value)
-    for name, value in headers.iteritems()
-  ])
+  header_lines = _headers_to_log_string(headers)
   if verbosity == 2:
     return logger.info(
       "Response: {status} {url}\n{headers}"
       .format(status=status, url=url, headers=header_lines)
     )
-  if verbosity == 3 and content and len(content) > LIMITED_BODY_LENGTH:
-    content = content[:LIMITED_BODY_LENGTH]
-    cut_report = (
-      "Only first {n} (of {total}) symbols of response content were shown"
-      .format(n=LIMITED_BODY_LENGTH, total=len(content))
-    )
-  else:
-    content = content or ""
-    cut_report = None
+  body = _body_to_log_string(body, verbosity)
   logger.info(
-    "Response: {status} {url}\n{headers}\n\n{content}"
-    .format(status=status, url=url, headers=header_lines, content=content)
+    "Response: {status} {url}\n{headers}\n\n{body}"
+    .format(status=status, url=url, headers=header_lines, body=body)
   )
-  if cut_report:
-    logger.info(cut_report)
+
+
+def _headers_to_log_string(headers):
+  if not headers:
+    return ""
+  return "\n".join([
+    "{header}: {value}".format(header=name, value=value)
+    for name, value in headers.iteritems()
+  ])
+
+
+def _body_to_log_string(body, verbosity):
+  if not body:
+    return ""
+  if verbosity < 4 and len(body) > LIMITED_BODY_LENGTH:
+    body = "{firstN} ... ONLY {n} of {total} symbols are shown".format(
+      firstN=body[:LIMITED_BODY_LENGTH], n=LIMITED_BODY_LENGTH, total=len(body)
+    )
+  return body
 
 
 def configure_hawkeye_logging(hawkeye_logs_dir, language):

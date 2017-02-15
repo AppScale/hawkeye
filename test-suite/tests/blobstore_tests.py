@@ -13,9 +13,13 @@ FILE1_NAME = 'file1.txt'
 FILE2_NAME = 'file2.txt'
 FILE3_NAME = 'file3.txt'
 
-FILE1 = StringIO('FILE UPLOAD CONTENT')
-FILE2 = StringIO('AppScale Rocks!!!')
-FILE3 = StringIO('ASYNC FILE UPLOAD CONTENT')
+FILE1_CONTENT = 'FILE UPLOAD CONTENT'
+FILE2_CONTENT = 'AppScale Rocks!!!'
+FILE3_CONTENT = 'ASYNC FILE UPLOAD CONTENT'
+
+FILE1 = StringIO(FILE1_CONTENT)
+FILE2 = StringIO(FILE2_CONTENT)
+FILE3 = StringIO(FILE3_CONTENT)
 
 class UploadBlobTest(HawkeyeTestCase):
   def test_blobstore_upload_handler(self):
@@ -23,7 +27,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    files = {FILE1_NAME: (FILE1_NAME, FILE1, 'application/octet-stream')}
+    files = {"file": (FILE1_NAME, FILE1, 'application/octet-stream')}
     response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
@@ -34,7 +38,7 @@ class UploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    files = {FILE2_NAME: (FILE2_NAME, FILE2, 'application/octet-stream')}
+    files = {"file": (FILE2_NAME, FILE2, 'application/octet-stream')}
     response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']
@@ -46,12 +50,12 @@ class DownloadBlobTest(DeprecatedHawkeyeTestCase):
     response = self.http_get('/blobstore/download/{0}'.format(
       FILE_UPLOADS[FILE1_NAME]))
     self.assertEquals(response.status, 200)
-    self.assertEquals(response.payload, FILE1)
+    self.assertEquals(response.payload, FILE1_CONTENT)
 
     response = self.http_get('/blobstore/download/{0}'.format(
       FILE_UPLOADS[FILE2_NAME]))
     self.assertEquals(response.status, 200)
-    self.assertEquals(response.payload, FILE2)
+    self.assertEquals(response.payload, FILE2_CONTENT)
 
 class QueryBlobByKeyTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -85,7 +89,7 @@ class QueryBlobByPropertyTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(file_info['filename'], FILE2_NAME)
 
     response = self.http_get('/blobstore/query?' \
-                             'size={0}'.format(len(FILE1)))
+                             'size={0}'.format(len(FILE1_CONTENT)))
     self.assertEquals(response.status, 200)
     blobs = json.loads(response.payload)
     for blob in blobs:
@@ -132,7 +136,7 @@ class AsyncUploadBlobTest(HawkeyeTestCase):
     self.assertEquals(response.status_code, 200)
     url = response.json()['url']
     self.assertTrue(url is not None and len(url) > 0)
-    files = {FILE3_NAME: (FILE3_NAME, FILE3, 'application/octet-stream')}
+    files = {"file": (FILE3_NAME, FILE3, 'application/octet-stream')}
     response = hawkeye_request('POST', url, files=files)
     self.assertEquals(response.status_code, 200)
     blob_key = response.json()['key']

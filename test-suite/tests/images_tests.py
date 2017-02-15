@@ -19,7 +19,7 @@ class ImageUploadTest(HawkeyeTestCase):
   def test_image_upload(self):
     file_path = 'resources/logo.png'
     with open(file_path, 'rb') as logo_png:
-      files = {file_path: ('logo.png', logo_png, 'application/octet-stream')}
+      files = {"file": ('logo.png', logo_png, 'application/octet-stream')}
       response = self.app.post('/{lang}/images/logo', files=files)
     self.assertEquals(response.status_code, 201)
     project_info = response.json()
