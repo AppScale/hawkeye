@@ -1,16 +1,11 @@
-import wsgiref
-from google.appengine.api import xmpp
+import json
+import logging
 import os
+import time
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
-
+from google.appengine.api import xmpp
 from google.appengine.ext import db, webapp
 from google.appengine.ext.webapp import xmpp_handlers
-
-__author__ = 'chris'
 
 # To send XMPP messages to ourself, we need to know our
 # own hostname. For App Engine, it's always a constant,
@@ -28,6 +23,17 @@ else:  # Google App Engine
   HOST = "appspot.com"
   APP_ID = os.environ['APPLICATION_ID'].split("~")[1]
 MY_JABBER_ID = APP_ID + "@" + HOST
+
+# The keyname used to track message state via a datastore entity.
+TEST_KEYNAME = "test"
+
+
+class XmppMessages(object):
+  """ The messages used in the XMPP tests. """
+  HELLO = 'pew pew from hawkeye'
+  NON_EXISTENT = 'non-existent'
+  SENT = 'message sent!'
+  RECEIVED = 'message received!'
 
 
 class XmppMetadata(db.Model):
@@ -52,22 +58,11 @@ class XmppGetHandler(webapp.RequestHandler):
   state machine for XMPP message metadata is:
   NON EXISTENT -> MESSAGE SENT -> MESSAGE RECEIVED
   """
-
-  MESSAGE = "pew pew from hawkeye"
-
-  NON_EXISTENT = "non-existent"
-
-  MESSAGE_SENT = "message sent!"
-
-  MESSAGE_RECEIVED = "message received!"
-
-  TEST_KEYNAME = "test"
-
   def get(self):
     """Returns info on the state of the XMPP message we've
     sent for testing.
     """
-    metadata = XmppMetadata.get_by_key_name(self.TEST_KEYNAME)
+    metadata = XmppMetadata.get_by_key_name(TEST_KEYNAME)
     if metadata:
       self.response.headers['Content-Type'] = "application/json"
       self.response.out.write(json.dumps({
@@ -80,35 +75,38 @@ class XmppGetHandler(webapp.RequestHandler):
       self.response.out.write(json.dumps({
         'status' : True,
         'exists' : False,
-        'state': self.NON_EXISTENT
+        'state': XmppMessages.NON_EXISTENT
       }))
 
   def post(self):
-    """Sends an XMPP from this app to itself.
-    """
-    # send the message
-    xmpp.send_message(MY_JABBER_ID, self.MESSAGE)
+    """Sends an XMPP from this app to itself. """
+    @db.transactional
+    def update_state(key):
+      metadata = db.get(key)
+      if metadata is None:
+        XmppMetadata(key_name=TEST_KEYNAME, state=XmppMessages.SENT).put()
+      else:
+        # The 'received' handler may have already updated the state.
+        assert metadata.state == XmppMessages.RECEIVED
 
-    # update our metadata
-    # TODO(cgb): Add a try/except on this and return
-    # status=False if we run into a Datastore exception
-    metadata = XmppMetadata(key_name = self.TEST_KEYNAME,
-      state = self.MESSAGE_SENT)
-    metadata.put()
+    xmpp.send_message(MY_JABBER_ID, XmppMessages.HELLO)
+
+    entity_key = db.Key.from_path('XmppMetadata', TEST_KEYNAME)
+    update_state(entity_key)
 
     # write out the result, in json
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({
       'status' : True,
       'exists' : True,
-      'state': metadata.state
+      'state': XmppMessages.SENT
     }))
 
   def delete(self):
     """Cleans up Datastore state concerning XMPP messages.
     """
     # if the metadata exists, delete it
-    metadata = XmppMetadata.get_by_key_name(self.TEST_KEYNAME)
+    metadata = XmppMetadata.get_by_key_name(TEST_KEYNAME)
     if not metadata:
       self.response.headers['Content-Type'] = "application/json"
       self.response.out.write(json.dumps({
@@ -136,18 +134,11 @@ class XmppReceiveHandler(xmpp_handlers.CommandHandler):
   received, this handler writes to the Datastore (which can then
   be accessed via the XmppGetHandler.
   """
-
-  MESSAGE = "pew pew from hawkeye"
-
-  MESSAGE_RECEIVED = "message received!"
-
-  TEST_KEYNAME = "test"
-
   def text_message(self, message=None):
     """Receives an XMPP message previously sent to this app.
     """
     # make sure the payload is what we're expecting
-    if message.arg != self.MESSAGE:
+    if message.arg != XmppMessages.HELLO:
       self.response.headers['Content-Type'] = "application/json"
       self.response.out.write(json.dumps({
         'status' : False,
@@ -156,17 +147,13 @@ class XmppReceiveHandler(xmpp_handlers.CommandHandler):
       }))
       return
 
-    # TODO(cgb): Put a try/except on this and return
-    # status = False if a Datastore exception is thrown.
-    metadata = XmppMetadata.get_by_key_name(self.TEST_KEYNAME)
-    metadata.state = self.MESSAGE_RECEIVED
-    metadata.put()
+    XmppMetadata(key_name=TEST_KEYNAME, state=XmppMessages.RECEIVED).put()
 
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({
-      'status' : True,
-      'exists' : True,
-      'state': metadata.state
+      'status': True,
+      'exists': True,
+      'state': XmppMessages.RECEIVED
     }))
 
 urls = [
