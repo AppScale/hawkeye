@@ -56,7 +56,7 @@ def hawkeye_request(method, url, params=None, verbosity=3, verify=False,
   """
   try:
     resp = requests.request(
-      method, url.replace("192.168.100.162", "localhost"), params=params, verify=verify,
+      method, url, params=params, verify=verify,
       allow_redirects=allow_redirects, **kwargs
     )
     # Use real request which was sent by requests lib
