@@ -528,7 +528,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
     """
     if prepend_lang:
       path = "/" + self.LANG + path
-    response = self.app.logged_request(
+    response = self.app.request(
       method, path, https=use_ssl, data=payload, headers=headers, **kwargs
     )
     response_info = ResponseInfo(response)

@@ -15,7 +15,7 @@ class RequestAPI(DeprecatedHawkeyeTestCase):
       for method in ['GET', 'PUT', 'POST', 'DELETE']:
         path = '/python/env/mirror'
         url = self.app.build_url(path, https=scheme=='https')
-        response = self.app.logged_request(method, path, https=scheme=='https')
+        response = self.app.request(method, path, https=scheme == 'https')
         response_dict = response.json()
 
         self.assertEqual(response_dict['scheme'], scheme)

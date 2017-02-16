@@ -42,8 +42,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self.build_url(path, module, version, https)
-    return hawkeye_request('get', url, **kwargs)
+    return self.request('get', path, module, version, https, **kwargs)
 
   def post(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -60,8 +59,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self.build_url(path, module, version, https)
-    return self.logged_request('post', url, **kwargs)
+    return self.request('post', path, module, version, https, **kwargs)
 
   def put(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -78,8 +76,7 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self.build_url(path, module, version, https)
-    return self.logged_request('put', url, **kwargs)
+    return self.request('put', path, module, version, https, **kwargs)
 
   def delete(self, path, module=None, version=None, https=False, **kwargs):
     """
@@ -96,15 +93,12 @@ class Application(object):
     Returns:
        request.Response object
     """
-    url = self.build_url(path, module, version, https)
-    return self.logged_request('delete', url, **kwargs)
+    return self.request('delete', path, module, version, https, **kwargs)
 
-  def logged_request(self, method, path, module=None, version=None,
-                     params=None, https=False, verbosity=2, **kwargs):
+  def request(self, method, path, module=None, version=None,
+              https=False, **kwargs):
     url = self.build_url(path, module, version, https)
-    return hawkeye_request(
-      method, url, params=params, verbosity=verbosity, **kwargs
-    )
+    return hawkeye_request(method, url, **kwargs)
 
   def build_url(self, path, module=None, version=None, https=True):
     return self._url_builder.build_url(
