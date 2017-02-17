@@ -1,6 +1,3 @@
-import csv
-
-
 class InvalidVersionsCSVFileFormat(Exception):
   pass
 

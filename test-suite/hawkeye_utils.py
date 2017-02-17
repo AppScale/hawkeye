@@ -18,7 +18,7 @@ class ResponseInfo:
 
   def __init__(self, response):
     """
-    Create a new instance of ResponseInfo using the given HTTPResponse
+    Create a new instance of ResponseInfo using the given request.Response
     object.
     """
     self.status = response.status_code
@@ -41,18 +41,23 @@ def hawkeye_request(method, url, params=None, verbosity=3, verify=False,
   Wrapper of requests.request. It writes logs about request sent and
   response received. It also sets default value of `verify` and `allow_redirects`
   to False
-  :param method: string name of http method
-  :param url: string URL
-  :param params: a dict with query-string params
-  :param verbosity: 0 - don't write logs
-                    1 - log only request URL and response status
-                    2 - log request and response without body
-                    3 - add limited body
-                    4 - write full request and response with full body
-  :param verify:
-  :param allow_redirects:
-  :param kwargs:
-  :return:
+
+  Args:
+    method: string name of http method
+    url: string URL
+    params: a dict with query-string params
+    verbosity: 0 - don't write logs
+               1 - log only request URL and response status
+               2 - log request and response without body
+               3 - add limited body
+               4 - write full request and response with full body
+    verify: boolean, determines if server's certificate should be verified
+    allow_redirects: boolean, determines if redirects should be
+                     automatically followed
+    kwargs: other keyword arguments to be passed to requests.request
+
+  Returns:
+    an instance of requests.Response
   """
   try:
     resp = requests.request(
@@ -63,7 +68,7 @@ def hawkeye_request(method, url, params=None, verbosity=3, verify=False,
     request_headers = resp.request.headers
     request_body = resp.request.body
   except:
-    # Okay. Try to recover request which was tried to be sent by requests lib
+    # Ok. Attempt to recover request which was tried to be sent by requests lib
     request_headers = kwargs.get("headers")
     if "data" in kwargs and verbosity > 2:
       request_body = kwargs.get("data")

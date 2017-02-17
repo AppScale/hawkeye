@@ -24,16 +24,32 @@ from hawkeye_utils import logger, ResponseInfo
 
 
 class HawkeyeTestCase(unittest.TestCase):
+  """
+  Extension of unittest.TestCase. It has `app` attribute for easy access to the
+  tested application.
+  """
+
   def __init__(self, methodName, application):
     super(HawkeyeTestCase, self).__init__(methodName)
     self.app = application
 
   @classmethod
   def all_cases(cls, app):
-    return [cls(method_name, app) for method_name in cls.cases_names()]
+    """
+    Helper method which is used for building suites. It creates a list of
+    test cases with specified `app` attribute. Test case is created for each
+    method with name starting with 'test' or method with name 'runTest'.
+
+    Args:
+      app: an Application to be passed to __init__ of HawkeyeTestCase
+
+    Returns:
+      a list of instances of cls (an instance for each test method)
+    """
+    return [cls(method_name, app) for method_name in cls._cases_names()]
 
   @classmethod
-  def cases_names(cls):
+  def _cases_names(cls):
     return [
       name for name, _ in inspect.getmembers(cls, predicate=inspect.ismethod)
       if name.startswith("test") or name == "runTest"
@@ -62,12 +78,13 @@ class HawkeyeTestSuite(unittest.TestSuite):
 
 class HawkeyeTestResult(unittest.TextTestResult):
   """
-  Like a usual unittest.TextTestResult but saves report to dictionary like:
+  Like a usual unittest.TextTestResult but it writes logs to hawkeye logger
+  and saves report to dictionary like:
   {
     "tests.search_tests.SearchTest.runTest": "ok",
-    "tests.search_tests.GetRangeTest": "FAIL",
-    "tests.search_tests.GetTest": "skip",
-    "tests.search_tests.PutTest": "ERROR",
+    "tests.search_tests.GetRangeTest.test_default_limit": "FAIL",
+    "tests.search_tests.GetTest.test_unknown_doc": "skip",
+    "tests.search_tests.PutTest.test_invalid_id": "ERROR",
     ...
   }
   """
@@ -361,19 +378,20 @@ class HawkeyeSuitesRunner(object):
 
 class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
   """
-  This abstract class provides a skeleton to implement actual
+  This DEPRECATED abstract class provides a skeleton to implement actual
   Hawkeye test cases. To implement a test case, this class must
   be extended by providing an implementation for the runTest
   method. Use the http_* methods to perform HTTP calls on backend
   endpoints. All the HTTP calls performed via these methods are
-  traced and logged to hawkeye-logs/http.log.
+  traced and logged to hawkeye-logs/<lang>-detailed <datetime>.log.
   """
   LANG = None
 
   def __init__(self, methodName, application):
     """
     Args:
-      application: Application object
+      methodName: name of test method (e.g.: "runTest")
+      application: an Application object
     """
     super(DeprecatedHawkeyeTestCase, self).__init__(methodName, application)
     self.description_printed = False
@@ -394,10 +412,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
   def http_get(self, path, headers=None, prepend_lang=True,
                use_ssl=False, **kwargs):
     """
-    Perform a HTTP GET request on the specified URL path.
-    The hostname and port segments of the URL are inferred from
-    the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT.
+    Perform a HTTP GET request on the specified URL path using Application
+    object provided by new HawkeyeTestCase
 
     Args:
       path          A URL path fragment (eg: /foo)
@@ -416,10 +432,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
 
   def http_post(self, path, payload, headers=None, prepend_lang=True, **kwargs):
     """
-    Perform a HTTP POST request on the specified URL path.
-    The hostname and port segments of the URL are inferred from
-    the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. If a content-type header is not set
+    Perform a HTTP POST request on the specified URL path using Application
+    object provided by new HawkeyeTestCase. If a content-type header is not set
     defaults to 'application/x-www-form-urlencoded' content type.
 
     Args:
@@ -442,10 +456,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
 
   def http_put(self, path, payload, headers=None, prepend_lang=True, **kwargs):
     """
-    Perform a HTTP PUT request on the specified URL path.
-    The hostname and port segments of the URL are inferred from
-    the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT. If a content-type header is not set
+    Perform a HTTP PUT request on the specified URL path using Application
+    object provided by new HawkeyeTestCase. If a content-type header is not set
     defaults to 'application/x-www-form-urlencoded' content type.
 
     Args:
@@ -468,10 +480,8 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
 
   def http_delete(self, path, prepend_lang=True, **kwargs):
     """
-    Perform a HTTP DELETE request on the specified URL path.
-    The hostname and port segments of the URL are inferred from
-    the values of the 2 constants hawkeye_utils.HOST and
-    hawkeye_utils.PORT.
+    Perform a HTTP DELETE request on the specified URL path using Application
+    object provided by new HawkeyeTestCase.
 
     Args:
       path          A URL path fragment (eg: /foo)
@@ -512,7 +522,7 @@ class DeprecatedHawkeyeTestCase(HawkeyeTestCase):
                      prepend_lang=True, use_ssl=False, **kwargs):
     """
     Make a HTTP call using the provided arguments. HTTP request and response
-    are traced and logged to hawkeye-logs/http.log.
+    are traced and logged to hawkeye-logs/<lang>-detailed <datetime>.log.
 
     Args:
       method       HTTP method (eg: GET, POST)

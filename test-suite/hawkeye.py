@@ -49,6 +49,9 @@ SSL_PORT_OFFSET = 3700
 
 def build_suites_list(lang, include, exclude, application):
   """
+  Based on language, include and exclude filters, build list of
+  HawkeyeTestSuite objects.
+
   Args:
     lang: language to test, either 'python' or 'java'
     include: a list of str - suites to return (use empty list to include all)
@@ -56,6 +59,7 @@ def build_suites_list(lang, include, exclude, application):
       ('exclude' is ignored if 'include' is specified)
     application: Application object - wraps requests library and provides api
       for access to testing AppEngine application
+
   Returns:
     a list of HawkeyeTestSuite for specified language
   """
@@ -104,6 +108,9 @@ def print_usage_and_exit(msg):
 
 
 class HawkeyeParameters(object):
+  """
+  Container of parameters which are used to configure specific hawkeye tests run
+  """
   def __init__(self):
     self.language = None
     self.suites = None
@@ -115,6 +122,12 @@ class HawkeyeParameters(object):
 
 
 def process_command_line_options():
+  """
+  Validates and processes command line arguments. Builds HawkeyeParameters
+
+  Returns:
+    An instance of HawkeyeParameters with filled attributres
+  """
   options = docopt.docopt(__doc__)
 
   # Validate language
@@ -175,6 +188,13 @@ def process_command_line_options():
 
 
 def run_hawkeye_tests(params):
+  """
+  Runs hawkeye tests according to params. Prints summary and saves
+  test results to csv file
+
+  Args:
+    params: an instance of HawkeyeParameters
+  """
   # Configure logging
   hawkeye_utils.configure_hawkeye_logging(params.log_dir, params.language)
 
