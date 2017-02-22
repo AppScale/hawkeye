@@ -124,7 +124,7 @@ class AppURLBuilder(object):
     self.language = language
 
     # Find default versions for modules and globally for applications
-    modules = set((v.module for v in app_versions))
+    modules = {v.module for v in app_versions}
     module_default_versions = [
       v for v in app_versions if v.is_default_for_module
     ]
@@ -132,9 +132,14 @@ class AppURLBuilder(object):
       v for v in module_default_versions if v.is_default_module
     ]
 
-    # Verify if every single module has default version
-    if len(modules) != len(module_default_versions):
-      raise ImproperVersionsList("Some of modules doesn't have default version")
+    # Verify if every single module has exactly one default version
+    for m in modules:
+      num_of_default = sum(1 for v in module_default_versions if v.module == m)
+      if num_of_default != 1:
+        raise ImproperVersionsList(
+          "Module {} has {} default versions. Exactly 1 was expected"
+          .format(m, num_of_default)
+        )
 
     # Save version details into dict for a quick access
     self._versions_dict = {
