@@ -1,7 +1,3 @@
-class InvalidVersionsCSVFileFormat(Exception):
-  pass
-
-
 class AppVersion(object):
   """
   Container for details about specific version of specific module of
