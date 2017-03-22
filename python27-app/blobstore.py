@@ -104,13 +104,10 @@ class CreateURL(webapp2.RequestHandler):
     url = blobstore.create_upload_url('test')
     self.response.write(url)
 
-application = webapp.WSGIApplication([
+urls = [
   ('/python/blobstore/url', MainHandler),
   ('/python/blobstore/upload', UploadHandler),
   ('/python/blobstore/download/(.*)', DownloadHandler),
   ('/python/blobstore/query', BlobQueryHandler),
   ('/python/blobstore/create_url', CreateURL),
-], debug=True)
-
-if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+]

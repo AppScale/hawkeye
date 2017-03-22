@@ -2,7 +2,8 @@ import json
 import ssl
 import urllib2
 import urlparse
-from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
+from hawkeye_utils import HawkeyeTestCase
+from hawkeye_test_runner import HawkeyeTestSuite
 import hawkeye_utils
 
 __author__ = 'hiranya'

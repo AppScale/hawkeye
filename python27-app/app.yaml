@@ -2,7 +2,7 @@ application: hawkeyepython27
 version: 1
 runtime: python27
 api_version: 1
-threadsafe: false
+threadsafe: true
 
 env_variables:
   SHOULD_BE_BAZ: "baz"
@@ -15,61 +15,31 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /python/cron.*
-  script: cron.py
-
-- url: /python/datastore/(.*)
-  script: datastore.py
-
-- url: /python/async_datastore/(.*)
-  script: async_datastore.py
-
-- url: /python/ndb/(.*)
-  script: ndb.py
-
-- url: /python/memcache.*
-  script: memcache.py
-
-- url: /python/taskqueue/(.*)
-  script: taskqueue.py
-
-- url: /python/blobstore/(.*)
-  script: blobstore.py
-
-- url: /python/users/secure.*
-  script: users.py
+- url: /python/users/secure
+  script: main.app
   login: required
 
-- url: /python/users/(.*)
-  script: users.py
-
-- url: /python/images/(.*)
-  script: images.py
-
 - url: /python/secure/always
-  script: secure_url.py
+  script: main.app
   secure: always
 
-- url: /python/secure/always/(.*?)/(.*)
-  script: secure_url.py
+- url: /python/secure/always/.*
+  script: main.app
   secure: always
 
 - url: /python/secure/never
-  script: secure_url.py
+  script: main.app
   secure: never
 
-- url: /python/secure/never/(.*?)/(.*)
-  script: secure_url.py
+- url: /python/secure/never/.*
+  script: main.app
   secure: never
-
-- url: /python/env/(.*)
-  script: env_var.py
-
-- url: /python/xmpp/?
-  script: xmpp.py
 
 - url: /_ah/xmpp/message/chat/?
-  script: xmpp.py
+  script: main.app
+
+- url: /.*
+  script: main.app
 
 - url: /python/logserver/(.*)
   script: logservice.py

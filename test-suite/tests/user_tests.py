@@ -1,6 +1,7 @@
 import json
 import urlparse
-from hawkeye_utils import HawkeyeTestCase, HawkeyeTestSuite
+from hawkeye_utils import HawkeyeTestCase
+from hawkeye_test_runner import HawkeyeTestSuite
 
 __author__ = 'hiranya'
 

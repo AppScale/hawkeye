@@ -1,52 +1,37 @@
 #!/usr/bin/python
 """ hawkeye.py: Run API fidelity tests on AppScale. """
 
-import csv
 import optparse
 import os
-import StringIO
 import sys
+
+from hawkeye_test_runner import HawkeyeSuitesRunner, save_report_dict_to_csv
+
 if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 import hawkeye_utils
-from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
-from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
-from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
-from tests import cron_tests, logservice_tests
-
-# We want to proceed nicely on systems that don't have termcolor installed.
-try:
-  from termcolor import cprint
-except ImportError:
-  sys.stderr.write('termcolor module not found\n')
-  def cprint(msg, color, end='\n'):
-    """
-    Fallback definition of cprint in case the termcolor module is not available.
-
-    Args:
-      msg: string to be printed stdout.
-      color: this argument is ignored, included for compatibility with
-        termcolor.cprint().
-      end: line-ending character, typically a new-line or empty string.
-    """
-    sys.stdout.write(msg)
-    if end is not '':
-      sys.stdout.write(end)
+from tests import (
+  datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
+  user_tests, images_tests, secure_url_tests, xmpp_tests,
+  environment_variable_tests, async_datastore_tests, cron_tests,
+  logservice_tests
+)
 
 SUPPORTED_LANGUAGES = ['java', 'python']
 
-def init_test_suites(lang):
-  """
-  Initialize the hawkeye test suites.
 
+def build_suites_list(lang, include, exclude):
+  """
   Args:
-    lang: language to test, either 'python' or 'java'.
-
+    lang: language to test, either 'python' or 'java'
+    include: a list of str - suites to return (use empty list to include all)
+    exclude: a list of str - suites to skip
+      ('exclude' is ignored if 'include' is specified)
   Returns:
-    A dict of hawkeye test suites.
+    a list of HawkeyeTestSuite for specified language
   """
-  return {
+  defined_suites  = {
     'blobstore' : blobstore_tests.suite(lang),
     'datastore' : datastore_tests.suite(lang),
     'async_datastore' : async_datastore_tests.suite(lang),
@@ -61,29 +46,46 @@ def init_test_suites(lang):
     'cron' : cron_tests.suite(lang),
     'logservice': logservice_tests.suite(lang),
   }
+  # Validation include and exclude lists
+  for suite_name in include + exclude:
+    if suite_name not in defined_suites:
+      print_usage_and_exit("Unknown suite '{}'. Suite can be one of {}"
+                           .format(suite_name, defined_suites.keys()))
 
-def print_usage_and_exit(msg, myparser):
+  if include:
+    return [
+      suite for suite_name, suite in defined_suites.iteritems()
+      if suite_name in include
+    ]
+  if exclude:
+    return [
+      suite for suite_name, suite in defined_suites.iteritems()
+      if suite_name not in exclude
+    ]
+  return defined_suites.values()
+
+
+def print_usage_and_exit(msg):
   """
   Print out usage for this program and  and exit.
 
   Args:
     msg: error message to print out.
-    myparser: parser object.
   """
-  print msg
-  myparser.print_help()
+  print(msg)
+  build_option_parser().print_help()
   exit(1)
 
-if __name__ == '__main__':
 
+def build_option_parser():
   parser = optparse.OptionParser()
   parser.add_option('-s', '--server', action='store',
-    type='string', dest='server', 
+    type='string', dest='server',
     help='Hostname of the target AppEngine server')
   parser.add_option('-p', '--port', action='store',
     type='int', dest='port', help='Port of the target AppEngine server')
   parser.add_option('-l', '--lang', action='store',
-    type='string', dest='lang', 
+    type='string', dest='lang',
     help='Language binding to test (eg: python, python27, java)')
   parser.add_option('--user', action='store',
     type='string', dest='user', help='Admin username (defaults to a@a.com)')
@@ -96,22 +98,27 @@ if __name__ == '__main__':
   parser.add_option('--exclude-suites', action='store', type='string',
     dest='exclude_suites', help='A comma separated list of suites to exclude')
   parser.add_option('--baseline', action='store_true',
-    dest='verbose_baseline', 
+    dest='verbose_baseline',
     help='Turn on verbose reporting for baseline comparison')
   parser.add_option('--log-dir', action='store', type='string',
     dest='base_dir',
     help='Directory to store error logs.')
   parser.add_option('--keep-old-logs', action='store_true',
     dest='keep_old_logs', help='Keep existing hawkeye logs')
+  return parser
+
+
+if __name__ == '__main__':
+  parser = build_option_parser()
   (options, args) = parser.parse_args(sys.argv[1:])
 
   if options.server is None:
-    print_usage_and_exit('Target server name not specified', parser)
+    print_usage_and_exit('Target server name not specified')
   elif options.port is None:
-    print_usage_and_exit('Target port name not specified', parser)
+    print_usage_and_exit('Target port name not specified')
   elif options.lang is not None and options.lang not in SUPPORTED_LANGUAGES:
     print_usage_and_exit('Unsupported language. Must be one of: {0}'.
-      format(SUPPORTED_LANGUAGES), parser)
+      format(SUPPORTED_LANGUAGES))
   elif options.lang is None:
     options.lang = 'python'
 
@@ -122,16 +129,16 @@ if __name__ == '__main__':
     if base_dir[0] == '~':
       base_dir = "{0}{1}".format(os.environ['HOME'], base_dir[1:])
 
-  suite_names = ['all']
+  include_suites = []
   exclude_suites = []
-  if options.suites is not None:
-    suite_names = options.suites.split(',')
-  if options.exclude_suites is not None:
+  if options.suites:
+    include_suites = options.suites.split(',')
+  if options.exclude_suites:
     exclude_suites = options.exclude_suites.split(',')
 
-  if options.user is not None:
+  if options.user:
     user_tests.USER_EMAIL = options.user
-  if options.password is not None:
+  if options.password:
     user_tests.USER_PASSWORD = options.password
 
   hawkeye_utils.HOST = options.server
@@ -141,7 +148,7 @@ if __name__ == '__main__':
   if options.console:
     hawkeye_utils.CONSOLE_MODE = True
 
-  hawkeye_logs = '{0}{1}hawkeye-logs'.format(base_dir, os.sep)
+  hawkeye_logs = os.path.join(base_dir, 'hawkeye-logs')
   if not os.path.exists(hawkeye_logs):
     os.makedirs(hawkeye_logs)
 
@@ -153,102 +160,17 @@ if __name__ == '__main__':
       if os.path.isfile(file_path):
         os.unlink(file_path)
 
-  suites = {}
-  TEST_SUITES = init_test_suites(options.lang)
-  for suite_name in suite_names:
-    suite_name = suite_name.strip()
-    if suite_name == 'all':
-      suites = TEST_SUITES
-      break
-    elif TEST_SUITES.has_key(suite_name):
-      suites[suite_name] = TEST_SUITES[suite_name]
-    else:
-      print_usage_and_exit('Unsupported test suite: {0}'.
-        format(suite_name), parser)
-
-  for exclude_suite in exclude_suites:
-    exclude_suite = exclude_suite.strip()
-    if suites.has_key(exclude_suite):
-      del(suites[exclude_suite])
-    elif not TEST_SUITES.has_key(exclude_suite):
-      print_usage_and_exit('Unsupported test suite: {0}'.
-        format(exclude_suite), parser)
+  suites = build_suites_list(options.lang, include_suites, exclude_suites)
 
   if not suites:
-    print_usage_and_exit('Must specify at least one suite to execute', parser)
+    print_usage_and_exit('Must specify at least one suite to execute')
 
-  ran_suites = {}
-  for suite in suites.values():
-    # Capture output from the test suites to a string.
-    buff = StringIO.StringIO()
-    runner = hawkeye_utils.HawkeyeTestRunner(suite)
-    runner.set_stream(buff)
-    runner.run_suite()
-    output = buff.getvalue()
-    buff.close()
-    print output
-    # Parse the output for comparison against the baseline.
-    for line in output.splitlines():
-      if line.startswith('runTest ('):
-        key = line[9:line.index(')')]
-        val = line[line.rfind(' '):]
-        ran_suites[key] = val
- 
-  # Write the test results to a file in CSV format.
-  csv_writer = csv.writer(open("hawkeye_output.csv", "w"))
-  for key, val in sorted(ran_suites.items()):
-    csv_writer.writerow([key, val])
+  verbosity = 2 if options.console else 1
+  baseline_file = "hawkeye_baseline_{lang}.csv".format(lang=options.lang)
 
-  # Read in the baseline file (if found).
-  baseline_results = {}
-  try:
-    for key, val in csv.reader(open("hawkeye_baseline_"+options.lang+".csv")):
-      baseline_results[key] = val
-  except IOError:
-    print "ERROR: Could not open baseline file for comparison"
+  test_runner = HawkeyeSuitesRunner(
+    options.lang, hawkeye_logs, baseline_file, verbosity)
 
-  # Compare 'ran_suites' with 'baseline_results'.
-  tests_matched = 0
-  tests_no_match = 0
-  test_no_match_buffer = ''
-  tests_added = 0
-  test_added_buffer = ''
-  tests_ommitted = 0
-  test_ommitted_buffer = ''
-  test_results = {} # Dict to count the various result values.
-  for key in ran_suites.keys():
-    # Add to the count (i.e. how many 'ok', how many 'FAIL'...).
-    value = ran_suites[key]
-    if(value in test_results):
-      test_results[value] += 1
-    else:  test_results[value] = 1
-    # Compare baseline and results.
-    if(key in baseline_results):
-      if(baseline_results[key]==ran_suites[key]):
-        tests_matched += 1
-      else:
-        tests_no_match += 1
-        test_no_match_buffer += "\t"+key+" ="+value
-        test_no_match_buffer += " (baseline ="+baseline_results[key]+")\n"
-      del baseline_results[key]
-    else:
-      tests_added += 1
-      test_added_buffer += "\t"+key+" ="+value+"\n"
-  # How many tests were ommited (how many are left in the baseline list).
-  tests_ommitted = len(baseline_results)
-  for key in baseline_results.keys():
-    test_ommitted_buffer += "\t"+key+" ="+value+"\n"
-
-  print "Comparison to baseline"
-  print str(tests_matched)+" tests match baseline result"
-  print str(tests_no_match)+" tests did not match baseline result"
-  if options.verbose_baseline and tests_no_match > 0:
-    cprint(test_no_match_buffer, 'red', end='')
-  print str(tests_added)+" tests run, but not found in baseline"
-  if options.verbose_baseline and tests_added > 0:
-    print test_added_buffer,
-  print str(tests_ommitted)+" tests in baseline, but not run"
-  if options.verbose_baseline and tests_ommitted > 0:
-    print test_ommitted_buffer,
-  for status in sorted(test_results.keys()):
-    print str(test_results[status])+" test with value: "+status
+  test_runner.run_suites(suites)
+  test_runner.print_summary(options.verbose_baseline)
+  save_report_dict_to_csv(test_runner.suites_report, "hawkeye_output.csv")
