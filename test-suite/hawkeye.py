@@ -13,7 +13,7 @@ import hawkeye_utils
 from tests import datastore_tests, ndb_tests, memcache_tests, taskqueue_tests
 from tests import blobstore_tests, user_tests, images_tests, secure_url_tests
 from tests import xmpp_tests, environment_variable_tests, async_datastore_tests
-from tests import cron_tests
+from tests import cron_tests, logservice_tests
 
 # We want to proceed nicely on systems that don't have termcolor installed.
 try:
@@ -59,6 +59,7 @@ def init_test_suites(lang):
     'users' : user_tests.suite(lang),
     'xmpp' : xmpp_tests.suite(lang),
     'cron' : cron_tests.suite(lang),
+    'logservice': logservice_tests.suite(lang),
   }
 
 def print_usage_and_exit(msg, myparser):
