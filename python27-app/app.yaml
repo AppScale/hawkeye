@@ -41,9 +41,6 @@ handlers:
 - url: /.*
   script: main.app
 
-- url: /python/logserver/(.*)
-  script: logservice.py
-
 inbound_services:
 - xmpp_message
 
