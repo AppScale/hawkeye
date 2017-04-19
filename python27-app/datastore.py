@@ -1819,6 +1819,8 @@ class TxInvalidation(webapp2.RequestHandler):
     @ndb.transactional(retries=0)
     def get_and_put(key):
       key.get()
+      # Give time for the client to make a concurrent request. The second
+      # request should come between the get and put.
       time.sleep(1)
       TestModel(key=key, field='transactional').put()
 

@@ -592,6 +592,9 @@ class TxInvalidation(HawkeyeTestCase):
     thread = Thread(target=tx_succeeded, args=(url, tx_payload))
     thread.start()
 
+    # The tx_payload request sleeps for 1 second between a get and put inside
+    # a transaction. This smaller sleep aims to run a put (from the
+    # non_tx_payload request) between those two calls.
     time.sleep(.5)
 
     non_tx_payload = urllib.urlencode({'key': self.KEY, 'txn': False})
