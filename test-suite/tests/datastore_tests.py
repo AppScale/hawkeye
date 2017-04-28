@@ -571,6 +571,19 @@ class LongTxRead(HawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class CursorWithRepeatedProp(HawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/cursor_with_repeated_prop')
+
+  def setUp(self):
+    self.http_post('/datastore/cursor_with_repeated_prop', '')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_with_repeated_prop')
+    self.assertEqual(response.status, 200)
+    results = json.loads(response.payload)
+    self.assertEqual(len(results), 1)
+
 def suite(lang):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTest(DataStoreCleanupTest())
@@ -609,6 +622,7 @@ def suite(lang):
     suite.addTest(CompositeProjection())
     suite.addTest(CursorQueries())
     suite.addTest(LongTxRead())
+    suite.addTest(CursorWithRepeatedProp())
   elif lang == 'java':
     suite.addTest(JDOIntegrationTest())
     suite.addTest(JPAIntegrationTest())

@@ -39,6 +39,7 @@ tests.datastore_tests.ConcurrentTransactionTest.runTest,ok
 tests.datastore_tests.CountQueryTest.runTest,ok
 tests.datastore_tests.CrossGroupTransactionTest.runTest,ok
 tests.datastore_tests.CursorQueries.runTest,ok
+tests.datastore_tests.CursorWithRepeatedProp.runTest,ok
 tests.datastore_tests.CursorWithZigzagMerge.runTest,ok
 tests.datastore_tests.DataStoreCleanupTest.runTest,ok
 tests.datastore_tests.GQLProjectionQueryTest.runTest,ok
