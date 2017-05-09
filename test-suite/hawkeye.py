@@ -15,7 +15,7 @@ from tests import (
   datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
   user_tests, images_tests, secure_url_tests, xmpp_tests,
   environment_variable_tests, async_datastore_tests, cron_tests,
-  logservice_tests
+  logservice_tests, urlfetch_tests
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
@@ -41,6 +41,7 @@ def build_suites_list(lang, include, exclude):
     'ndb' : ndb_tests.suite(lang),
     'secure_url' : secure_url_tests.suite(lang),
     'taskqueue' : taskqueue_tests.suite(lang),
+    'urlfetch': urlfetch_tests.suite(lang),
     'users' : user_tests.suite(lang),
     'xmpp' : xmpp_tests.suite(lang),
     'cron' : cron_tests.suite(lang),
