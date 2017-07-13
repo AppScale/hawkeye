@@ -40,24 +40,24 @@ def hawkeye_request(method, url, params=None, verbosity=3, verify=False,
   """
   Wrapper of requests.request. It writes logs about request sent and
   response received. It also sets default value of `verify` and `allow_redirects`
-  to False
+  to False.
 
   Args:
-    method: string name of http method
-    url: string URL
-    params: a dict with query-string params
-    verbosity: 0 - don't write logs
-               1 - log only request URL and response status
-               2 - log request and response without body
-               3 - add limited body
-               4 - write full request and response with full body
-    verify: boolean, determines if server's certificate should be verified
-    allow_redirects: boolean, determines if redirects should be
-                     automatically followed
-    kwargs: other keyword arguments to be passed to requests.request
+    method: A string name of http method.
+    url: A string URL.
+    params: A dict with query-string params.
+    verbosity: An integer. 0 - don't write logs
+      1 - log only request URL and response status
+      2 - log request and response without body
+      3 - add limited body
+      4 - write full request and response with full body
+    verify: A boolean, determines if server's certificate should be verified.
+    allow_redirects: A boolean, determines if redirects should be
+      automatically followed.
+    kwargs: other keyword arguments to be passed to requests.request.
 
   Returns:
-    an instance of requests.Response
+    an instance of requests.Response.
   """
   try:
     resp = requests.request(
@@ -150,15 +150,14 @@ def _body_to_log_string(body, verbosity):
 def configure_hawkeye_logging(hawkeye_logs_dir, language):
   """
   This function configures hawkeye logger and loggers of some libraries
-  to write relevant logs to specific log file located in
-  hawkeye_logs_dir.
+  to write relevant logs to specific log file located in hawkeye_logs_dir.
   Hawkeye logs written by logging framework in contrast to those logs
   which are written manually to report files are aimed to collect debug
   information which can help to understand unexpected failure of testcase.
 
   Args:
-    hawkeye_logs_dir: a string - path to hawkeye logs directory
-    language: a string - name of currently testing language
+    hawkeye_logs_dir: A string - path to hawkeye logs directory.
+    language: A string - name of currently testing language.
   """
   # Configure simple formatter
   formatter = logging.Formatter("%(levelname)s %(name)s %(message)s")

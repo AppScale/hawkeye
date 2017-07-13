@@ -1,13 +1,23 @@
 class AppVersion(object):
   """
   Container for details about specific version of specific module of
-  specific application
+  specific application.
   """
 
   DEFAULT_MODULE = "default"
 
   def __init__(self, app_id, module, version,
                http_url, https_url, is_default_for_module):
+    """
+    Args:
+      app_id: A string representing application ID.
+      module: A string representing module name.
+      version: A string representing version name.
+      http_url: A string representing application URL.
+      https_url: A string representing secured application URL.
+      is_default_for_module: A flag indicating if the version
+        is default for module.
+    """
     self.app_id = app_id
     self.module = module
     self.version = version
@@ -27,11 +37,11 @@ class AppVersion(object):
     Gets default version for specific module.
 
     Args:
-      available_versions: a list of AppVersion
-      module_name: name of module to check
+      available_versions: A list of AppVersion objects.
+      module_name: A string representing name of module to check.
     Returns:
       AppVersion which is default version for specified module or None if
-      there is no default version for module
+      there is no default version for module.
     """
     return next((
       v for v in available_versions

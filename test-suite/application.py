@@ -30,17 +30,17 @@ class Application(object):
   def get(self, path, module=None, version=None, https=False, **kwargs):
     """
     Sends GET request to specified module and version of application.
-    If module or version are missed, then default one will be used.
+    If module or version are missing, then default one will be used.
 
     Args:
-      path: a string - path to http method. It can contain '{lang}'
-            which will be replaced with application language
-      module: a string - identifies which module should be used
-      version: a string - identifies which version of module should be used
-      https: a boolean - determines if https should be used
-      kwargs: kwargs to be passed to requests.get function
+      path: A string - path to http method. It can contain '{lang}'
+        which will be replaced with application language.
+      module: A string - identifies which module should be used.
+      version: A string - identifies which version of module should be used.
+      https: A boolean - determines if https should be used.
+      kwargs: kwargs to be passed to requests.get function.
     Returns:
-       request.Response object
+       request.Response object.
     """
     return self.request('get', path, module, version, https, **kwargs)
 
@@ -50,14 +50,14 @@ class Application(object):
     If module or version are missed, then default one will be used.
 
     Args:
-      path: a string - path to http method. It can contain '{lang}'
-            which will be replaced with application language
-      module: a string - identifies which module should be used
-      version: a string - identifies which version of module should be used
-      https: a boolean - determines if https should be used
-      kwargs: kwargs to be passed to requests.post function
+      path: A string - path to http method. It can contain '{lang}'
+        which will be replaced with application language.
+      module: A string - identifies which module should be used.
+      version: A string - identifies which version of module should be used.
+      https: A boolean - determines if https should be used.
+      kwargs: kwargs to be passed to requests.post function.
     Returns:
-       request.Response object
+       request.Response object.
     """
     return self.request('post', path, module, version, https, **kwargs)
 
@@ -67,14 +67,14 @@ class Application(object):
     If module or version are missed, then default one will be used.
 
     Args:
-      path: a string - path to http method. It can contain '{lang}'
-            which will be replaced with application language
-      module: a string - identifies which module should be used
-      version: a string - identifies which version of module should be used
-      https: a boolean - determines if https should be used
-      kwargs: kwargs to be passed to requests.put function
+      path: A string - path to http method. It can contain '{lang}'
+        which will be replaced with application language.
+      module: A string - identifies which module should be used.
+      version: A string - identifies which version of module should be used.
+      https: A boolean - determines if https should be used.
+      kwargs: kwargs to be passed to requests.put function.
     Returns:
-       request.Response object
+       request.Response object.
     """
     return self.request('put', path, module, version, https, **kwargs)
 
@@ -84,31 +84,63 @@ class Application(object):
     If module or version are missed, then default one will be used.
 
     Args:
-      path: a string - path to http method. It can contain '{lang}'
-            which will be replaced with application language
-      module: a string - identifies which module should be used
-      version: a string - identifies which version of module should be used
-      https: a boolean - determines if https should be used
-      kwargs: kwargs to be passed to requests.delete function
+      path: A string - path to http method. It can contain '{lang}'
+        which will be replaced with application language.
+      module: A string - identifies which module should be used.
+      version: A string - identifies which version of module should be used.
+      https: A boolean - determines if https should be used.
+      kwargs: kwargs to be passed to requests.delete function.
     Returns:
-       request.Response object
+       request.Response object.
     """
     return self.request('delete', path, module, version, https, **kwargs)
 
   def request(self, method, path, module=None, version=None,
               https=False, **kwargs):
+    """
+    Sends request to specified module and version of application.
+    If module or version are missed, then default one will be used.
+
+    Args:
+      method: A string - represents HTTP methods.
+      path: A string - path to http method. It can contain '{lang}'
+        which will be replaced with application language.
+      module: A string - identifies which module should be used.
+      version: A string - identifies which version of module should be used.
+      https: A boolean - determines if https should be used.
+      kwargs: kwargs to be passed to requests.delete function.
+    Returns:
+       request.Response object.
+    """
     url = self.build_url(path, module, version, https)
     return hawkeye_request(method, url, **kwargs)
 
   def build_url(self, path, module=None, version=None, https=True):
+    """
+    Like DNS returns IP for domain name, build_url returns full URL for
+    module, version, path and schema (http/https).
+
+    Args:
+      path: A string - path to http method, it can contain '{lang}' which
+        will be converted to current hawkeye language (shared.language)
+        e.g.: /{lang}/product/add
+      module: A string - module name; can be None if version is None,
+        in this case default version of default module will be used).
+      version: A string - version name; can be None,
+        in this case default version of module will be used.
+      https: A boolean - shows if https should be used instead of http.
+
+    Returns:
+      Full URL, e.g. "https://192.168.33.10:8082/api/product/add".
+    """
     return self._url_builder.build_url(
       self.app_id, path, module, version, https)
 
 
 class AppURLBuilder(object):
   """
-  This class is kind of DNS.
-  It's responsible for building URL from app_id, module, version and path.
+  This class is responsible for building a URL
+  from app_id, module, version, and path.
 
   It allows Application class to use modules and versions abstraction
   and not care about building specific URL.
@@ -117,9 +149,8 @@ class AppURLBuilder(object):
   def __init__(self, app_versions, language):
     """
     Args:
-      app_versions: a list of AppVersion - description of application versions
-        available for test cases.
-      language:  a string - name of language which is currently being tested
+      app_versions: A list of AppVersion objects.
+      language: A string - name of language which is currently being tested.
     """
     self.language = language
 
@@ -169,21 +200,21 @@ class AppURLBuilder(object):
   def build_url(self, app_id, path, module, version, https):
     """
     Like DNS returns IP for domain name, build_url returns full URL for app_id,
-    module, version, path and schema (http/https)
+    module, version, path and schema (http/https).
 
     Args:
-      app_id: a string - application ID of running app
-      path: a string - path to http method, it can contain '{lang}' which
-          will be converted to current hawkeye language (shared.language)
-          e.g.: /{lang}/product/add
-      module: a string - module name; can be None if version is None,
-          in this case default version of default module will be used)
-      version: a string - version name ;can be None,
-          in this case default version of module will be used
-      https: a boolean - shows if https should be used instead of http
+      app_id: A string - application ID of running app.
+      path: A string - path to http method, it can contain '{lang}' which
+        will be converted to current hawkeye language (shared.language)
+        e.g.: /{lang}/product/add
+      module: A string - module name; can be None if version is None,
+        in this case default version of default module will be used).
+      version: A string - version name; can be None,
+        in this case default version of module will be used.
+      https: A boolean - shows if https should be used instead of http.
 
     Returns:
-      Full URL, e.g. "https://192.168.33.10:8082/api/product/add"
+      Full URL, e.g. "https://192.168.33.10:8082/api/product/add".
     """
     # Allow testcases to leave a placeholder for language in path
     path = path.format(lang=self.language)

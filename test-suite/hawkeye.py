@@ -54,15 +54,15 @@ def build_suites_list(lang, include, exclude, application):
   HawkeyeTestSuite objects.
 
   Args:
-    lang: language to test, either 'python' or 'java'
-    include: a list of str - suites to return (use empty list to include all)
-    exclude: a list of str - suites to skip
-      ('exclude' is ignored if 'include' is specified)
-    application: Application object - wraps requests library and provides api
-      for access to testing AppEngine application
+    lang: A string representing language to test ('python' or 'java').
+    include: A list of str - suites to return (use empty list to include all).
+    exclude: A list of str - suites to skip
+      ('exclude' is ignored if 'include' is specified).
+    application: An Application object - wraps requests library and provides
+      api for access to testing AppEngine application.
 
   Returns:
-    a list of HawkeyeTestSuite for specified language
+    a list of HawkeyeTestSuite for specified language.
   """
   defined_suites  = {
     'blobstore' : blobstore_tests.suite(lang, application),
@@ -102,7 +102,7 @@ def print_usage_and_exit(msg):
   Print out msg and then usage for this program and exit.
 
   Args:
-    msg: error message to print out before usage doc
+    msg: A string representing error msg to print out before usage doc.
   """
   print(msg)
   print(__doc__)
@@ -111,7 +111,8 @@ def print_usage_and_exit(msg):
 
 class HawkeyeParameters(object):
   """
-  Container of parameters which are used to configure specific hawkeye tests run
+  Container of parameters which are used to configure
+  specific hawkeye tests run.
   """
   def __init__(self):
     self.language = None
@@ -125,10 +126,10 @@ class HawkeyeParameters(object):
 
 def process_command_line_options():
   """
-  Validates and processes command line arguments. Builds HawkeyeParameters
+  Validates and processes command line arguments. Builds HawkeyeParameters.
 
   Returns:
-    An instance of HawkeyeParameters with filled attributres
+    An instance of HawkeyeParameters with filled attributres.
   """
   options = docopt.docopt(__doc__)
 
@@ -192,10 +193,10 @@ def process_command_line_options():
 def run_hawkeye_tests(params):
   """
   Runs hawkeye tests according to params. Prints summary and saves
-  test results to csv file
+  test results to csv file.
 
   Args:
-    params: an instance of HawkeyeParameters
+    params: An instance of HawkeyeParameters.
   """
   # Configure logging
   hawkeye_utils.configure_hawkeye_logging(params.log_dir, params.language)
