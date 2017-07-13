@@ -3,7 +3,7 @@ tests.blobstore_tests.DownloadBlobTest.runTest,ok
 tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
 tests.blobstore_tests.QueryBlobByPropertyTest.runTest,ok
 tests.blobstore_tests.QueryBlobDataTest.runTest,ok
-tests.blobstore_tests.UploadBlobTest.runTest,ok
+tests.blobstore_tests.UploadBlobTest.test_blobstore_upload_handler,ok
 tests.cron_tests.CronTest.runTest,ok
 tests.datastore_tests.AncestorQueryTest.runTest,ok
 tests.datastore_tests.ComplexQueryCursorTest.runTest,ok
@@ -34,7 +34,7 @@ tests.images_tests.ImageLoadTest.runTest,ok
 tests.images_tests.ImageMetadataTest.runTest,ok
 tests.images_tests.ImageResizeTest.runTest,ok
 tests.images_tests.ImageRotateTest.runTest,ok
-tests.images_tests.ImageUploadTest.runTest,ok
+tests.images_tests.ImageUploadTest.test_image_upload,ok
 tests.memcache_tests.JCacheExpiryTest.runTest,ok
 tests.memcache_tests.MemcacheAddTest.runTest,ok
 tests.memcache_tests.MemcacheAsyncAddTest.runTest,ok

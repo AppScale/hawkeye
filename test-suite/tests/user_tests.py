@@ -1,7 +1,7 @@
 import json
 import urlparse
-from hawkeye_utils import HawkeyeTestCase
-from hawkeye_test_runner import HawkeyeTestSuite
+
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 __author__ = 'hiranya'
 
@@ -10,18 +10,18 @@ LOGIN_COOKIES = {}
 USER_EMAIL = 'a@a.com'
 USER_PASSWORD = 'aaaaaa'
 
-class LoginURLTest(HawkeyeTestCase):
+class LoginURLTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/home')
     self.assertEquals(response.status, 200)
     url_info = json.loads(response.payload)
     self.assertEquals(url_info['type'], 'login')
 
-class UserLoginTest(HawkeyeTestCase):
+class UserLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
-    self.assertTrue(response.headers.has_key('location'))
+    self.assertTrue('location' in response.headers)
 
     parser = urlparse.urlparse(response.headers['location'])
     login_url = parser.path + '?' + parser.query
@@ -29,8 +29,8 @@ class UserLoginTest(HawkeyeTestCase):
       USER_EMAIL, USER_PASSWORD)
     response = self.http_post(login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
-    self.assertTrue(response.headers.has_key('location'))
-    self.assertTrue(response.headers.has_key('set-cookie'))
+    self.assertTrue('location' in response.headers)
+    self.assertTrue('set-cookie' in response.headers)
     parser = urlparse.urlparse(response.headers['location'])
     continue_url = parser.path
     self.assertTrue(continue_url, '/users/secure')
@@ -44,11 +44,11 @@ class UserLoginTest(HawkeyeTestCase):
     self.assertEquals(user_info['email'], USER_EMAIL)
     self.assertFalse(user_info['admin'])
 
-class AdminLoginTest(HawkeyeTestCase):
+class AdminLoginTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/users/secure')
     self.assertEquals(response.status, 302)
-    self.assertTrue(response.headers.has_key('location'))
+    self.assertTrue('location' in response.headers)
 
     parser = urlparse.urlparse(response.headers['location'])
     login_url = parser.path + '?' + parser.query
@@ -56,8 +56,8 @@ class AdminLoginTest(HawkeyeTestCase):
       USER_EMAIL, USER_PASSWORD)
     response = self.http_post(login_url, payload, prepend_lang=False)
     self.assertEquals(response.status, 302)
-    self.assertTrue(response.headers.has_key('location'))
-    self.assertTrue(response.headers.has_key('set-cookie'))
+    self.assertTrue('location' in response.headers)
+    self.assertTrue('set-cookie' in response.headers)
     parser = urlparse.urlparse(response.headers['location'])
     continue_url = parser.path
     self.assertTrue(continue_url, '/users/secure')
@@ -71,7 +71,7 @@ class AdminLoginTest(HawkeyeTestCase):
     self.assertEquals(user_info['email'], USER_EMAIL)
     self.assertTrue(user_info['admin'])
 
-class LogoutURLTest(HawkeyeTestCase):
+class LogoutURLTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     headers = { 'Cookie' : LOGIN_COOKIES['user'] }
     response = self.http_get('/users/home', headers=headers)
@@ -79,11 +79,11 @@ class LogoutURLTest(HawkeyeTestCase):
     url_info = json.loads(response.payload)
     self.assertEquals(url_info['type'], 'logout')
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('User API Test Suite', 'users')
-  suite.addTest(LoginURLTest())
-  suite.addTest(UserLoginTest())
-  suite.addTest(AdminLoginTest())
-  suite.addTest(LogoutURLTest())
+  suite.addTests(LoginURLTest.all_cases(app))
+  suite.addTests(UserLoginTest.all_cases(app))
+  suite.addTests(AdminLoginTest.all_cases(app))
+  suite.addTests(LogoutURLTest.all_cases(app))
   return suite
 
