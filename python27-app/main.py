@@ -8,7 +8,7 @@ from env_var import urls as env_var_urls
 from images import urls as images_urls
 from logservice import urls as logservice_urls
 from memcache import urls as memcache_urls
-from modules_main import urls as modules_urls
+from module_main import urls as modules_urls
 from ndb import urls as ndb_urls
 from secure_url import urls as secure_url_urls
 from taskqueue import urls as taskqueue_urls

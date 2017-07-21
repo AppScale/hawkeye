@@ -1,5 +1,5 @@
 application: hawkeyepython27
-module: module-a
+service: module-a
 version: v1
 runtime: python27
 api_version: 1
@@ -7,4 +7,4 @@ threadsafe: true
 
 handlers:
 - url: /python/modules/(.*)
-  script: modules_a_previous.app
+  script: module_a.app

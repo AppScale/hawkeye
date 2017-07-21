@@ -1,37 +1,55 @@
-import application
-from hawkeye_test_case import HawkeyeTestCase
-from hawkeye_utils import HawkeyeTestSuite
-
-DEFAULT_MODULE = "default"
-MODULE_A = "module-a"
-DEFAULT_VERSION = "1"
-V1 = "v1"
-V2 = "v2"
+from hawkeye_test_runner import HawkeyeTestSuite, HawkeyeTestCase
 
 
 class TestVersionDetails(HawkeyeTestCase):
-  def test_default_module_and_version(self):
-    response = self.app.get('/modules/version_details')
+  def test_default_module(self):
+    response = self.app.get('/modules/version-details')
     self.assertEquals(response.status, 200)
     self.assertEquals(response.json(), {
-      'modules': application.DEFAULT_MODULE,
-      'current_module_versions': DEFAULT_VERSION,
-      'default_version': DEFAULT_VERSION,
-      'current_module': DEFAULT_MODULE,
-      'current_version': DEFAULT_VERSION,
+      'modules': ['default', 'module-a'],
+      'current_module_versions': ['main-v1'],
+      'default_version': 'main-v1',
+      'current_module': 'default',
+      'current_version': 'main-v1',
     })
 
-  def test_module_a_v1(self):
-    response = self.app.get('/modules/version_details',
-                            module=MODULE_A, version=V1)
+  def test_module_a(self):
+    response = self.app.get('/modules/version-details',
+                            module='module-a', version='v1')
     self.assertEquals(response.status, 200)
     self.assertEquals(response.json(), {
-      'modules': application.DEFAULT_MODULE,
-      'current_module_versions': V1,
-      'default_version': V2,
-      'current_module': MODULE_A,
-      'current_version': V1,
+      'modules': ['default', 'module-a'],
+      'current_module_versions': ['v1'],
+      'default_version': 'v1',
+      'current_module': 'module-a',
+      'current_version': 'v1',
     })
+
+
+class TestCreatingEntity(HawkeyeTestCase):
+  def test_default_module(self):
+    response = self.app.get('/modules/create-entity', )
+    self.assertEquals(response.status, 200)
+    self.assertEquals(response.json(), {
+      'modules': ['default', 'module-a'],
+      'current_module_versions': ['main-v1'],
+      'default_version': 'main-v1',
+      'current_module': 'default',
+      'current_version': 'main-v1',
+    })
+
+  def test_module_a(self):
+    response = self.app.get('/modules/version-details',
+                            module='module-a', version='v1')
+    self.assertEquals(response.status, 200)
+    self.assertEquals(response.json(), {
+      'modules': ['default', 'module-a'],
+      'current_module_versions': ['v1'],
+      'default_version': 'v1',
+      'current_module': 'module-a',
+      'current_version': 'v1',
+    })
+
 
 def suite(lang):
   suite = HawkeyeTestSuite('Modules API Test Suite', 'modules')

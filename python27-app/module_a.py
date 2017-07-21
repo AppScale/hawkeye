@@ -3,12 +3,12 @@ import json
 import webapp2
 
 from google.appengine.ext import ndb
-from modules_main import GetVersionDetailsHandler
+from module_main import GetVersionDetailsHandler
 
 
 class Entity(ndb.Model):
   """
-  New version of module-a has extended version of Entity model
+  module-a has extended version of Entity model
   """
   module = ndb.StringProperty(indexed=False)
   version = ndb.StringProperty(indexed=False)
@@ -28,7 +28,7 @@ def render_entity(entity):
 
 class GetEntityHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in modules_a_current.py
+  This handler is implemented here and in module_a.py
   (there Entity class has new field, so handler is also updated to include it).
   This implementation is also imported in modules_a_previous.py
   """
@@ -43,7 +43,7 @@ class GetEntityHandler(webapp2.RequestHandler):
 
 class GetEntitiesHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in modules_a_current.py
+  This handler is implemented here and in module_a.py
   (there Entity class has new field, so handler is also updated to include it).
   This implementation is also imported in modules_a_previous.py
   """
@@ -63,7 +63,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
   def get(self):
     entity_id = self.request.get('id')
     Entity(id=entity_id, module='module-a',
-           version='v2', new_field='new').put()
+           version='v1', new_field='new').put()
 
 
 # The second version of separate module 'a'

@@ -46,7 +46,7 @@ class GetVersionDetailsHandler(webapp2.RequestHandler):
 
 class GetEntityHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in modules_a_current.py
+  This handler is implemented here and in module_a.py
   (there Entity class has new field, so handler is also updated to include it).
   This implementation is also imported in modules_a_previous.py
   """
@@ -61,7 +61,7 @@ class GetEntityHandler(webapp2.RequestHandler):
 
 class GetEntitiesHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in modules_a_current.py
+  This handler is implemented here and in module_a.py
   (there Entity class has new field, so handler is also updated to include it).
   This implementation is also imported in modules_a_previous.py
   """
@@ -102,7 +102,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
   """
   def get(self):
     entity_id = self.request.get('id')
-    Entity(id=entity_id, module='default', version='1').put()
+    Entity(id=entity_id, module='default', version='main-v1').put()
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):
