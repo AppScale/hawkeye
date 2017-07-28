@@ -3,11 +3,6 @@ try:
 except ImportError:
   import simplejson as json
 
-from google.appengine.api import datastore_errors
-from google.appengine.ext import db
-from google.appengine.ext import ndb
-from google.appengine.ext import webapp
-
 import datetime
 import logging
 import random
@@ -15,8 +10,12 @@ import string
 import time
 import unittest
 import uuid
+
 import webapp2
-import wsgiref
+from google.appengine.api import datastore_errors
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+from google.appengine.ext import webapp
 
 import utils
 
@@ -55,7 +54,7 @@ class Counter(db.Model):
 class Cars(db.Model):
   model = db.StringProperty(required=True)
   make = db.StringProperty(required=True)
-  color = db.StringProperty(required=True) 
+  color = db.StringProperty(required=True)
 
 class CompositeCars(db.Model):
   model = db.StringProperty()

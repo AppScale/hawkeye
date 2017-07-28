@@ -1,7 +1,6 @@
 import json
 
 import webapp2
-
 from google.appengine.ext import ndb
 from module_main import GetVersionDetailsHandler
 

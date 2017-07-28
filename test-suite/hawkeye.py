@@ -2,13 +2,13 @@
 """hawkeye.py: Run API fidelity tests on AppScale.
 
 Usage:
-  hawkeye.py --server SERVER --port PORT [options]
+  hawkeye.py --app APP_ID --server SERVER [options] <endpoint>...
   hawkeye.py (-h | --help)
 
 Options:
   -h, --help           # show this help message and exit
+  --app                # Application ID to test
   -s SERVER --server=SERVER  # Hostname of the target AppEngine server
-  -p PORT --port=PORT  # Port of the target AppEngine server
   -l LANG --lang=LANG  # Language binding to test (python or java) [default: python]
   --user=USER          # Admin username [default: a@a.com]
   --pass=PASSWORD      # Admin password [default: aaaaaa]
@@ -18,11 +18,13 @@ Options:
   --baseline           # Turn on verbose reporting for baseline comparison
   --log-dir=BASE_DIR   # Directory to store error logs
   --keep-old-logs      # Keep existing hawkeye logs
+  <endpoint>           # A string formatted as 'VERSION.SERVICE:PORT'
 """
 import os
 import sys
 
 import docopt
+import re
 
 import hawkeye_utils
 from application import Application, AppURLBuilder
@@ -41,10 +43,6 @@ from tests import (
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
-APP_IDS = {
-  'java': 'hawkeyejava',
-  'python': 'hawkeyepython27'
-}
 SSL_PORT_OFFSET = 3700
 
 
@@ -157,19 +155,27 @@ def process_command_line_options():
   user_tests.USER_PASSWORD = options["--pass"]
 
   # Initialize Application object
+  app_id = options["--app"]
   host = options["--server"]
-  port = int(options["--port"])
-  # Currently hawkeye is expected to test only one application with one version
-  app_version = AppVersion(
-    app_id=APP_IDS[language],
-    module="default",
-    version="1",      # Predefined application version
-    http_url="http://{}:{}".format(host, port),
-    https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
-    is_default_for_module=True
+  versions = []
+  pattern = re.compile(
+    r"(?P<version>[\w\-]+)\.(?P<service>[\w\-]+):(?P<port>\d+)"
   )
-  url_builder = AppURLBuilder([app_version], language)
-  app = Application(app_version.app_id, url_builder)
+  for endpoint in options["<endpoint>"]:
+    matched = pattern.match(endpoint)
+    port = int(matched.group("port"))
+    version = AppVersion(
+      app_id=app_id,
+      module=matched.group("service"),
+      version=matched.group("version"),
+      http_url="http://{}:{}".format(host, port),
+      https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
+      is_default_for_module=True
+    )
+    versions.append(version)
+
+  url_builder = AppURLBuilder(versions, language)
+  app = Application(app_id, url_builder)
 
   # Determine suites list
   include_opt = options["--suites"]
