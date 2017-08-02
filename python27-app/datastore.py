@@ -8,6 +8,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
+import base64
 import datetime
 import logging
 import random
@@ -1820,6 +1821,21 @@ class LongTransactionRead(webapp2.RequestHandler):
     entity_key = ndb.Key(TestModel, self.request.get('id'))
     entity_key.delete()
 
+class ManageEntity(webapp2.RequestHandler):
+  def post(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    content = self.request.get('content')
+    TestModel(id=id_, field=content).put()
+
+  def get(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    entity = ndb.Key(TestModel, id_).get()
+    self.response.write(entity.field)
+
+  def delete(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    ndb.Key(TestModel, id_).delete()
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1846,5 +1862,6 @@ urls = [
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
-  ('/python/datastore/long_tx_read', LongTransactionRead)
+  ('/python/datastore/long_tx_read', LongTransactionRead),
+  ('/python/datastore/manage_entity', ManageEntity)
 ]

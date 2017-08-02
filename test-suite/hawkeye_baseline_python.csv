@@ -49,6 +49,7 @@ tests.datastore_tests.KindlessQueryTest.runTest,ok
 tests.datastore_tests.LimitedResultQueryTest.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
+tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
 tests.datastore_tests.OrderedResultQueryTest.runTest,ok
 tests.datastore_tests.ProjectionQueryTest.runTest,ok

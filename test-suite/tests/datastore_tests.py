@@ -1,7 +1,11 @@
+import base64
 import Queue
 import json
+import urllib
 import urllib2
 import uuid
+import random
+import string
 from threading import Thread
 from time import sleep
 
@@ -564,6 +568,22 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
+  ID = base64.urlsafe_b64encode('\xe2\x98\x85')
+
+  def tearDown(self):
+    self.http_delete('/datastore/manage_entity?id={}'.format(self.ID))
+
+  def run_hawkeye_test(self):
+    content = ''.join(random.choice(string.letters) for _ in range(10))
+    payload = urllib.urlencode({'id': self.ID, 'content': content})
+    response = self.http_post('/datastore/manage_entity', payload)
+    self.assertEqual(response.status, 200)
+
+    response = self.http_get('/datastore/manage_entity?id={}'.format(self.ID))
+    self.assertEqual(response.status, 200)
+    self.assertEqual(response.payload, content)
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -602,6 +622,7 @@ def suite(lang, app):
     suite.addTests(CompositeProjection.all_cases(app))
     suite.addTests(CursorQueries.all_cases(app))
     suite.addTests(LongTxRead.all_cases(app))
+    suite.addTests(NonAsciiEntityKeys.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
