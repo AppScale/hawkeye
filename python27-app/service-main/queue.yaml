@@ -8,15 +8,14 @@ queue:
 - name: rest-pull-queue
   mode: pull
 
-# Tasks with specified target
-- name: tasks-related-to-deprecated-version
-# TODO  target: v1.module-a
+# Queue without specified target
+- name: queue-with-missed-target
   rate: 1/s
 
-- name: tasks-related-to-current-version
-# TODO  target: v2.module-a
+# Queue with specified target
+- name: queue-for-module-a
+  target: module-a
   rate: 1/s
-
-- name: tasks-related-to-module-a
-# TODO  target: module-a    # default verion (current) expected to be used
+- name: queue-for-default
+  target: default
   rate: 1/s

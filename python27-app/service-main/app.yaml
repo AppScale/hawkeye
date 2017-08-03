@@ -1,5 +1,4 @@
-application: hawkeyepython27
-version: main-v1
+#application: hawkeyepython27
 runtime: python27
 api_version: 1
 threadsafe: true

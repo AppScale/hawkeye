@@ -39,7 +39,7 @@ from tests import (
   datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
   user_tests, images_tests, secure_url_tests, xmpp_tests,
   environment_variable_tests, async_datastore_tests, cron_tests,
-  logservice_tests
+  logservice_tests, modules_tests
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
@@ -76,6 +76,7 @@ def build_suites_list(lang, include, exclude, application):
     'xmpp' : xmpp_tests.suite(lang, application),
     'cron' : cron_tests.suite(lang, application),
     'logservice': logservice_tests.suite(lang, application),
+    'services' : modules_tests.suite(lang, application),
   }
   # Validation include and exclude lists
   for suite_name in include + exclude:
@@ -156,25 +157,42 @@ def process_command_line_options():
 
   # Initialize Application object
   app_id = options["--app"]
-  host = options["--server"]
-  versions = []
-  pattern = re.compile(
-    r"(?P<version>[\w\-]+)\.(?P<service>[\w\-]+):(?P<port>\d+)"
-  )
-  for endpoint in options["<endpoint>"]:
-    matched = pattern.match(endpoint)
-    port = int(matched.group("port"))
-    version = AppVersion(
+  #host = options["--server"]
+  #versions = []
+  #pattern = re.compile(
+  #  r"(?P<version>[\w\-]+)\.(?P<service>[\w\-]+):(?P<port>\d+)"
+  #)
+  #for endpoint in options["<endpoint>"]:
+  #  matched = pattern.match(endpoint)
+  #  port = int(matched.group("port"))
+  #  version = AppVersion(
+  #    app_id=app_id,
+  #    module=matched.group("service"),
+  #    version=matched.group("version"),
+  #    http_url="http://{}:{}".format(host, port),
+  #    https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
+  #    is_default_for_module=True
+  #  )
+  #  versions.append(version)
+
+  url_builder = AppURLBuilder([
+    AppVersion(
       app_id=app_id,
-      module=matched.group("service"),
-      version=matched.group("version"),
-      http_url="http://{}:{}".format(host, port),
-      https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
+      module="module-a",
+      version="1",
+      http_url="http://1.module-a.appscale-test-163710.appspot.com",
+      https_url="https://1.module-a.appscale-test-163710.appspot.com",
+      is_default_for_module=True
+    ),
+    AppVersion(
+      app_id=app_id,
+      module="default",
+      version="1",
+      http_url="http://1-dot-appscale-test-163710.appspot.com",
+      https_url="https://1-dot-appscale-test-163710.appspot.com",
       is_default_for_module=True
     )
-    versions.append(version)
-
-  url_builder = AppURLBuilder(versions, language)
+  ], language)
   app = Application(app_id, url_builder)
 
   # Determine suites list

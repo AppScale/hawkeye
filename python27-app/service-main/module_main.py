@@ -20,8 +20,8 @@ def render_entity(entity):
     return None
   return {
     'id': entity.key.id(),
-    'module': entity.module,
-    'version': entity.version
+    'created_at_module': entity.module,
+    'created_at_version': entity.version
   }
 
 
@@ -85,11 +85,19 @@ class TaskCreateEntityHandler(webapp2.RequestHandler):
     entity_id = self.request.get('id')
     queue = self.request.params.get('queue')
     target = self.request.params.get('target')
-    task = taskqueue.Task(
-      url='/modules/create-entity',
-      target=target,
-      method='GET',
-      params={'id': entity_id})
+
+    if target:
+      task = taskqueue.Task(
+        url='/modules/create-entity',
+        target=target,
+        method='GET',
+        params={'id': entity_id})
+    else:
+      task = taskqueue.Task(
+        url='/modules/create-entity',
+        method='GET',
+        params={'id': entity_id})
+
     if queue:
       taskqueue.Queue(queue).add(task)
     else:
@@ -102,7 +110,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
   """
   def get(self):
     entity_id = self.request.get('id')
-    Entity(id=entity_id, module='default', version='main-v1').put()
+    Entity(id=entity_id, module='default', version='1').put()
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):
@@ -123,11 +131,6 @@ def deferred_create_entity(entity_id):
          version=get_current_version_name()).put()
 
 
-class CleanUpHandler(webapp2.RequestHandler):
-  def get(self):
-    ndb.delete_multi(Entity.query().fetch(keys_only=True))
-
-
 # URLs to be added to the main App (see main.py)
 urls = [
   ('/modules/versions-details', GetVersionDetailsHandler),
@@ -136,5 +139,4 @@ urls = [
   ('/modules/create-entity', CreateEntityHandler),
   ('/modules/add-task', TaskCreateEntityHandler),
   ('/modules/defer-task', DeferredCreateEntityHandler),
-  ('/modules/clean-up', CleanUpHandler),
 ]
