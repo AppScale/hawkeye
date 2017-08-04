@@ -12,8 +12,8 @@ class Entity(ndb.Model):
   """
   module-a has extended version of Entity model
   """
-  module = ndb.StringProperty(indexed=False)
-  version = ndb.StringProperty(indexed=False)
+  created_at_module = ndb.StringProperty(indexed=False)
+  created_at_version = ndb.StringProperty(indexed=False)
   new_field = ndb.StringProperty(indexed=False)
 
 
@@ -22,8 +22,8 @@ def render_entity(entity):
     return None
   return {
     'id': entity.key.id(),
-    'created_at_module': entity.module,
-    'created_at_version': entity.version,
+    'created_at_module': entity.created_at_module,
+    'created_at_version': entity.created_at_version,
     'new_field': entity.new_field
   }
 
@@ -83,8 +83,8 @@ class CreateEntityHandler(webapp2.RequestHandler):
   """
   def get(self):
     entity_id = self.request.get('id')
-    Entity(id=entity_id, module='module-a',
-           version='1', new_field='new').put()
+    Entity(id=entity_id, created_at_module='module-a',
+           created_at_version='1', new_field='new').put()
 
 
 # The second version of separate module 'a'
@@ -94,3 +94,7 @@ app = webapp2.WSGIApplication([
   ('/modules/get-entities', GetEntitiesHandler),
   ('/modules/create-entity', CreateEntityHandler),
 ])
+
+
+# This import helps to run deferred task using service-a
+import module_main

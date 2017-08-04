@@ -11,8 +11,8 @@ from google.appengine.ext import ndb, deferred
 
 
 class Entity(ndb.Model):
-  module = ndb.StringProperty(indexed=False)
-  version = ndb.StringProperty(indexed=False)
+  created_at_module = ndb.StringProperty(indexed=False)
+  created_at_version = ndb.StringProperty(indexed=False)
 
 
 def render_entity(entity):
@@ -20,8 +20,8 @@ def render_entity(entity):
     return None
   return {
     'id': entity.key.id(),
-    'created_at_module': entity.module,
-    'created_at_version': entity.version
+    'created_at_module': entity.created_at_module,
+    'created_at_version': entity.created_at_version
   }
 
 
@@ -110,7 +110,8 @@ class CreateEntityHandler(webapp2.RequestHandler):
   """
   def get(self):
     entity_id = self.request.get('id')
-    Entity(id=entity_id, module='default', version='1').put()
+    Entity(id=entity_id, created_at_module='default',
+           created_at_version='1').put()
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):
@@ -126,9 +127,15 @@ class DeferredCreateEntityHandler(webapp2.RequestHandler):
                      _target=target)
 
 
+class CleaningHandler(webapp2.RequestHandler):
+  @staticmethod
+  def get():
+    ndb.delete_multi(Entity.query().fetch(keys_only=True))
+
+
 def deferred_create_entity(entity_id):
-  Entity(id=entity_id, module=get_current_module_name(),
-         version=get_current_version_name()).put()
+  Entity(id=entity_id, created_at_module=get_current_module_name(),
+         created_at_version=get_current_version_name()).put()
 
 
 # URLs to be added to the main App (see main.py)
@@ -139,4 +146,5 @@ urls = [
   ('/modules/create-entity', CreateEntityHandler),
   ('/modules/add-task', TaskCreateEntityHandler),
   ('/modules/defer-task', DeferredCreateEntityHandler),
+  ('/modules/clean', CleaningHandler),
 ]
