@@ -2,13 +2,13 @@
 """hawkeye.py: Run API fidelity tests on AppScale.
 
 Usage:
-  hawkeye.py --app APP_ID --server SERVER [options] <endpoint>...
+  hawkeye.py --app APP_ID --versions-csv FILE [options]
   hawkeye.py (-h | --help)
 
 Options:
   -h, --help           # show this help message and exit
   --app                # Application ID to test
-  -s SERVER --server=SERVER  # Hostname of the target AppEngine server
+  --versions-csv FILE  # File containing http and https URL to app versions
   -l LANG --lang=LANG  # Language binding to test (python or java) [default: python]
   --user=USER          # Admin username [default: a@a.com]
   --pass=PASSWORD      # Admin password [default: aaaaaa]
@@ -18,13 +18,12 @@ Options:
   --baseline           # Turn on verbose reporting for baseline comparison
   --log-dir=BASE_DIR   # Directory to store error logs
   --keep-old-logs      # Keep existing hawkeye logs
-  <endpoint>           # A string formatted as 'VERSION.SERVICE:PORT'
 """
+import csv
 import os
 import sys
 
 import docopt
-import re
 
 import hawkeye_utils
 from application import Application, AppURLBuilder
@@ -43,7 +42,6 @@ from tests import (
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
-SSL_PORT_OFFSET = 3700
 
 
 def build_suites_list(lang, include, exclude, application):
@@ -157,42 +155,17 @@ def process_command_line_options():
 
   # Initialize Application object
   app_id = options["--app"]
-  #host = options["--server"]
-  #versions = []
-  #pattern = re.compile(
-  #  r"(?P<version>[\w\-]+)\.(?P<service>[\w\-]+):(?P<port>\d+)"
-  #)
-  #for endpoint in options["<endpoint>"]:
-  #  matched = pattern.match(endpoint)
-  #  port = int(matched.group("port"))
-  #  version = AppVersion(
-  #    app_id=app_id,
-  #    module=matched.group("service"),
-  #    version=matched.group("version"),
-  #    http_url="http://{}:{}".format(host, port),
-  #    https_url="https://{}:{}".format(host, port-SSL_PORT_OFFSET),
-  #    is_default_for_module=True
-  #  )
-  #  versions.append(version)
+  versions = []
+  with open(options["--versions-csv"]) as versions_csv:
+    for service, version, http, https, is_default in csv.reader(versions_csv):
+      version = AppVersion(
+        app_id=app_id, module=service, version=version,
+        http_url=http, https_url=https,
+        is_default_for_module=is_default.lower() == 'yes'
+      )
+      versions.append(version)
 
-  url_builder = AppURLBuilder([
-    AppVersion(
-      app_id=app_id,
-      module="module-a",
-      version="1",
-      http_url="http://1.module-a.appscale-test-163710.appspot.com",
-      https_url="https://1.module-a.appscale-test-163710.appspot.com",
-      is_default_for_module=True
-    ),
-    AppVersion(
-      app_id=app_id,
-      module="default",
-      version="1",
-      http_url="http://1-dot-appscale-test-163710.appspot.com",
-      https_url="https://1-dot-appscale-test-163710.appspot.com",
-      is_default_for_module=True
-    )
-  ], language)
+  url_builder = AppURLBuilder(versions, language)
   app = Application(app_id, url_builder)
 
   # Determine suites list
