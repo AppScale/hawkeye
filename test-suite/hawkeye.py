@@ -157,6 +157,8 @@ def process_command_line_options():
   app_id = options["--app"]
   versions = []
   with open(options["--versions-csv"]) as versions_csv:
+    # Skip header line
+    versions_csv.next()
     for service, version, http, https, is_default in csv.reader(versions_csv):
       version = AppVersion(
         app_id=app_id, module=service, version=version,

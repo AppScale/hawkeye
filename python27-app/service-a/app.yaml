@@ -1,6 +1,5 @@
-#application: hawkeyepython27
+application: hawkeyepython27
 service: module-a
-#version: v1
 runtime: python27
 api_version: 1
 threadsafe: true
