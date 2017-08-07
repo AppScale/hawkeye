@@ -23,15 +23,15 @@ and deploy the Java, and Python 2.7 versions:
 
 ```
 appscale deploy hawkeye/java-app
-appscale deploy hawkeye/python27-app/service-main
+appscale deploy hawkeye/python27-app/module-main
 ```
-if you're going to test services suite
-you also need to deploy additional python service:
+if you're going to test modules suite
+you also need to deploy additional python module:
 ```
-appscale deploy hawkeye/python27-app/service-a
+appscale deploy hawkeye/python27-app/module-a
 ```
 
-Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Java running at 192.168.33.10:8080, Hawkeye Python 2.7 (service-main) running at 192.168.33.10:8081, and Hawkeye Python 2.7 (service-a) running at 192.168.33.10:8082.
+Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Java running at 192.168.33.10:8080, Hawkeye Python 2.7 (module-main) running at 192.168.33.10:8081, and Hawkeye Python 2.7 (module-a) running at 192.168.33.10:8082.
 
 run hawkeye
 =======
@@ -42,18 +42,18 @@ Go into the `test-suite` directory:
 cd hawkeye/test-suite
 ```
 
-Create 2 csv files containing app services and versions info:
+Create 2 csv files containing app modules and versions info:
 
 ```
 cat > versions-java.csv << APP_VERSIONS
-SERVICE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
+MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
 default,1,http://192.168.33.10:8080,https://192.168.33.10:4380,yes
 APP_VERSIONS
 
 cat > versions-python.csv << APP_VERSIONS
-SERVICE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
+MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
 default,1,http://192.168.33.10:8081,https://192.168.33.10:4381,yes
-service-a,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
+module-a,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
 APP_VERSIONS
 ```
 
