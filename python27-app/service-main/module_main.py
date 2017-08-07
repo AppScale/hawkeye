@@ -16,6 +16,13 @@ class Entity(ndb.Model):
 
 
 def render_entity(entity):
+  """ Generates dictionary containing information about entity.
+  
+  Args:
+    entity: an instance of Entity or None
+  Returns:
+    a dict containing values of entity fields or None if entity is None
+  """
   if not entity:
     return None
   return {
@@ -27,9 +34,8 @@ def render_entity(entity):
 
 class GetVersionDetailsHandler(webapp2.RequestHandler):
   """
-  This handler is imported in all modules and versions.
-  When it's invoked on different version and modules it should
-  return different responses
+  Returns information about current version of app
+  as it's seen inside from app.
   """
   def get(self):
     self.response.headers['Content-Type'] = 'application/json'
@@ -46,9 +52,7 @@ class GetVersionDetailsHandler(webapp2.RequestHandler):
 
 class GetEntityHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in module_a.py
-  (there Entity class has new field, so handler is also updated to include it).
-  This implementation is also imported in modules_a_previous.py
+  Returns json representation of requested entity.
   """
   def get(self):
     entity_id = self.request.get('id')
@@ -61,9 +65,7 @@ class GetEntityHandler(webapp2.RequestHandler):
 
 class GetEntitiesHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in module_a.py
-  (there Entity class has new field, so handler is also updated to include it).
-  This implementation is also imported in modules_a_previous.py
+  Returns json representation of requested entities.
   """
   def get(self):
     entity_ids = self.request.get_all('id')
@@ -76,10 +78,7 @@ class GetEntitiesHandler(webapp2.RequestHandler):
 
 class TaskCreateEntityHandler(webapp2.RequestHandler):
   """
-  Adds entity creation task to default queue with specified (or missed) target.
-  Depending on target, different module and version will be used,
-  so different implementation if create_entity will be used and different
-  entities will be created
+  Schedules task which will create an entity with specified ID.
   """
   def get(self):
     entity_id = self.request.get('id')
@@ -106,7 +105,8 @@ class TaskCreateEntityHandler(webapp2.RequestHandler):
 
 class CreateEntityHandler(webapp2.RequestHandler):
   """
-  For testing purposes it's also expected to be invoked using task queue.
+  Creates an entity with specified ID and information
+  about module and version where creation was done
   """
   def get(self):
     entity_id = self.request.get('id')
@@ -115,6 +115,9 @@ class CreateEntityHandler(webapp2.RequestHandler):
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):
+  """
+  Schedules deferred task which will create an entity with specified ID.
+  """
   def get(self):
     entity_id = self.request.params.get('id')
     queue_name = self.request.params.get('queue')
@@ -128,6 +131,9 @@ class DeferredCreateEntityHandler(webapp2.RequestHandler):
 
 
 class CleaningHandler(webapp2.RequestHandler):
+  """
+  Removes all entities of kind Entity
+  """
   @staticmethod
   def get():
     ndb.delete_multi(Entity.query().fetch(keys_only=True))
@@ -137,8 +143,6 @@ def deferred_create_entity(entity_id):
   Entity(id=entity_id, created_at_module=get_current_module_name(),
          created_at_version=get_current_version_name()).put()
 
-
-# URLs to be added to the main App (see main.py)
 urls = [
   ('/modules/versions-details', GetVersionDetailsHandler),
   ('/modules/get-entity', GetEntityHandler),

@@ -18,6 +18,13 @@ class Entity(ndb.Model):
 
 
 def render_entity(entity):
+  """ Generates dictionary containing information about entity.
+  
+  Args:
+    entity: an instance of Entity or None
+  Returns:
+    a dict containing values of entity fields or None if entity is None
+  """
   if not entity:
     return None
   return {
@@ -30,9 +37,8 @@ def render_entity(entity):
 
 class GetVersionDetailsHandler(webapp2.RequestHandler):
   """
-  This handler is imported in all modules and versions.
-  When it's invoked on different version and modules it should
-  return different responses
+  Returns information about current version of app
+  as it's seen inside from app.
   """
   def get(self):
     self.response.headers['Content-Type'] = 'application/json'
@@ -49,9 +55,7 @@ class GetVersionDetailsHandler(webapp2.RequestHandler):
 
 class GetEntityHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in module_a.py
-  (there Entity class has new field, so handler is also updated to include it).
-  This implementation is also imported in modules_a_previous.py
+  Returns json representation of requested entity.
   """
   def get(self):
     entity_id = self.request.get('id')
@@ -64,9 +68,7 @@ class GetEntityHandler(webapp2.RequestHandler):
 
 class GetEntitiesHandler(webapp2.RequestHandler):
   """
-  This handler is implemented here and in module_a.py
-  (there Entity class has new field, so handler is also updated to include it).
-  This implementation is also imported in modules_a_previous.py
+  Returns json representation of requested entities.
   """
   def get(self):
     entity_ids = self.request.get_all('id')
@@ -79,7 +81,8 @@ class GetEntitiesHandler(webapp2.RequestHandler):
 
 class CreateEntityHandler(webapp2.RequestHandler):
   """
-  For testing purposes it's also expected to be invoked using task queue.
+  Creates an entity with specified ID and information
+  about module and version where creation was done.
   """
   def get(self):
     entity_id = self.request.get('id')
@@ -87,7 +90,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
            created_at_version='1', new_field='new').put()
 
 
-# The second version of separate module 'a'
+# These are all all URL available for module-a
 app = webapp2.WSGIApplication([
   ('/modules/versions-details', GetVersionDetailsHandler),
   ('/modules/get-entity', GetEntityHandler),
@@ -96,5 +99,5 @@ app = webapp2.WSGIApplication([
 ])
 
 
-# This import helps to run deferred task using service-a
+# This import helps to run deferred task using module-a as target
 import module_main

@@ -36,7 +36,7 @@ class TestVersionDetails(HawkeyeTestCase):
 
 class TestCreatingAndGettingEntity(HawkeyeTestCase):
   """
-  Verifies if expected service handles request.
+  Verifies if expected module handles request.
   """
 
   def test_default_module(self):
@@ -195,7 +195,7 @@ class TestTaskTargets(HawkeyeTestCase):
 
 
 def suite(lang, app):
-  suite = HawkeyeTestSuite('Modules API Test Suite', 'services')
+  suite = HawkeyeTestSuite('Modules API Test Suite', 'modules')
   suite.addTests(TestVersionDetails.all_cases(app))
   suite.addTests(TestCreatingAndGettingEntity.all_cases(app))
   suite.addTests(TestTaskTargets.all_cases(app))

@@ -74,7 +74,7 @@ def build_suites_list(lang, include, exclude, application):
     'xmpp' : xmpp_tests.suite(lang, application),
     'cron' : cron_tests.suite(lang, application),
     'logservice': logservice_tests.suite(lang, application),
-    'services' : modules_tests.suite(lang, application),
+    'modules' : modules_tests.suite(lang, application),
   }
   # Validation include and exclude lists
   for suite_name in include + exclude:
@@ -159,9 +159,9 @@ def process_command_line_options():
   with open(options["--versions-csv"]) as versions_csv:
     # Skip header line
     versions_csv.next()
-    for service, version, http, https, is_default in csv.reader(versions_csv):
+    for module, version, http, https, is_default in csv.reader(versions_csv):
       version = AppVersion(
-        app_id=app_id, module=service, version=version,
+        app_id=app_id, module=module, version=version,
         http_url=http, https_url=https,
         is_default_for_module=is_default.lower() == 'yes'
       )
