@@ -136,6 +136,10 @@ class Application(object):
     return self._url_builder.build_url(
       self.app_id, path, module, version, https)
 
+  @property
+  def language(self):
+    return self._url_builder.language
+
 
 class AppURLBuilder(object):
   """

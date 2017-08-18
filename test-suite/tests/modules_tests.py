@@ -105,14 +105,10 @@ class TestTaskTargets(HawkeyeTestCase):
       ('queue-with-missed-target', str(uuid.uuid4())),
       ('queue-for-default', str(uuid.uuid4())),
       ('queue-for-module-a', str(uuid.uuid4())),
-      ('target-default', str(uuid.uuid4())),
-      ('target-module-a', str(uuid.uuid4())),
       ('deferred-default-queue', str(uuid.uuid4())),
       ('deferred-queue-with-missed-target', str(uuid.uuid4())),
       ('deferred-queue-for-default', str(uuid.uuid4())),
       ('deferred-queue-for-module-a', str(uuid.uuid4())),
-      ('deferred-target-default', str(uuid.uuid4())),
-      ('deferred-target-module-a', str(uuid.uuid4())),
     ])
 
     # Push entity-creation tasks to default queue
@@ -130,14 +126,6 @@ class TestTaskTargets(HawkeyeTestCase):
                  params={'id': self.entity_ids['queue-for-module-a'],
                          'queue': 'queue-for-module-a'})
 
-    # Push entity-creation tasks with specified targets
-    self.app.get('/modules/add-task',
-                 params={'id': self.entity_ids['target-default'],
-                         'target': 'default'})
-    self.app.get('/modules/add-task',
-                 params={'id': self.entity_ids['target-module-a'],
-                         'target': 'module-a'})
-
     # Defer entity-creation tasks to default queue
     self.app.get('/modules/defer-task',
                  params={'id': self.entity_ids['deferred-default-queue']})
@@ -153,13 +141,29 @@ class TestTaskTargets(HawkeyeTestCase):
                  params={'id': self.entity_ids['deferred-queue-for-module-a'],
                          'queue': 'queue-for-module-a'})
 
-    # Defer entity-creation tasks with specified targets
-    self.app.get('/modules/defer-task',
-                 params={'id': self.entity_ids['deferred-target-default'],
-                         'target': 'default'})
-    self.app.get('/modules/defer-task',
-                 params={'id': self.entity_ids['deferred-target-module-a'],
-                         'target': 'module-a'})
+    # Target is set explicitly only in Python apps
+    if self.app.language == 'python':
+
+      self.entity_ids['target-default'] = str(uuid.uuid4())
+      self.entity_ids['target-module-a'] = str(uuid.uuid4())
+      self.entity_ids['deferred-target-default'] = str(uuid.uuid4())
+      self.entity_ids['deferred-target-module-a'] = str(uuid.uuid4())
+
+      # Push entity-creation tasks with specified targets
+      self.app.get('/modules/add-task',
+                   params={'id': self.entity_ids['target-default'],
+                           'target': 'default'})
+      self.app.get('/modules/add-task',
+                   params={'id': self.entity_ids['target-module-a'],
+                           'target': 'module-a'})
+
+      # Defer entity-creation tasks with specified targets
+      self.app.get('/modules/defer-task',
+                   params={'id': self.entity_ids['deferred-target-default'],
+                           'target': 'default'})
+      self.app.get('/modules/defer-task',
+                   params={'id': self.entity_ids['deferred-target-module-a'],
+                           'target': 'module-a'})
 
     time.sleep(2)
 
@@ -173,15 +177,17 @@ class TestTaskTargets(HawkeyeTestCase):
       'queue-with-missed-target': 'default',
       'queue-for-default': 'default',
       'queue-for-module-a': 'module-a',
-      'target-default': 'default',
-      'target-module-a': 'module-a',
       'deferred-default-queue': 'default',
       'deferred-queue-with-missed-target': 'default',
       'deferred-queue-for-default': 'default',
       'deferred-queue-for-module-a': 'module-a',
-      'deferred-target-default': 'default',
-      'deferred-target-module-a': 'module-a',
     }
+    if self.app.language == 'python':
+      expectation['target-default'] = 'default'
+      expectation['target-module-a'] = 'module-a'
+      expectation['deferred-target-default'] = 'default'
+      expectation['deferred-target-module-a'] = 'module-a'
+
     miss_match = []
     for entity_alias, entity in entities:
       created_at_module = entity.get('created_at_module') if entity else None

@@ -175,6 +175,24 @@
         <servlet-class>com.appscale.hawkeye.cron.CronHandlerServlet</servlet-class>
     </servlet>
 
+    <!-- Servlets for testing Modules functionality -->
+    <servlet>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.GetVersionDetailsHandlerServlet
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.GetEntityHandlerServlet
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateEntityHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.CreateEntityHandlerServlet
+        </servlet-class>
+    </servlet>
+    <!-- End Modules -->
+
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <url-pattern>/java/datastore/project</url-pattern>
@@ -342,6 +360,25 @@
       <servlet-name>XmppReceiverServlet</servlet-name>
       <url-pattern>/_ah/xmpp/message/chat/</url-pattern>
     </servlet-mapping>
+
+    <!-- URLs for testing Modules functionality -->
+    <servlet-mapping>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <url-pattern>/modules/versions-details</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <url-pattern>/modules/get-entity</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <url-pattern>/modules/get-entities</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateEntityHandlerServlet</servlet-name>
+        <url-pattern>/modules/create-entity</url-pattern>
+    </servlet-mapping>
+    <!-- End Modules -->
 
     <security-constraint>
         <web-resource-collection>

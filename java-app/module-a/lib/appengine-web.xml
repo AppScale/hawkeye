@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+  <application>hawkeyejava</application>
+  <version>1</version>
+  <module>module-a</module>
+  <threadsafe>true</threadsafe>
+
+  <env-variables>
+    <env-var name="SHOULD_BE_BAZ" value="baz" />
+  </env-variables>
+</appengine-web-app>
