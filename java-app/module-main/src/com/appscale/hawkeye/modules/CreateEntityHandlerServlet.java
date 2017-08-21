@@ -20,5 +20,6 @@ public class CreateEntityHandlerServlet extends HttpServlet {
         Entity entity = new Entity("Entity", request.getParameter("id"));
         entity.setProperty("created_at_module", "module-a");
         entity.setProperty("created_at_version", "1");
+        datastore.put(entity);
     }
 }

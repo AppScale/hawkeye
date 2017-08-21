@@ -24,7 +24,7 @@ public class AddTaskHandlerServlet extends HttpServlet {
         else
         	Queue queue = QueueFactory.getQueue(queue_name);
 
-        String url = "/modules/create-entity"
+        String url = "/modules/create-entity";
         TaskOptions options = TaskOptions.Builder.withUrl(url).param("id", id);
 		queue.add(options);
     }

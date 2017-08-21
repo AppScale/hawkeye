@@ -13,17 +13,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class GetVersionDetailsHandlerServlet extends HttpServlet {
+public class GetEntityHandlerServlet extends HttpServlet {
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
-        if request.getRequestURL().endsWith("entity") {
-            Entity entity = datastore.get(KeyFactory.createKey("Entity", request.getParameter("id"));
+        if (request.getRequestURL().indexOf("entity") != -1) {
+            Entity entity = datastore.get(KeyFactory.createKey("Entity", request.getParameter("id")))   ;
             Map<String,Object> map = new HashMap<String, Object>();
             map.put("entity", this.renderEntity(entity));
         }
@@ -31,12 +33,12 @@ public class GetVersionDetailsHandlerServlet extends HttpServlet {
             String[] ids = request.getParameterValues("id");
             List<Key> keys = new ArrayList<Key>();
             for (String id : ids)
-                keys.add(KeyFactory.createKey("Entity", id))
-            List<Entity> entities = datastore.get(keys);
+                keys.add(KeyFactory.createKey("Entity", id));
+            Map<Key,Entity> entities = datastore.get(keys);
             List<Map<String,Object>> rendered = new ArrayList<Map<String,Object>>();
-            for (Entity entity : entities)
+            for (Entity entity : entities.values())
                 rendered.add(this.renderEntity(entity));
-            map.put("entities", rendered)
+            map.put("entities", rendered);
         }
         JSONUtils.serialize(map, response);
     }

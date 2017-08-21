@@ -49,13 +49,6 @@
                 <include name="**/*.properties" />
             </fileset>
         </copy>
-        <copy
-                todir="war/WEB-INF/classes/META-INF">
-            <fileset dir="lib/classes/META-INF">
-                <include name="**/*.xml" />
-                <include name="**/*.properties" />
-            </fileset>
-        </copy>
         <javac
                 srcdir="src"
                 destdir="war/WEB-INF/classes"

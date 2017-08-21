@@ -191,6 +191,11 @@
         <servlet-class>com.appscale.hawkeye.modules.CreateEntityHandlerServlet
         </servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AddTaskHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.AddTaskHandlerServlet
+        </servlet-class>
+    </servlet>
     <!-- End Modules -->
 
     <servlet-mapping>
@@ -377,6 +382,10 @@
     <servlet-mapping>
         <servlet-name>CreateEntityHandlerServlet</servlet-name>
         <url-pattern>/modules/create-entity</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AddTaskHandlerServlet</servlet-name>
+        <url-pattern>/modules/add-task</url-pattern>
     </servlet-mapping>
     <!-- End Modules -->
 
