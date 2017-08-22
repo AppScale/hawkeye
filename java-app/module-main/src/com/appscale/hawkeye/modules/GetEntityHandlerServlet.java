@@ -5,6 +5,7 @@ import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -24,10 +25,15 @@ public class GetEntityHandlerServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
+        Map<String,Object> map = new HashMap<String, Object>();
         if (request.getRequestURL().indexOf("entity") != -1) {
-            Entity entity = datastore.get(KeyFactory.createKey("Entity", request.getParameter("id")))   ;
-            Map<String,Object> map = new HashMap<String, Object>();
-            map.put("entity", this.renderEntity(entity));
+            try {
+                Entity entity = datastore.get(KeyFactory.createKey("Entity", request.getParameter("id")));
+                map.put("entity", this.renderEntity(entity));
+            }
+            catch (EntityNotFoundException e) {
+                map.put("entity", null);
+            }
         }
         else {
             String[] ids = request.getParameterValues("id");
@@ -44,8 +50,6 @@ public class GetEntityHandlerServlet extends HttpServlet {
     }
 
     private Map<String,Object> renderEntity(Entity entity) {
-        if (entity == null)
-            return null;
         Map<String,Object> fields_map = new HashMap<String, Object>();
         fields_map.put("id", entity.getKey().getName());
         fields_map.put("created_at_module", entity.getProperty("created_at_module"));

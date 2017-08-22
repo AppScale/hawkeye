@@ -2,8 +2,8 @@ package com.appscale.hawkeye.envvar;
 
 import com.appscale.hawkeye.JSONUtils;
 
-import com.google.appengine.api.modules.ModulesService;
-import com.google.appengine.api.modules.ModulesServiceFactory;
+import com.google.appengine.api.labs.modules.ModulesService;
+import com.google.appengine.api.labs.modules.ModulesServiceFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

@@ -12,17 +12,16 @@ import java.io.IOException;
 
 public class AddTaskHandlerServlet extends HttpServlet {
 
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
     	String id = request.getParameter("id");
     	String queue_name = request.getParameter("queue");
+        Queue queue;
 		
-		if (queue == null)
-        	Queue queue = QueueFactory.getDefaultQueue();
+		if (queue_name == null)
+        	queue = QueueFactory.getDefaultQueue();
         else
-        	Queue queue = QueueFactory.getQueue(queue_name);
+        	queue = QueueFactory.getQueue(queue_name);
 
         String url = "/modules/create-entity";
         TaskOptions options = TaskOptions.Builder.withUrl(url).param("id", id);
