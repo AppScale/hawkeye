@@ -118,7 +118,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
     if backend is not None and backend == 'true':
       taskqueue.add(url='/python/taskqueue/worker',
-        params={'key': key}, target='hawkeyepython', queue_name=DEFAULT_PUSH_QUEUE)
+        params={'key': key}, queue_name=DEFAULT_PUSH_QUEUE)
     elif defer is not None and defer == 'true':
       deferred.defer(utils.process, key)
     elif get_method is not None and get_method == 'true':
