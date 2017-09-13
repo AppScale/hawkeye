@@ -1,10 +1,9 @@
 .DS_Store
 *.swp
 *.py[c|o]
-*.jar
-*.class
 logs
 out
+war
 .idea
 test-suite/hawkeye-logs
 test-suite/hawkeye_output.csv
