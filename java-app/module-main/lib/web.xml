@@ -149,7 +149,7 @@
         <servlet-name>MemcacheCasHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.memcache.MemcacheCasHandlerServlet</servlet-class>
     </servlet>
- 
+
     <servlet>
         <servlet-name>AuthorizedAccessHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.users.AuthorizedAccessHandlerServlet</servlet-class>
@@ -368,15 +368,15 @@
 
     <!-- URLs for testing Modules functionality -->
     <servlet-mapping>
-        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
         <url-pattern>/modules/versions-details</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
         <url-pattern>/modules/get-entity</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
         <url-pattern>/modules/get-entities</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
