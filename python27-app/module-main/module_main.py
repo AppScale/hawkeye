@@ -111,7 +111,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
   def get(self):
     entity_id = self.request.get('id')
     Entity(id=entity_id, created_at_module='default',
-           created_at_version='1').put()
+           created_at_version='v1').put()
 
 
 class DeferredCreateEntityHandler(webapp2.RequestHandler):

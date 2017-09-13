@@ -87,7 +87,7 @@ class CreateEntityHandler(webapp2.RequestHandler):
   def get(self):
     entity_id = self.request.get('id')
     Entity(id=entity_id, created_at_module='module-a',
-           created_at_version='1', new_field='new').put()
+           created_at_version='v1', new_field='new').put()
 
 
 # These are all all URL available for module-a
