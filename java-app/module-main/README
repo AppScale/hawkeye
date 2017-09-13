@@ -1,2 +1,0 @@
-To compile the java app, first run the 'get_sdk.sh' script in this directory.
-Then run "ant compile", then "ant datanucleusenhance"

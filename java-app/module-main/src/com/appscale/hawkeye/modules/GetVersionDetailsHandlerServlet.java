@@ -1,4 +1,4 @@
-package com.appscale.hawkeye.envvar;
+package com.appscale.hawkeye.modules;
 
 import com.appscale.hawkeye.JSONUtils;
 

@@ -1,4 +1,4 @@
-package com.appscale.hawkeye.envvar;
+package com.appscale.hawkeye.modules;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -19,7 +19,8 @@ public class CreateEntityHandlerServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
         Entity entity = new Entity("Entity", request.getParameter("id"));
         entity.setProperty("created_at_module", "module-a");
-        entity.setProperty("created_at_version", "1");
+        entity.setProperty("created_at_version", "v1");
         entity.setProperty("new_field", "new");
+        datastore.put(entity);
     }
 }

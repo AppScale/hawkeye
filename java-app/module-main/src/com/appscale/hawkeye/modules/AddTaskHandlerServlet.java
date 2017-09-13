@@ -1,4 +1,4 @@
-package com.appscale.hawkeye.envvar;
+package com.appscale.hawkeye.modules;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -17,14 +17,14 @@ public class AddTaskHandlerServlet extends HttpServlet {
     	String id = request.getParameter("id");
     	String queue_name = request.getParameter("queue");
         Queue queue;
-		
+
 		if (queue_name == null)
         	queue = QueueFactory.getDefaultQueue();
         else
         	queue = QueueFactory.getQueue(queue_name);
 
         String url = "/modules/create-entity";
-        TaskOptions options = TaskOptions.Builder.withUrl(url).param("id", id);
+        TaskOptions options = TaskOptions.Builder.withUrl(url).param("id", id).method(TaskOptions.Method.GET);
 		queue.add(options);
     }
 }

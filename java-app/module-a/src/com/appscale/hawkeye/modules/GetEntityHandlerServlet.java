@@ -1,4 +1,4 @@
-package com.appscale.hawkeye.envvar;
+package com.appscale.hawkeye.modules;
 
 import com.appscale.hawkeye.JSONUtils;
 
@@ -42,8 +42,8 @@ public class GetEntityHandlerServlet extends HttpServlet {
                 keys.add(KeyFactory.createKey("Entity", id));
             Map<Key,Entity> entities = datastore.get(keys);
             List<Map<String,Object>> rendered = new ArrayList<Map<String,Object>>();
-            for (Entity entity : entities.values())
-                rendered.add(this.renderEntity(entity));
+            for (Key key : keys)
+                rendered.add(this.renderEntity(entities.get(key)));
             map.put("entities", rendered);
         }
         JSONUtils.serialize(map, response);
