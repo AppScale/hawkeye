@@ -1,2 +1,21 @@
 You must run this with python2.7
-python2.7 hawkeye.py <SERVER> <PORT>
+
+hawkeye.py: Run API fidelity tests on AppScale.
+
+Usage:
+  hawkeye.py --app APP_ID --versions-csv FILE [options]
+  hawkeye.py (-h | --help)
+
+Options:
+  -h, --help           # show this help message and exit
+  --app                # Application ID to test
+  --versions-csv FILE  # File containing http and https URL to app versions
+  -l LANG --lang=LANG  # Language binding to test (python or java) [default: python]
+  --user=USER          # Admin username [default: a@a.com]
+  --pass=PASSWORD      # Admin password [default: aaaaaa]
+  -c, --console        # Log errors and failures to console
+  --suites=SUITES      # A comma separated list of suites to run
+  --exclude-suites=EXCLUDE_SUITES # A comma separated list of suites to exclude
+  --baseline           # Turn on verbose reporting for baseline comparison
+  --log-dir=BASE_DIR   # Directory to store error logs
+  --keep-old-logs      # Keep existing hawkeye logs

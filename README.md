@@ -22,16 +22,21 @@ compile the Java version as indicated in java-app/README.md
 and deploy the Java, and Python 2.7 versions:
 
 ```
-appscale deploy hawkeye/java-app
+appscale deploy hawkeye/java-app/module-main/war
 appscale deploy hawkeye/python27-app/module-main
 ```
 if you're going to test modules suite
 you also need to deploy additional python module:
 ```
+appscale deploy hawkeye/java-app/module-a/war
 appscale deploy hawkeye/python27-app/module-a
 ```
 
-Assuming that your head node runs on 192.168.33.10, you'll now have Hawkeye Java running at 192.168.33.10:8080, Hawkeye Python 2.7 (module-main) running at 192.168.33.10:8081, and Hawkeye Python 2.7 (module-a) running at 192.168.33.10:8082.
+Assuming that your head node runs on 192.168.33.10, you'll now have
+Hawkeye Java (module-main) running at 192.168.33.10:8080,
+Hawkeye Java (module-a) running at 192.168.33.10:8081,
+Hawkeye Python 2.7 (module-main) running at 192.168.33.10:8082,
+Hawkeye Python 2.7 (module-a) running at 192.168.33.10:8083.
 
 run hawkeye
 =======
@@ -39,7 +44,7 @@ run hawkeye
 Go into the `test-suite` directory:
 
 ```
-cd hawkeye/test-suite
+cd test-suite
 ```
 
 Create 2 csv files containing app modules and versions info:
@@ -48,12 +53,13 @@ Create 2 csv files containing app modules and versions info:
 cat > versions-java.csv << APP_VERSIONS
 MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
 default,1,http://192.168.33.10:8080,https://192.168.33.10:4380,yes
+module-a,1,http://192.168.33.10:8081,https://192.168.33.10:4381,yes
 APP_VERSIONS
 
 cat > versions-python.csv << APP_VERSIONS
 MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
-default,1,http://192.168.33.10:8081,https://192.168.33.10:4381,yes
-module-a,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
+default,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
+module-a,1,http://192.168.33.10:8083,https://192.168.33.10:4383,yes
 APP_VERSIONS
 ```
 
@@ -237,7 +243,7 @@ Comparison to baseline:
     tests.images_tests.ImageUploadTest.runTest ... ok
 ```
 
-The only important part here is the line that says:
+The only important part here is following:
 
 ```
  97  tests matched baseline result
@@ -252,4 +258,4 @@ The only important part here is the line that says:
 
 If you run into any of the baseline tests failing, you should definitely dig into these logs:
 * AppScale logs (run "appscale logs somedirectory" to grab AppScale logs and put them in somedirectory).
-* Hawkeye logs, located in "hawkeye/test-suite/logs"
+* Hawkeye logs, located in "hawkeye/test-suite/hawkeye-logs"
