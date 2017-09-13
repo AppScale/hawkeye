@@ -2,9 +2,3 @@ cron:
 - description: db update job
   url: /python/cron
   schedule: every 1 minutes
-
-# Default version of module_a should be called
-- description: module job
-  url: /python/modules/create-entity?id=cron
-  target: module-a
-  schedule: every 1 minutes

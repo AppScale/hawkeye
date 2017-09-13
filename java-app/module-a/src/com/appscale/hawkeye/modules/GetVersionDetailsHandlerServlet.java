@@ -24,8 +24,6 @@ public class GetVersionDetailsHandlerServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
         Map<String,Object> map = new HashMap<String, Object>();
         String currentModuleName = modulesApi.getCurrentModule();
-        logger.log(Level.INFO, "==================");
-        logger.log(Level.INFO, currentModuleName);
         map.put("modules", modulesApi.getModules());
         map.put("current_module_versions", modulesApi.getVersions(currentModuleName));
         map.put("default_version", modulesApi.getDefaultVersion(currentModuleName));

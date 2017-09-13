@@ -165,7 +165,7 @@ class TestTaskTargets(HawkeyeTestCase):
                    params={'id': self.entity_ids['deferred-queue-for-module-a'],
                            'queue': 'queue-for-module-a'})
 
-    time.sleep(2)
+    time.sleep(3)
 
   def test_task_targets(self):
     response = self.app.get('/modules/get-entities',
