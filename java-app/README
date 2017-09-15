@@ -1,2 +1,5 @@
 To compile the java app, first run the 'get_sdk.sh' script in this directory.
 Then cd to module-main run "ant compile".
+If you're going to test modules suite you also need to run "ant compile" in
+module-a dir.
+
