@@ -1,18 +1,16 @@
 import datetime
 import time
 import urllib
-import utils
-import webapp2
-import wsgiref
 
+import webapp2
 from google.appengine.api import taskqueue
-from google.appengine.api.taskqueue import TaskLeaseExpiredError
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
-from google.appengine.ext import deferred
+from google.appengine.api.taskqueue import TaskLeaseExpiredError
 from google.appengine.ext import db
-from google.appengine.ext import webapp
+from google.appengine.ext import deferred
 
+import utils
 from datastore import SDK_CONSISTENCY_WAIT
 
 try:
@@ -542,7 +540,7 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
       taskqueue.add(url='/python/taskqueue/transworker',
         params={'key': key}, transactional=True, queue_name=DEFAULT_PUSH_QUEUE)
       # Enqueue a task update a key, assert that value
-      task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key) 
+      task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key)
       task_ent.put()
       if throw_exception:
         raise
@@ -558,13 +556,13 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
 
     try:
       db.run_in_transaction(task_txn, key, raise_exception)
-    except Exception: 
+    except Exception:
       self.response.out.write(json.dumps({'value' : "None"}))
       return
     else:
       value = TaskEntity.get_by_key_name(key).value
       self.response.out.write(json.dumps({'value' : value}))
-     
+
 
   def get(self):
     key = self.request.get('key')
@@ -573,15 +571,15 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
 
     if entity:
       value = entity.value
- 
+
     self.response.out.write(json.dumps({ 'value' : value}))
-    
+
 class TransactionalTaskWorker(webapp2.RequestHandler):
   def post(self):
     key = self.request.get('key')
     task_ent = TaskEntity.get_by_key_name(key)
     task_ent.value = UPDATED_BY_TQ
-    task_ent.put() 
+    task_ent.put()
 
 class TaskCounterWorker(webapp2.RequestHandler):
   def get(self):

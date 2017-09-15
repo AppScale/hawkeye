@@ -7,3 +7,15 @@ queue:
 
 - name: rest-pull-queue
   mode: pull
+
+# Queue without specified target
+- name: queue-with-missed-target
+  rate: 50/s
+
+# Queue with specified target
+- name: queue-for-module-a
+  target: module-a
+  rate: 50/s
+- name: queue-for-default
+  target: default
+  rate: 50/s
