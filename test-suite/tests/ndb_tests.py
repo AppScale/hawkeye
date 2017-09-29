@@ -51,7 +51,7 @@ class SimpleKindAwareNDBInsertTest(DeprecatedHawkeyeTestCase):
     NDB_ALL_PROJECTS[HawkeyeConstants.PROJECT_HADOOP] = project_id
 
     # Allow some time to eventual consistency to run its course
-    sleep(2)
+    sleep(5)
 
 class KindAwareNDBInsertWithParentTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
