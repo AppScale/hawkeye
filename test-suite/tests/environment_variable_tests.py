@@ -1,54 +1,31 @@
 import json
-import ssl
-import urllib2
-
-import hawkeye_utils
-from hawkeye_utils import HawkeyeTestCase
-from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 
-class GetConfigEnvironmentVariableTest(HawkeyeTestCase):
+class GetConfigEnvironmentVariableTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/env/var')
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals('baz', entry_info['value'])
 
-class RequestAPI(HawkeyeTestCase):
+class RequestAPI(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
-    config = {
-      'http': {
-        'handler': urllib2.HTTPHandler,
-        'port': hawkeye_utils.PORT
-      },
-      'https': {
-        'handler': urllib2.HTTPSHandler,
-        'port': hawkeye_utils.PORT - hawkeye_utils.SSL_PORT_OFFSET
-      }
-    }
     for scheme in ['http', 'https']:
       for method in ['GET', 'PUT', 'POST', 'DELETE']:
-        url = '{}://{}:{}/python/env/mirror'.\
-          format(scheme, hawkeye_utils.HOST, config[scheme]['port'])
-        request = urllib2.Request(url, headers={'Content-Length': '0'})
-        request.get_method = lambda: method
-
-        if hasattr(ssl, '_create_unverified_context'):
-          context = ssl._create_unverified_context()
-          response = urllib2.urlopen(request, context=context)
-        else:
-          response = urllib2.urlopen(request)
-
-        response_dict = json.load(response)
+        path = '/python/env/mirror'
+        url = self.app.build_url(path, https=scheme=='https')
+        response = self.app.request(method, path, https=scheme == 'https')
+        response_dict = response.json()
 
         self.assertEqual(response_dict['scheme'], scheme)
         self.assertEqual(response_dict['method'], method)
         self.assertEqual(response_dict['uri'], url)
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('Config Environment Variable Test Suite', 'env_var')
-  suite.addTest(GetConfigEnvironmentVariableTest())
+  suite.addTests(GetConfigEnvironmentVariableTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(RequestAPI())
+    suite.addTests(RequestAPI.all_cases(app))
   return suite

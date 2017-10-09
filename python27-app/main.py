@@ -6,6 +6,7 @@ from cron import urls as cron_urls
 from datastore import urls as datastore_urls
 from env_var import urls as env_var_urls
 from images import urls as images_urls
+from logservice import urls as logservice_urls
 from memcache import urls as memcache_urls
 from ndb import urls as ndb_urls
 from secure_url import urls as secure_url_urls
@@ -20,6 +21,7 @@ app = webapp2.WSGIApplication(
   datastore_urls +
   env_var_urls +
   images_urls +
+  logservice_urls +
   memcache_urls +
   ndb_urls +
   secure_url_urls +

@@ -2,15 +2,7 @@ queue:
 - name: hawkeyepython-PushQueue-0
   rate: 5/s
 
-# This queue should not be created.
-- name: largePushQueueName-largePushQueueName-largePushQueueName-largePushQueueName-largePushQueueName-largePushQueueName
-  rate: 1/s
-
 - name: hawkeyepython-PullQueue-0
-  mode: pull
-
-# This queue should not be created.
-- name: largePullQueueName-largePullQueueName-largePullQueueName-largePullQueueName-largePullQueueName-largePullQueueName
   mode: pull
 
 - name: rest-pull-queue
