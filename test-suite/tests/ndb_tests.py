@@ -1,5 +1,5 @@
-from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants
-from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_utils import HawkeyeConstants
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 import json
 from time import sleep
 import uuid
@@ -9,7 +9,7 @@ __author__ = 'hiranya'
 NDB_ALL_PROJECTS = {}
 NDB_SYNAPSE_MODULES = {}
 
-class NDBCleanupTest(HawkeyeTestCase):
+class NDBCleanupTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/ndb/project')
     self.assertEquals(response.status, 200)
@@ -18,7 +18,7 @@ class NDBCleanupTest(HawkeyeTestCase):
     response = self.http_delete('/ndb/transactions')
     self.assertEquals(response.status, 200)
 
-class SimpleKindAwareNDBInsertTest(HawkeyeTestCase):
+class SimpleKindAwareNDBInsertTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/ndb/project',
       'name={0}&description=Mediation Engine&rating=8&license=L1'.format(
@@ -53,7 +53,7 @@ class SimpleKindAwareNDBInsertTest(HawkeyeTestCase):
     # Allow some time to eventual consistency to run its course
     sleep(2)
 
-class KindAwareNDBInsertWithParentTest(HawkeyeTestCase):
+class KindAwareNDBInsertWithParentTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/ndb/module',
       'name={0}&description=Mediation Core&project_id={1}'.format(
@@ -77,7 +77,7 @@ class KindAwareNDBInsertWithParentTest(HawkeyeTestCase):
     self.assertTrue(module_id is not None)
     NDB_SYNAPSE_MODULES[HawkeyeConstants.MOD_NHTTP] = module_id
 
-class SimpleKindAwareNDBQueryTest(HawkeyeTestCase):
+class SimpleKindAwareNDBQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     project_list = self.assert_and_get_list('/ndb/project')
     for entry in project_list:
@@ -97,7 +97,7 @@ class SimpleKindAwareNDBQueryTest(HawkeyeTestCase):
       self.assertEquals(len(list), 1)
       self.assertEquals(project_info['name'], entry['name'])
 
-class NDBAncestorQueryTest(HawkeyeTestCase):
+class NDBAncestorQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_modules?' \
       'project_id={0}'.format(NDB_ALL_PROJECTS[HawkeyeConstants.PROJECT_SYNAPSE]))
@@ -110,7 +110,7 @@ class NDBAncestorQueryTest(HawkeyeTestCase):
     self.assertTrue(modules.index(HawkeyeConstants.MOD_CORE) != -1)
     self.assertTrue(modules.index(HawkeyeConstants.MOD_NHTTP) != -1)
 
-class NDBSinglePropertyBasedQueryTest(HawkeyeTestCase):
+class NDBSinglePropertyBasedQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_ratings?rating=10&'
                                            'comparator=eq')
@@ -150,7 +150,7 @@ class NDBSinglePropertyBasedQueryTest(HawkeyeTestCase):
     except AssertionError:
       pass
 
-class NDBOrderedResultQueryTest(HawkeyeTestCase):
+class NDBOrderedResultQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_ratings?rating=6&'
                                            'comparator=ge&desc=true')
@@ -160,7 +160,7 @@ class NDBOrderedResultQueryTest(HawkeyeTestCase):
       self.assertTrue(entity['rating'], last_rating)
       last_rating = entity['rating']
 
-class NDBLimitedResultQueryTest(HawkeyeTestCase):
+class NDBLimitedResultQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_ratings?rating=6&'
                                            'comparator=ge&limit=2')
@@ -174,7 +174,7 @@ class NDBLimitedResultQueryTest(HawkeyeTestCase):
       self.assertTrue(entity['rating'], last_rating)
       last_rating = entity['rating']
 
-class NDBProjectionQueryTest(HawkeyeTestCase):
+class NDBProjectionQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_fields?'
                                            'fields=name,description')
@@ -193,7 +193,7 @@ class NDBProjectionQueryTest(HawkeyeTestCase):
       self.assertTrue(entity['name'] is not None)
       self.assertNotEquals(entity['name'], HawkeyeConstants.PROJECT_XERCES)
 
-class NDBCompositeQueryTest(HawkeyeTestCase):
+class NDBCompositeQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_filter?'
                                            'license=L1&rate_limit=5')
@@ -211,7 +211,7 @@ class NDBCompositeQueryTest(HawkeyeTestCase):
     self.assertEquals(len(entity_list), 1)
     self.assertEquals(entity_list[0]['name'], HawkeyeConstants.PROJECT_HADOOP)
 
-class NDBGQLTest(HawkeyeTestCase):
+class NDBGQLTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_filter?'
                                            'license=L1&rate_limit=5&gql=true')
@@ -229,7 +229,7 @@ class NDBGQLTest(HawkeyeTestCase):
     self.assertEquals(len(entity_list), 1)
     self.assertEquals(entity_list[0]['name'], HawkeyeConstants.PROJECT_HADOOP)
 
-class NDBInQueryTest(HawkeyeTestCase):
+class NDBInQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/ndb/project_license_filter?'
                                            'licenses=L1')
@@ -253,7 +253,7 @@ class NDBInQueryTest(HawkeyeTestCase):
     except AssertionError:
       pass
 
-class NDBCursorTest(HawkeyeTestCase):
+class NDBCursorTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     project1 = self.assert_and_get_list('/ndb/project_cursor')
     project2 = self.assert_and_get_list('/ndb/project_cursor?cursor={0}'.
@@ -270,7 +270,7 @@ class NDBCursorTest(HawkeyeTestCase):
     self.assertTrue(project4['project'] is None)
     self.assertTrue(project4['next'] is None)
 
-class SimpleNDBTransactionTest(HawkeyeTestCase):
+class SimpleNDBTransactionTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     response = self.http_get('/ndb/transactions?' \
@@ -294,7 +294,7 @@ class SimpleNDBTransactionTest(HawkeyeTestCase):
     self.assertFalse(entity['success'])
     self.assertEquals(entity['counter'], 2)
 
-class NDBCrossGroupTransactionTest(HawkeyeTestCase):
+class NDBCrossGroupTransactionTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     response = self.http_get('/ndb/transactions?' \
@@ -321,23 +321,23 @@ class NDBCrossGroupTransactionTest(HawkeyeTestCase):
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('NDB Test Suite', 'ndb')
   if lang != 'python':
     return suite
-  suite.addTest(NDBCleanupTest())
-  suite.addTest(SimpleKindAwareNDBInsertTest())
-  suite.addTest(KindAwareNDBInsertWithParentTest())
-  suite.addTest(SimpleKindAwareNDBQueryTest())
-  suite.addTest(NDBAncestorQueryTest())
-  suite.addTest(NDBSinglePropertyBasedQueryTest())
-  suite.addTest(NDBOrderedResultQueryTest())
-  suite.addTest(NDBLimitedResultQueryTest())
-  suite.addTest(NDBProjectionQueryTest())
-  suite.addTest(NDBCompositeQueryTest())
-  suite.addTest(NDBGQLTest())
-  suite.addTest(NDBInQueryTest())
-  suite.addTest(NDBCursorTest())
-  suite.addTest(SimpleNDBTransactionTest())
-  suite.addTest(NDBCrossGroupTransactionTest())
+  suite.addTests(NDBCleanupTest.all_cases(app))
+  suite.addTests(SimpleKindAwareNDBInsertTest.all_cases(app))
+  suite.addTests(KindAwareNDBInsertWithParentTest.all_cases(app))
+  suite.addTests(SimpleKindAwareNDBQueryTest.all_cases(app))
+  suite.addTests(NDBAncestorQueryTest.all_cases(app))
+  suite.addTests(NDBSinglePropertyBasedQueryTest.all_cases(app))
+  suite.addTests(NDBOrderedResultQueryTest.all_cases(app))
+  suite.addTests(NDBLimitedResultQueryTest.all_cases(app))
+  suite.addTests(NDBProjectionQueryTest.all_cases(app))
+  suite.addTests(NDBCompositeQueryTest.all_cases(app))
+  suite.addTests(NDBGQLTest.all_cases(app))
+  suite.addTests(NDBInQueryTest.all_cases(app))
+  suite.addTests(NDBCursorTest.all_cases(app))
+  suite.addTests(SimpleNDBTransactionTest.all_cases(app))
+  suite.addTests(NDBCrossGroupTransactionTest.all_cases(app))
   return suite

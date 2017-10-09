@@ -4,31 +4,31 @@ from time import sleep
 import StringIO
 
 import hawkeye_test_runner
-from hawkeye_utils import HawkeyeTestCase
-import hawkeye_utils
+from hawkeye_test_runner import HawkeyeTestCase, DeprecatedHawkeyeTestCase
 
 __author__ = 'hiranya'
 
 PROJECTS = {}
 
-class ImageDeleteTest(HawkeyeTestCase):
+class ImageDeleteTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/images/logo')
     self.assertEquals(response.status, 200)
 
 class ImageUploadTest(HawkeyeTestCase):
-  def run_hawkeye_test(self):
-    content_type, body = hawkeye_utils.encode_file('resources/logo.png')
-    headers = { 'Content-Type': content_type }
-    response = self.file_upload('/images/logo', body, headers, prepend_lang=True)
-    self.assertEquals(response.status, 201)
-    project_info = json.loads(response.payload)
+  def test_image_upload(self):
+    file_path = 'resources/logo.png'
+    with open(file_path, 'rb') as logo_png:
+      files = {"file": ('logo.png', logo_png, 'application/octet-stream')}
+      response = self.app.post('/{lang}/images/logo', files=files)
+    self.assertEquals(response.status_code, 201)
+    project_info = response.json()
     self.assertTrue(project_info['success'])
-    self.assertTrue(project_info['project_id'] is not None)
+    self.assertIsNotNone(project_info['project_id'])
     PROJECTS['appscale'] = project_info['project_id']
     sleep(5)
 
-class ImageLoadTest(HawkeyeTestCase):
+class ImageLoadTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?project_id=' + PROJECTS['appscale'])
     self.assertEquals(response.status, 200)
@@ -38,7 +38,7 @@ class ImageLoadTest(HawkeyeTestCase):
     image = Image.open(StringIO.StringIO(response.payload))
     self.assertEquals(100, image.size[0])
 
-class ImageMetadataTest(HawkeyeTestCase):
+class ImageMetadataTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?metadata=true&project_id=' +
                              PROJECTS['appscale'])
@@ -47,7 +47,7 @@ class ImageMetadataTest(HawkeyeTestCase):
     self.assertEquals(logo_info['width'], 100)
     self.assertEquals(logo_info['format'], 0)
 
-class ImageResizeTest(HawkeyeTestCase):
+class ImageResizeTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?resize=50&metadata=true&project_id=' +
                              PROJECTS['appscale'])
@@ -56,7 +56,7 @@ class ImageResizeTest(HawkeyeTestCase):
     self.assertEquals(logo_info['width'], 50)
     self.assertEquals(logo_info['format'], 0)
 
-class ImageResizeTransformTest(HawkeyeTestCase):
+class ImageResizeTransformTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?transform=true&resize=50&'
                              'metadata=true&project_id=' + PROJECTS['appscale'])
@@ -65,7 +65,7 @@ class ImageResizeTransformTest(HawkeyeTestCase):
     self.assertEquals(logo_info['width'], 50)
     self.assertEquals(logo_info['format'], 0)
 
-class ImageRotateTest(HawkeyeTestCase):
+class ImageRotateTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?rotate=true&metadata=true&project_id=' +
                              PROJECTS['appscale'])
@@ -74,7 +74,7 @@ class ImageRotateTest(HawkeyeTestCase):
     self.assertEquals(logo_info['height'], 100)
     self.assertEquals(logo_info['format'], 0)
 
-class ImageRotateTransformTest(HawkeyeTestCase):
+class ImageRotateTransformTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/images/logo?transform=true&rotate=true&'
                              'metadata=true&project_id=' + PROJECTS['appscale'])
@@ -83,19 +83,19 @@ class ImageRotateTransformTest(HawkeyeTestCase):
     self.assertEquals(logo_info['height'], 100)
     self.assertEquals(logo_info['format'], 0)
 
-def suite(lang):
+def suite(lang, app):
   suite = hawkeye_test_runner.HawkeyeTestSuite('Images Test Suite', 'images')
-  suite.addTest(ImageDeleteTest())
-  suite.addTest(ImageUploadTest())
-  suite.addTest(ImageLoadTest())
-  suite.addTest(ImageMetadataTest())
-  suite.addTest(ImageResizeTest())
-  suite.addTest(ImageRotateTest())
+  suite.addTests(ImageDeleteTest.all_cases(app))
+  suite.addTests(ImageUploadTest.all_cases(app))
+  suite.addTests(ImageLoadTest.all_cases(app))
+  suite.addTests(ImageMetadataTest.all_cases(app))
+  suite.addTests(ImageResizeTest.all_cases(app))
+  suite.addTests(ImageRotateTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(ImageResizeTransformTest())
-    suite.addTest(ImageRotateTransformTest())
+    suite.addTests(ImageResizeTransformTest.all_cases(app))
+    suite.addTests(ImageRotateTransformTest.all_cases(app))
 
   # Clean up entities. They can affect later tests.
-  suite.addTest(ImageDeleteTest())
+  suite.addTests(ImageDeleteTest.all_cases(app))
   return suite
