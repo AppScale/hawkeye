@@ -569,7 +569,8 @@ class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
     self.http_delete('/datastore/cursor_with_repeated_prop')
 
   def setUp(self):
-    self.http_post('/datastore/cursor_with_repeated_prop', '')
+    # Insert entities to query.
+    self.http_post('/datastore/cursor_with_repeated_prop', payload='')
 
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/cursor_with_repeated_prop')
