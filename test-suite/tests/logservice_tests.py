@@ -1,11 +1,10 @@
 import json
 import urllib
 
-from hawkeye_test_runner import HawkeyeTestSuite
-from hawkeye_utils import HawkeyeTestCase
+from hawkeye_test_runner import DeprecatedHawkeyeTestCase, HawkeyeTestSuite
 
 
-class FetchLogTest(HawkeyeTestCase):
+class FetchLogTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     requests = [['two logs are given', 'two are desired'],
                 ['this is the first request', 'so expect it last']]
@@ -18,10 +17,10 @@ class FetchLogTest(HawkeyeTestCase):
     self.assertListEqual(requests, json.loads(response.payload))
 
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('Logservice Test Suite', 'logservice')
 
   if lang == 'python':
-    suite.addTest(FetchLogTest())
+    suite.addTests(FetchLogTest.all_cases(app))
 
   return suite
