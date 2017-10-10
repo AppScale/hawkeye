@@ -1,5 +1,6 @@
 import json
 import Queue
+import ssl
 import time
 import urllib
 import urllib2
@@ -574,8 +575,10 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     self.http_delete('/datastore/tx_invalidation?key={}'.format(self.KEY))
 
   def run_hawkeye_test(self):
+    context = ssl._create_unverified_context()
+
     def tx_succeeded(url, payload):
-      response = urllib2.urlopen(url, payload)
+      response = urllib2.urlopen(url, payload, context=context)
       self.RESPONSE = response.read()
 
     url = self.app.build_url('/python/datastore/tx_invalidation')
@@ -590,7 +593,7 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     time.sleep(.5)
 
     non_tx_payload = urllib.urlencode({'key': self.KEY, 'txn': False})
-    urllib2.urlopen(url, non_tx_payload)
+    urllib2.urlopen(url, non_tx_payload, context=context)
 
     thread.join()
     response = json.loads(self.RESPONSE)
