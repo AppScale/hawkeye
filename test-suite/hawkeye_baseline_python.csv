@@ -61,6 +61,7 @@ tests.datastore_tests.SimpleKindAwareInsertTest.runTest,ok
 tests.datastore_tests.SimpleKindAwareQueryTest.runTest,ok
 tests.datastore_tests.SimpleTransactionTest.runTest,ok
 tests.datastore_tests.SinglePropertyBasedQueryTest.runTest,ok
+tests.datastore_tests.TxInvalidation.runTest,ok
 tests.datastore_tests.ZigZagQueryTest.runTest,ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest.runTest,ok
 tests.environment_variable_tests.RequestAPI.runTest,ok
