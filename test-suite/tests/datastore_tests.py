@@ -600,6 +600,41 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     # The first transaction should be invalidated by the concurrent put.
     self.assertFalse(response['txnSucceeded'])
 
+class ScatterPropTest(DeprecatedHawkeyeTestCase):
+  """ Tests queries on the __scatter__ reserved property.
+
+  This test will not work in GAE or the SDK, which both use different hash
+  functions to determine the scatter property.
+
+  In the SDK, there's a 50% chance an entity will get the scatter property. It
+  uses MD5. In GAE, there's a .78% chance for an entity to get the scatter
+  property.
+
+  AppScale uses the Murmur3 hash function, and there's a .78% chance for an
+  entity to get the property.
+  """
+  KEY_NAMES = {
+    'normal': ['1', '2'],  # These shouldn't get the property.
+    'scattered': ['8', '86']  # These should get the property.
+  }
+  KIND = 'ScatterEntity'
+
+  def tearDown(self):
+    self.http_delete('/datastore/scatter_prop?kind={}'.format(self.KIND))
+
+  def setUp(self):
+    for type, key_names in self.KEY_NAMES.items():
+      for name in key_names:
+        self.http_post('/datastore/scatter_prop',
+                       'kind={}&name={}'.format(self.KIND, name))
+
+  def run_hawkeye_test(self):
+    response = self.http_get(
+      '/datastore/scatter_prop?kind={}'.format(self.KIND))
+    keys = json.loads(response.payload)
+    self.assertListEqual(keys, self.KEY_NAMES['scattered'])
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -639,6 +674,7 @@ def suite(lang, app):
     suite.addTests(CursorQueries.all_cases(app))
     suite.addTests(LongTxRead.all_cases(app))
     suite.addTests(TxInvalidation.all_cases(app))
+    suite.addTests(ScatterPropTest.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))

@@ -1,3 +1,4 @@
+from google.appengine.api import datastore
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
@@ -1839,6 +1840,33 @@ class TxInvalidation(webapp2.RequestHandler):
   def delete(self):
     ndb.Key(TestModel, self.request.get('key')).delete()
 
+class ScatterProp(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    limit = self.request.get('limit', default_value=100)
+    query = datastore.Query(kind=kind, keys_only=True)
+    query.Order('__scatter__')
+    keys = [key.id_or_name() for key in query.Get(limit)]
+    json.dump(keys, self.response)
+
+  def post(self):
+    kind = self.request.get('kind')
+    entity_name = self.request.get('name')
+    content = self.request.get('content')
+    if not content:
+      content = ''.join(random.choice(string.letters) for _ in range(5))
+
+    entity = datastore.Entity(kind=kind, name=entity_name)
+    entity['content'] = content
+    datastore.Put(entity)
+
+  def delete(self):
+    kind = self.request.get('kind')
+    query = datastore.Query(kind=kind, keys_only=True)
+    keys = query.Get(limit=None)
+    datastore.Delete(keys)
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1866,5 +1894,6 @@ urls = [
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
   ('/python/datastore/long_tx_read', LongTransactionRead),
-  ('/python/datastore/tx_invalidation', TxInvalidation)
+  ('/python/datastore/tx_invalidation', TxInvalidation),
+  ('/python/datastore/scatter_prop', ScatterProp)
 ]

@@ -57,6 +57,7 @@ tests.datastore_tests.QueryCursorTest.runTest,ok
 tests.datastore_tests.QueryPagination.runTest,ok
 tests.datastore_tests.QueryingAfterFailedTxn.runTest,ok
 tests.datastore_tests.RepeatedProperties.runTest,ok
+tests.datastore_tests.ScatterPropTest.runTest,ok
 tests.datastore_tests.SimpleKindAwareInsertTest.runTest,ok
 tests.datastore_tests.SimpleKindAwareQueryTest.runTest,ok
 tests.datastore_tests.SimpleTransactionTest.runTest,ok
