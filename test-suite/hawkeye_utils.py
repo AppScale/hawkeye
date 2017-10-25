@@ -6,7 +6,7 @@ from datetime import datetime
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-LIMITED_BODY_LENGTH = 200
+LIMITED_BODY_LENGTH = 2000
 
 
 class ResponseInfo:
