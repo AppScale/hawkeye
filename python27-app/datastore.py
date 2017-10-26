@@ -1,24 +1,18 @@
-try:
-  import json
-except ImportError:
-  import simplejson as json
-
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
 import datetime
+import json
 import logging
 import random
 import string
 import time
 import unittest
+import utils
 import uuid
 import webapp2
-import wsgiref
-
-import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
@@ -1855,6 +1849,31 @@ class CursorWithRepeatedProp(webapp2.RequestHandler):
     keys = User.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
 
+class TxInvalidation(webapp2.RequestHandler):
+  def post(self):
+    @ndb.transactional(retries=0)
+    def get_and_put(key):
+      key.get()
+      # Give time for the client to make a concurrent request. The second
+      # request should come between the get and put.
+      time.sleep(1)
+      TestModel(key=key, field='transactional').put()
+
+    transactional = self.request.get('txn').lower() == 'true'
+    entity_key = ndb.Key(TestModel, self.request.get('key'))
+    if transactional:
+      try:
+        get_and_put(entity_key)
+        response = {'txnSucceeded': True}
+      except db.TransactionFailedError:
+        response = {'txnSucceeded': False}
+      self.response.write(json.dumps(response))
+    else:
+      TestModel(key=entity_key, field='outside transaction').put()
+
+  def delete(self):
+    ndb.Key(TestModel, self.request.get('key')).delete()
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1882,5 +1901,6 @@ urls = [
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
   ('/python/datastore/long_tx_read', LongTransactionRead),
-  ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp)
+  ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
+  ('/python/datastore/tx_invalidation', TxInvalidation)
 ]
