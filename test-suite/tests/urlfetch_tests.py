@@ -1,11 +1,11 @@
 import base64
 import urllib
 
-from hawkeye_utils import HawkeyeTestCase
+from hawkeye_test_runner import DeprecatedHawkeyeTestCase
 from hawkeye_test_runner import HawkeyeTestSuite
 
 
-class CertificateValidation(HawkeyeTestCase):
+class CertificateValidation(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     good_cert = 'https://redmine.appscale.com/'
     bad_cert = 'https://ocd.appscale.com:8080/'
@@ -27,8 +27,8 @@ class CertificateValidation(HawkeyeTestCase):
     self.assertEqual(response.status, 500)
 
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('URLFetch Suite', 'urlfetch')
   if lang == 'python':
-    suite.addTest(CertificateValidation())
+    suite.addTest(CertificateValidation.all_cases(app))
   return suite

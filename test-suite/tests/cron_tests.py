@@ -1,13 +1,10 @@
-from hawkeye_utils import HawkeyeTestCase, HawkeyeConstants
-from hawkeye_test_runner import HawkeyeTestSuite
-import json
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 from time import sleep
-import uuid
 import datetime
 
 __author__ = 'jovan'
 
-class CronTest(HawkeyeTestCase):
+class CronTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     time_start = datetime.datetime.now()
     success = False
@@ -24,7 +21,7 @@ class CronTest(HawkeyeTestCase):
       sleep(5)
     self.assertEquals(success, True)
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('Cron Test Suite', 'cron')
-  suite.addTest(CronTest())
+  suite.addTests(CronTest.all_cases(app))
   return suite

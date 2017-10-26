@@ -3,11 +3,10 @@ import json
 import uuid
 from time import sleep
 
-from hawkeye_utils import HawkeyeTestCase
-from hawkeye_test_runner import HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 
-class PushQueueTest(HawkeyeTestCase):
+class PushQueueTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/taskqueue/counter')
     self.assertEquals(response.status, 200)
@@ -135,7 +134,7 @@ class BackendTaskTest(PushQueueTest):
       self.assertTrue(task_info['status'])
     self.get_and_assert_counter(key, 12)
 
-class QueueExistsTest(HawkeyeTestCase):
+class QueueExistsTest(DeprecatedHawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/taskqueue/pull')
 
@@ -150,14 +149,14 @@ class QueueExistsTest(HawkeyeTestCase):
     self.assertEquals(len(queue_info['queues']), 3)
     self.assertEquals(queue_info['exists'], [True, True, True])
 
-class QueueStatisticsTest(HawkeyeTestCase):
+class QueueStatisticsTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/taskqueue/counter?stats=true')
     self.assertEquals(response.status, 200)
     task_info = json.loads(response.payload)
     self.assertEquals(task_info['queue'], 'default')
 
-class PullQueueTest(HawkeyeTestCase):
+class PullQueueTest(DeprecatedHawkeyeTestCase):
   def setup(self):
     self.key = str(uuid.uuid1())
     self.key_async = str(uuid.uuid1())
@@ -222,7 +221,7 @@ class PullQueueTest(HawkeyeTestCase):
       else:
         sleep(2)
 
-class LeaseModificationTest(HawkeyeTestCase):
+class LeaseModificationTest(DeprecatedHawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/taskqueue/pull')
 
@@ -230,7 +229,7 @@ class LeaseModificationTest(HawkeyeTestCase):
     response = self.http_get('/taskqueue/pull/lease_modification')
     self.assertEquals(response.status, 200)
 
-class BriefLeaseTest(HawkeyeTestCase):
+class BriefLeaseTest(DeprecatedHawkeyeTestCase):
   """ Ensures the same task is not leased twice in the same request. """
   def tearDown(self):
     self.http_delete('/taskqueue/pull')
@@ -239,7 +238,7 @@ class BriefLeaseTest(HawkeyeTestCase):
     response = self.http_get('/taskqueue/pull/brief_lease')
     self.assertEquals(response.status, 200)
 
-class RESTPullQueueTest(HawkeyeTestCase):
+class RESTPullQueueTest(DeprecatedHawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/taskqueue/pull/rest')
 
@@ -402,7 +401,7 @@ class RESTPullQueueTest(HawkeyeTestCase):
     self.assertEquals(response.status, 200)
 
 
-class TransactionalTaskTest(HawkeyeTestCase):
+class TransactionalTaskTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     response = self.http_post('/taskqueue/trans', 'key={0}'.format(key))
@@ -424,7 +423,7 @@ class TransactionalTaskTest(HawkeyeTestCase):
       else:
         sleep(1)
 
-class TransactionalFailedTaskTest(HawkeyeTestCase):
+class TransactionalFailedTaskTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
     response = self.http_post('/taskqueue/trans', 'key={0}&raise_exception=True'.\
@@ -447,30 +446,30 @@ class TransactionalFailedTaskTest(HawkeyeTestCase):
       else:
         sleep(1)
 
-class CleanUpTaskEntities(HawkeyeTestCase):
+class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/taskqueue/clean_up', '')
     self.assertEquals(response.status, 200)
 
-def suite(lang):
+def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
-  suite.addTest(QueueExistsTest())
-  suite.addTest(PushQueueTest())
-  suite.addTest(DeferredTaskTest())
-  suite.addTest(QueueStatisticsTest())
-  suite.addTest(PullQueueTest())
-  suite.addTest(LeaseModificationTest())
-  suite.addTest(TaskRetryTest())
-  suite.addTest(TaskEtaTest())
-  suite.addTest(BriefLeaseTest())
+  suite.addTests(QueueExistsTest.all_cases(app))
+  suite.addTests(PushQueueTest.all_cases(app))
+  suite.addTests(DeferredTaskTest.all_cases(app))
+  suite.addTests(QueueStatisticsTest.all_cases(app))
+  suite.addTests(PullQueueTest.all_cases(app))
+  suite.addTests(LeaseModificationTest.all_cases(app))
+  suite.addTests(TaskRetryTest.all_cases(app))
+  suite.addTests(TaskEtaTest.all_cases(app))
+  suite.addTests(BriefLeaseTest.all_cases(app))
 
   if lang == 'python':
-    suite.addTest(RESTPullQueueTest())
-    suite.addTest(TransactionalTaskTest())
-    suite.addTest(TransactionalFailedTaskTest())
-    suite.addTest(CleanUpTaskEntities())
+    suite.addTests(RESTPullQueueTest.all_cases(app))
+    suite.addTests(TransactionalTaskTest.all_cases(app))
+    suite.addTests(TransactionalFailedTaskTest.all_cases(app))
+    suite.addTests(CleanUpTaskEntities.all_cases(app))
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
-  #suite.addTest(BackendTaskTest())
+  #suite.addTests(BackendTaskTest.all_cases(app))
   return suite
