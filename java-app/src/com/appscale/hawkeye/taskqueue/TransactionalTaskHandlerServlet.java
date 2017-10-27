@@ -45,15 +45,11 @@ public class TransactionalTaskHandlerServlet extends HttpServlet {
 
         String key = request.getParameter("key");
 
-        Boolean raiseException;
-        try {
-            raiseException = request.getParameter("raise_exception").toLowerCase().equals("true");
-        } catch (NullPointerException e) {
-            raiseException = false;
-        }
+        Boolean raiseException = request.getParameter("raise_exception") != null
+                && request.getParameter("raise_exception").toLowerCase().equals("true");
 
         Queue queue = QueueFactory.getDefaultQueue();
-        Map<String,Object> responseMap = new HashMap<>();
+        Map<String, Object> responseMap = new HashMap<>();
 
         Transaction txn = datastore.beginTransaction();
         queue.add(TaskOptions.Builder.withUrl("/java/taskqueue/transworker").param("key", key));
