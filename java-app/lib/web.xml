@@ -128,6 +128,14 @@
         <servlet-name>BriefLeaseHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.taskqueue.BriefLeaseHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>TransactionalTaskHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TransactionalTaskHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TransactionalTaskWorkerServlet</servlet-class>
+    </servlet>
 
     <servlet>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -293,6 +301,14 @@
     <servlet-mapping>
         <servlet-name>BriefLeaseHandlerServlet</servlet-name>
         <url-pattern>/java/taskqueue/pull/brief_lease</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TransactionalTaskHandlerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/trans</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/transworker</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
