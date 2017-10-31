@@ -567,6 +567,20 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/cursor_with_repeated_prop')
+
+  def setUp(self):
+    # Insert entities to query.
+    self.http_post('/datastore/cursor_with_repeated_prop', payload='')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_with_repeated_prop')
+    self.assertEqual(response.status, 200)
+    results = json.loads(response.payload)
+    self.assertEqual(len(results), 1)
+
 class TxInvalidation(DeprecatedHawkeyeTestCase):
   KEY = 'tx-invalidation-test'
   RESPONSE = None
@@ -638,6 +652,7 @@ def suite(lang, app):
     suite.addTests(CompositeProjection.all_cases(app))
     suite.addTests(CursorQueries.all_cases(app))
     suite.addTests(LongTxRead.all_cases(app))
+    suite.addTests(CursorWithRepeatedProp.all_cases(app))
     suite.addTests(TxInvalidation.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
