@@ -1830,6 +1830,41 @@ class ManageEntity(webapp2.RequestHandler):
     id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
     ndb.Key(TestModel, id_).delete()
 
+class CursorWithRepeatedProp(webapp2.RequestHandler):
+  TOTAL_ENTITIES = 5
+
+  def serialize_key(self, key):
+    return '{}:{}'.format(key.kind(), key.id())
+
+  def get(self):
+    query = User.query().\
+      filter(User.brands == 'brand_{}'.format(self.TOTAL_ENTITIES))
+    page, cursor, has_more = query.fetch_page(
+      self.TOTAL_ENTITIES, keys_only=True, start_cursor=None)
+    results = [self.serialize_key(key) for key in page]
+
+    page, cursor, has_more = query.fetch_page(
+      self.TOTAL_ENTITIES, keys_only=True, start_cursor=cursor)
+    for key in page:
+      result = self.serialize_key(key)
+      if result in results:
+        self.error(500)
+        self.response.write('Duplicate result seen from cursor query')
+        return
+
+      results.append(result)
+
+    json.dump(results, self.response)
+
+  def post(self):
+    for index in range(1, self.TOTAL_ENTITIES + 1):
+      User(username='user_{}'.format(index),
+           brands=['brand_0', 'brand_{}'.format(index)]).put()
+
+  def delete(self):
+    keys = User.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
 class TxInvalidation(webapp2.RequestHandler):
   def post(self):
     @ndb.transactional(retries=0)
@@ -1883,5 +1918,6 @@ urls = [
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
   ('/python/datastore/long_tx_read', LongTransactionRead),
   ('/python/datastore/manage_entity', ManageEntity),
+  ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
   ('/python/datastore/tx_invalidation', TxInvalidation)
 ]
