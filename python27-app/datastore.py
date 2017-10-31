@@ -3,6 +3,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
+import base64
 import datetime
 import json
 import logging
@@ -1814,6 +1815,21 @@ class LongTransactionRead(webapp2.RequestHandler):
     entity_key = ndb.Key(TestModel, self.request.get('id'))
     entity_key.delete()
 
+class ManageEntity(webapp2.RequestHandler):
+  def post(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    content = self.request.get('content')
+    TestModel(id=id_, field=content).put()
+
+  def get(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    entity = ndb.Key(TestModel, id_).get()
+    self.response.write(entity.field)
+
+  def delete(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    ndb.Key(TestModel, id_).delete()
+
 class CursorWithRepeatedProp(webapp2.RequestHandler):
   TOTAL_ENTITIES = 5
 
@@ -1901,6 +1917,7 @@ urls = [
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
   ('/python/datastore/long_tx_read', LongTransactionRead),
+  ('/python/datastore/manage_entity', ManageEntity),
   ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
   ('/python/datastore/tx_invalidation', TxInvalidation)
 ]
