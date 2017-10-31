@@ -48,6 +48,7 @@ tests.datastore_tests.KindAwareInsertWithParentTest.runTest,ok
 tests.datastore_tests.KindlessAncestorQueryTest.runTest,ok
 tests.datastore_tests.KindlessQueryTest.runTest,ok
 tests.datastore_tests.LimitedResultQueryTest.runTest,ok
+tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
 tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
