@@ -30,5 +30,6 @@ class CertificateValidation(DeprecatedHawkeyeTestCase):
 def suite(lang, app):
   suite = HawkeyeTestSuite('URLFetch Suite', 'urlfetch')
   if lang == 'python':
-    suite.addTest(CertificateValidation.all_cases(app))
+    suite.addTests(CertificateValidation.all_cases(app))
+
   return suite
