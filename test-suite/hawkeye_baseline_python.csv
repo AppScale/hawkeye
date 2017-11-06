@@ -39,6 +39,7 @@ tests.datastore_tests.ConcurrentTransactionTest.runTest,ok
 tests.datastore_tests.CountQueryTest.runTest,ok
 tests.datastore_tests.CrossGroupTransactionTest.runTest,ok
 tests.datastore_tests.CursorQueries.runTest,ok
+tests.datastore_tests.CursorWithRepeatedProp.runTest,ok
 tests.datastore_tests.CursorWithZigzagMerge.runTest,ok
 tests.datastore_tests.DataStoreCleanupTest.runTest,ok
 tests.datastore_tests.GQLProjectionQueryTest.runTest,ok
@@ -47,8 +48,10 @@ tests.datastore_tests.KindAwareInsertWithParentTest.runTest,ok
 tests.datastore_tests.KindlessAncestorQueryTest.runTest,ok
 tests.datastore_tests.KindlessQueryTest.runTest,ok
 tests.datastore_tests.LimitedResultQueryTest.runTest,ok
+tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
+tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
 tests.datastore_tests.OrderedResultQueryTest.runTest,ok
 tests.datastore_tests.ProjectionQueryTest.runTest,ok
