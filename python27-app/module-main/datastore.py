@@ -1,23 +1,25 @@
+from google.appengine.api import datastore_errors
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+from google.appengine.ext import webapp
+
+import base64
 try:
   import json
 except ImportError:
   import simplejson as json
 
 import datetime
+import json
 import logging
 import random
 import string
 import time
 import unittest
+import utils
 import uuid
 
 import webapp2
-from google.appengine.api import datastore_errors
-from google.appengine.ext import db
-from google.appengine.ext import ndb
-from google.appengine.ext import webapp
-
-import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
@@ -1819,6 +1821,81 @@ class LongTransactionRead(webapp2.RequestHandler):
     entity_key = ndb.Key(TestModel, self.request.get('id'))
     entity_key.delete()
 
+class ManageEntity(webapp2.RequestHandler):
+  def post(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    content = self.request.get('content')
+    TestModel(id=id_, field=content).put()
+
+  def get(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    entity = ndb.Key(TestModel, id_).get()
+    self.response.write(entity.field)
+
+  def delete(self):
+    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
+    ndb.Key(TestModel, id_).delete()
+
+class CursorWithRepeatedProp(webapp2.RequestHandler):
+  TOTAL_ENTITIES = 5
+
+  def serialize_key(self, key):
+    return '{}:{}'.format(key.kind(), key.id())
+
+  def get(self):
+    query = User.query().\
+      filter(User.brands == 'brand_{}'.format(self.TOTAL_ENTITIES))
+    page, cursor, has_more = query.fetch_page(
+      self.TOTAL_ENTITIES, keys_only=True, start_cursor=None)
+    results = [self.serialize_key(key) for key in page]
+
+    page, cursor, has_more = query.fetch_page(
+      self.TOTAL_ENTITIES, keys_only=True, start_cursor=cursor)
+    for key in page:
+      result = self.serialize_key(key)
+      if result in results:
+        self.error(500)
+        self.response.write('Duplicate result seen from cursor query')
+        return
+
+      results.append(result)
+
+    json.dump(results, self.response)
+
+  def post(self):
+    for index in range(1, self.TOTAL_ENTITIES + 1):
+      User(username='user_{}'.format(index),
+           brands=['brand_0', 'brand_{}'.format(index)]).put()
+
+  def delete(self):
+    keys = User.query().fetch(keys_only=True)
+    ndb.delete_multi(keys)
+
+class TxInvalidation(webapp2.RequestHandler):
+  def post(self):
+    @ndb.transactional(retries=0)
+    def get_and_put(key):
+      key.get()
+      # Give time for the client to make a concurrent request. The second
+      # request should come between the get and put.
+      time.sleep(1)
+      TestModel(key=key, field='transactional').put()
+
+    transactional = self.request.get('txn').lower() == 'true'
+    entity_key = ndb.Key(TestModel, self.request.get('key'))
+    if transactional:
+      try:
+        get_and_put(entity_key)
+        response = {'txnSucceeded': True}
+      except db.TransactionFailedError:
+        response = {'txnSucceeded': False}
+      self.response.write(json.dumps(response))
+    else:
+      TestModel(key=entity_key, field='outside transaction').put()
+
+  def delete(self):
+    ndb.Key(TestModel, self.request.get('key')).delete()
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1845,5 +1922,8 @@ urls = [
   ('/python/datastore/cursor_with_zigzag_merge', TestCursorWithZigZagMergeHandler),
   ('/python/datastore/repeated_properties', TestRepeatedPropertiesHandler),
   ('/python/datastore/composite_projection', TestCompositeProjectionHandler),
-  ('/python/datastore/long_tx_read', LongTransactionRead)
+  ('/python/datastore/long_tx_read', LongTransactionRead),
+  ('/python/datastore/manage_entity', ManageEntity),
+  ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
+  ('/python/datastore/tx_invalidation', TxInvalidation)
 ]
