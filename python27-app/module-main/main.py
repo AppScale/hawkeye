@@ -12,6 +12,7 @@ from module_main import urls as modules_urls
 from ndb import urls as ndb_urls
 from secure_url import urls as secure_url_urls
 from taskqueue import urls as taskqueue_urls
+from urlfetch import urls as urlfetch_urls
 from users import urls as user_urls
 from xmpp import urls as xmpp_urls
 
@@ -28,6 +29,7 @@ app = webapp2.WSGIApplication(
   ndb_urls +
   secure_url_urls +
   taskqueue_urls +
+  urlfetch_urls +
   user_urls +
   xmpp_urls
 )

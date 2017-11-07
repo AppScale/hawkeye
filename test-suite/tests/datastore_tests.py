@@ -1,7 +1,15 @@
+import base64
 import Queue
 import json
+import json
+import Queue
+import ssl
+import time
+import urllib
 import urllib2
 import uuid
+import random
+import string
 from threading import Thread
 from time import sleep
 
@@ -564,6 +572,69 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
+  ID = base64.urlsafe_b64encode('\xe2\x98\x85')
+
+  def tearDown(self):
+    self.http_delete('/datastore/manage_entity?id={}'.format(self.ID))
+
+  def run_hawkeye_test(self):
+    content = ''.join(random.choice(string.letters) for _ in range(10))
+    payload = urllib.urlencode({'id': self.ID, 'content': content})
+    response = self.http_post('/datastore/manage_entity', payload)
+    self.assertEqual(response.status, 200)
+
+    response = self.http_get('/datastore/manage_entity?id={}'.format(self.ID))
+    self.assertEqual(response.status, 200)
+    self.assertEqual(response.payload, content)
+
+class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/cursor_with_repeated_prop')
+
+  def setUp(self):
+    # Insert entities to query.
+    self.http_post('/datastore/cursor_with_repeated_prop', payload='')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_with_repeated_prop')
+    self.assertEqual(response.status, 200)
+    results = json.loads(response.payload)
+    self.assertEqual(len(results), 1)
+
+class TxInvalidation(DeprecatedHawkeyeTestCase):
+  KEY = 'tx-invalidation-test'
+  RESPONSE = None
+
+  def tearDown(self):
+    self.http_delete('/datastore/tx_invalidation?key={}'.format(self.KEY))
+
+  def run_hawkeye_test(self):
+    context = ssl._create_unverified_context()
+
+    def tx_succeeded(url, payload):
+      response = urllib2.urlopen(url, payload, context=context)
+      self.RESPONSE = response.read()
+
+    url = self.app.build_url('/python/datastore/tx_invalidation')
+
+    tx_payload = urllib.urlencode({'key': self.KEY, 'txn': True})
+    thread = Thread(target=tx_succeeded, args=(url, tx_payload))
+    thread.start()
+
+    # The tx_payload request sleeps for 1 second between a get and put inside
+    # a transaction. This smaller sleep aims to run a put (from the
+    # non_tx_payload request) between those two calls.
+    time.sleep(.5)
+
+    non_tx_payload = urllib.urlencode({'key': self.KEY, 'txn': False})
+    urllib2.urlopen(url, non_tx_payload, context=context)
+
+    thread.join()
+    response = json.loads(self.RESPONSE)
+    # The first transaction should be invalidated by the concurrent put.
+    self.assertFalse(response['txnSucceeded'])
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -602,6 +673,9 @@ def suite(lang, app):
     suite.addTests(CompositeProjection.all_cases(app))
     suite.addTests(CursorQueries.all_cases(app))
     suite.addTests(LongTxRead.all_cases(app))
+    suite.addTests(NonAsciiEntityKeys.all_cases(app))
+    suite.addTests(CursorWithRepeatedProp.all_cases(app))
+    suite.addTests(TxInvalidation.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
