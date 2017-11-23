@@ -1,3 +1,7 @@
+tests.app_identity_tests.AccessTokenTest.runTest,ok
+tests.app_identity_tests.HostnameTest.runTest,ok
+tests.app_identity_tests.ProjectIDTest.runTest,ok
+tests.app_identity_tests.SignatureTest.runTest,ok
 tests.async_datastore_tests.AncestorQueryTest.runTest,ok
 tests.async_datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.async_datastore_tests.CompositeQueryTest.runTest,ok
