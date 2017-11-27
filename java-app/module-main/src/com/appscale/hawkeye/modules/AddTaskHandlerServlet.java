@@ -14,17 +14,17 @@ public class AddTaskHandlerServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
-    	String id = request.getParameter("id");
-    	String queue_name = request.getParameter("queue");
+        String id = request.getParameter("id");
+        String queue_name = request.getParameter("queue");
         Queue queue;
 
-		if (queue_name == null)
-        	queue = QueueFactory.getDefaultQueue();
+        if (queue_name == null)
+            queue = QueueFactory.getDefaultQueue();
         else
-        	queue = QueueFactory.getQueue(queue_name);
+            queue = QueueFactory.getQueue(queue_name);
 
         String url = "/modules/create-entity";
         TaskOptions options = TaskOptions.Builder.withUrl(url).param("id", id).method(TaskOptions.Method.GET);
-		queue.add(options);
+        queue.add(options);
     }
 }

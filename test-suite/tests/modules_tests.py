@@ -96,7 +96,7 @@ class TestCreatingAndGettingEntity(HawkeyeTestCase):
 
 class TestTaskTargets(HawkeyeTestCase):
   """
-  Verifies if tasks are handled by 
+  Verifies if tasks are executed using expected service.
   """
 
   def setUp(self):
