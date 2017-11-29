@@ -1,3 +1,5 @@
+import logging
+
 try:
   import json
 except ImportError:
@@ -67,7 +69,12 @@ class ProjectHandler(webapp2.RequestHandler):
       json.dumps({ 'success' : True, 'project_id' : project_id }))
 
   def delete(self):
-    delete_future = db.delete_async(Project.all())
+    logging.info('Attempting to remove all Project entities')
+    all_projects = Project.all()
+    for proj in all_projects:
+      logging.info('project_id: {}, name: {}, description: {}, rating: {}, license: {}'
+                   .format(proj.project_id, proj.name, proj.description, proj.rating, proj.license))
+    delete_future = db.delete_async(all_projects)
     delete_future.get_result()
 
 class GetPutMultiHandler(webapp2.RequestHandler):
@@ -258,6 +265,18 @@ class ProjectFieldHandler(webapp2.RequestHandler):
     data = []
     for entity in q:
       data.append(entity)
+
+    logging.info('All Project entities')
+    all_projects = Project.all()
+    for proj in all_projects:
+      logging.info('project_id: {}, name: {}, description: {}, rating: {}, license: {}'
+                   .format(proj.project_id, proj.name, proj.description, proj.rating, proj.license))
+
+    logging.info('Fetched Project entities')
+    for proj in data:
+      logging.info('project_id: {}, name: {}, description: {}, rating: {}, license: {}'
+                   .format(proj.project_id, proj.name, proj.description, proj.rating, proj.license))
+
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
@@ -335,7 +354,7 @@ class TransactionHandler(webapp2.RequestHandler):
         db.run_in_transaction_options(xg_on,
           self.increment_counters, key, int(amount))
         counter1_future = db.get_async(db.Key.from_path('Counter', key))
-        counter2_future = db.get_async(db.Key.from_path('Counter', 
+        counter2_future = db.get_async(db.Key.from_path('Counter',
           key + '_backup'))
 
         counter1 = counter1_future.get_result()
@@ -388,7 +407,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     try:
       num_employees = 4
-      seen_entities = set() 
+      seen_entities = set()
       self.set_up_data()
       query = Employee.all()
       result_list = query.fetch(1)
@@ -399,27 +418,27 @@ class ComplexCursorHandler(webapp2.RequestHandler):
           raise Exception('Unexpected kind from query')
         if result.key().id() in seen_entities:
           raise Exception('Saw same result twice')
-        seen_entities.add(result.key().id()) 
+        seen_entities.add(result.key().id())
         ctr = ctr + 1
         cursor = query.cursor()
         query.with_cursor(cursor)
         result_list = query.fetch(1)
-      if ctr != num_employees: 
+      if ctr != num_employees:
         raise Exception('Did not retrieve ' + str(num_employees) + ' Employees')
     except Exception:
-      status = {'success' : False}  
+      status = {'success' : False}
       self.response.out.write(json.dumps(status))
       raise
     finally:
       self.clean_up_data()
-    
+
     self.response.out.write(json.dumps(status))
 
   def set_up_data(self):
     company = Company(name = "AppScale")
     put_future = db.put_async(company)
     put_future.get_result()
-    
+
     employee1 = Employee(name = "A", parent = company)
     employee1_future = db.put_async(employee1)
     employee2 = Employee(name = "B", parent = company)
@@ -447,7 +466,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     pn2_future.get_result()
     pn3_future.get_result()
     pn4_future.get_result()
-    
+
   def clean_up_data(self):
     company_future = db.delete_async(Company.all())
     employee_future = db.delete_async(Employee.all())
