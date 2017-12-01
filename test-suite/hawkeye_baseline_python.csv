@@ -90,6 +90,9 @@ tests.memcache_tests.MemcacheMultiAddTest.runTest,ok
 tests.memcache_tests.MemcacheMultiDeleteTest.runTest,ok
 tests.memcache_tests.MemcacheMultiSetTest.runTest,ok
 tests.memcache_tests.MemcacheSetTest.runTest,ok
+tests.modules_tests.TestCreatingAndGettingEntity.test_default_module,ok
+tests.modules_tests.TestCreatingAndGettingEntity.test_module_a,ok
+tests.modules_tests.TestTaskTargets.test_task_targets,ok
 tests.ndb_tests.KindAwareNDBInsertWithParentTest.runTest,ok
 tests.ndb_tests.NDBAncestorQueryTest.runTest,ok
 tests.ndb_tests.NDBCleanupTest.runTest,ok

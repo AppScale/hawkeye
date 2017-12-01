@@ -58,6 +58,9 @@ tests.memcache_tests.MemcacheMultiDeleteTest.runTest,ok
 tests.memcache_tests.MemcacheMultiSetTest.runTest,ok
 tests.memcache_tests.MemcacheSetTest.runTest,ok
 tests.memcache_tests.SimpleJCacheTest.runTest,ok
+tests.modules_tests.TestCreatingAndGettingEntity.test_default_module,ok
+tests.modules_tests.TestCreatingAndGettingEntity.test_module_a,ok
+tests.modules_tests.TestTaskTargets.test_task_targets,ok
 tests.taskqueue_tests.BriefLeaseTest.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
 tests.taskqueue_tests.LeaseModificationTest.runTest,ok

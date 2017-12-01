@@ -1,9 +1,0 @@
-queue:
-- name: hawkeyepython-PushQueue-0
-  rate: 5/s
-
-- name: hawkeyepython-PullQueue-0
-  mode: pull
-
-- name: rest-pull-queue
-  mode: pull

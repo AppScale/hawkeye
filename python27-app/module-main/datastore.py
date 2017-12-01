@@ -1,8 +1,3 @@
-from google.appengine.api import datastore_errors
-from google.appengine.ext import db
-from google.appengine.ext import ndb
-from google.appengine.ext import webapp
-
 import base64
 import datetime
 import json
@@ -11,9 +6,15 @@ import random
 import string
 import time
 import unittest
-import utils
 import uuid
+
+from google.appengine.api import datastore_errors
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+from google.appengine.ext import webapp
 import webapp2
+
+import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
@@ -50,7 +51,7 @@ class Counter(db.Model):
 class Cars(db.Model):
   model = db.StringProperty(required=True)
   make = db.StringProperty(required=True)
-  color = db.StringProperty(required=True) 
+  color = db.StringProperty(required=True)
 
 class CompositeCars(db.Model):
   model = db.StringProperty()
