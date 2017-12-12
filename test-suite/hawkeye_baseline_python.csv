@@ -78,6 +78,7 @@ tests.images_tests.ImageRotateTransformTest.runTest,ok
 tests.images_tests.ImageUploadTest.test_image_upload,ok
 tests.images_tests.ImageUploadTest.runTest,ok
 tests.logservice_tests.FetchLogTest.runTest,ok
+tests.logservice_tests.AutoFlushLogTest.runTest,ok
 tests.memcache_tests.MemcacheAddTest.runTest,ok
 tests.memcache_tests.MemcacheCasTest.runTest,ok
 tests.memcache_tests.MemcacheDecrTest.runTest,ok
