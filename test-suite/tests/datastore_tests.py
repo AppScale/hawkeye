@@ -1,3 +1,4 @@
+import base64
 import json
 import Queue
 import ssl
@@ -5,6 +6,8 @@ import time
 import urllib
 import urllib2
 import uuid
+import random
+import string
 from threading import Thread
 from time import sleep
 
@@ -567,6 +570,36 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
+  ID = base64.urlsafe_b64encode('\xe2\x98\x85')
+
+  def tearDown(self):
+    self.http_delete('/datastore/manage_entity?id={}'.format(self.ID))
+
+  def run_hawkeye_test(self):
+    content = ''.join(random.choice(string.letters) for _ in range(10))
+    payload = urllib.urlencode({'id': self.ID, 'content': content})
+    response = self.http_post('/datastore/manage_entity', payload)
+    self.assertEqual(response.status, 200)
+
+    response = self.http_get('/datastore/manage_entity?id={}'.format(self.ID))
+    self.assertEqual(response.status, 200)
+    self.assertEqual(response.payload, content)
+
+class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
+  def tearDown(self):
+    self.http_delete('/datastore/cursor_with_repeated_prop')
+
+  def setUp(self):
+    # Insert entities to query.
+    self.http_post('/datastore/cursor_with_repeated_prop', payload='')
+
+  def run_hawkeye_test(self):
+    response = self.http_get('/datastore/cursor_with_repeated_prop')
+    self.assertEqual(response.status, 200)
+    results = json.loads(response.payload)
+    self.assertEqual(len(results), 1)
+
 class TxInvalidation(DeprecatedHawkeyeTestCase):
   KEY = 'tx-invalidation-test'
   RESPONSE = None
@@ -673,6 +706,8 @@ def suite(lang, app):
     suite.addTests(CompositeProjection.all_cases(app))
     suite.addTests(CursorQueries.all_cases(app))
     suite.addTests(LongTxRead.all_cases(app))
+    suite.addTests(NonAsciiEntityKeys.all_cases(app))
+    suite.addTests(CursorWithRepeatedProp.all_cases(app))
     suite.addTests(TxInvalidation.all_cases(app))
     suite.addTests(ScatterPropTest.all_cases(app))
   elif lang == 'java':

@@ -128,6 +128,14 @@
         <servlet-name>BriefLeaseHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.taskqueue.BriefLeaseHandlerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>TransactionalTaskHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TransactionalTaskHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.TransactionalTaskWorkerServlet</servlet-class>
+    </servlet>
 
     <servlet>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -149,7 +157,7 @@
         <servlet-name>MemcacheCasHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.memcache.MemcacheCasHandlerServlet</servlet-class>
     </servlet>
- 
+
     <servlet>
         <servlet-name>AuthorizedAccessHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.users.AuthorizedAccessHandlerServlet</servlet-class>
@@ -174,6 +182,29 @@
         <servlet-name>CronHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.cron.CronHandlerServlet</servlet-class>
     </servlet>
+
+    <!-- Servlets for testing Modules functionality -->
+    <servlet>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.GetVersionDetailsHandlerServlet
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.GetEntityHandlerServlet
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateEntityHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.CreateEntityHandlerServlet
+        </servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AddTaskHandlerServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.modules.AddTaskHandlerServlet
+        </servlet-class>
+    </servlet>
+    <!-- End Modules -->
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>
@@ -294,6 +325,14 @@
         <servlet-name>BriefLeaseHandlerServlet</servlet-name>
         <url-pattern>/java/taskqueue/pull/brief_lease</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TransactionalTaskHandlerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/trans</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
+        <url-pattern>/java/taskqueue/transworker</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -342,6 +381,29 @@
       <servlet-name>XmppReceiverServlet</servlet-name>
       <url-pattern>/_ah/xmpp/message/chat/</url-pattern>
     </servlet-mapping>
+
+    <!-- URLs for testing Modules functionality -->
+    <servlet-mapping>
+        <servlet-name>GetVersionDetailsHandlerServlet</servlet-name>
+        <url-pattern>/modules/versions-details</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <url-pattern>/modules/get-entity</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GetEntityHandlerServlet</servlet-name>
+        <url-pattern>/modules/get-entities</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateEntityHandlerServlet</servlet-name>
+        <url-pattern>/modules/create-entity</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AddTaskHandlerServlet</servlet-name>
+        <url-pattern>/modules/add-task</url-pattern>
+    </servlet-mapping>
+    <!-- End Modules -->
 
     <security-constraint>
         <web-resource-collection>
