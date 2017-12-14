@@ -1,5 +1,5 @@
 <project>
-    <property name="sdk.dir" location="../../appengine-java-sdk-1.8.4" />
+    <property name="sdk.dir" location="../../../appengine-java-sdk-1.8.4" />
 
     <import file="${sdk.dir}/config/user/ant-macros.xml" />
 
@@ -60,7 +60,9 @@
                 srcdir="src"
                 destdir="war/WEB-INF/classes"
                 classpathref="project.classpath"
-                debug="on" />
+                debug="on"
+                target="1.7"
+                source="1.7" />
     </target>
 
     <target name="datanucleusenhance" depends="compile"
