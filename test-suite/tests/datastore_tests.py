@@ -11,7 +11,8 @@ import string
 from threading import Thread
 from time import sleep
 
-from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
+from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
+                                 DeprecatedHawkeyeTestCase)
 from hawkeye_utils import HawkeyeConstants
 
 __author__ = 'hiranya'
@@ -633,7 +634,7 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     # The first transaction should be invalidated by the concurrent put.
     self.assertFalse(response['txnSucceeded'])
 
-class ScatterPropTest(DeprecatedHawkeyeTestCase):
+class ScatterPropTest(HawkeyeTestCase):
   """ Tests queries on the __scatter__ reserved property.
 
   This test will not work in GAE or the SDK, which both use different hash
@@ -653,18 +654,18 @@ class ScatterPropTest(DeprecatedHawkeyeTestCase):
   KIND = 'ScatterEntity'
 
   def tearDown(self):
-    self.http_delete('/datastore/scatter_prop?kind={}'.format(self.KIND))
+    self.app.delete('/python/datastore/scatter_prop?kind={}'.format(self.KIND))
 
   def setUp(self):
     for type, key_names in self.KEY_NAMES.items():
       for name in key_names:
-        self.http_post('/datastore/scatter_prop',
-                       'kind={}&name={}'.format(self.KIND, name))
+        self.app.post('/python/datastore/scatter_prop',
+                      data={'kind': self.KIND, 'name': name})
 
-  def run_hawkeye_test(self):
-    response = self.http_get(
-      '/datastore/scatter_prop?kind={}'.format(self.KIND))
-    keys = json.loads(response.payload)
+  def test_scatter_prop(self):
+    response = self.app.get(
+      '/python/datastore/scatter_prop?kind={}'.format(self.KIND))
+    keys = response.json()
     self.assertListEqual(keys, self.KEY_NAMES['scattered'])
 
 
