@@ -1,7 +1,7 @@
-tests.app_identity_tests.AccessTokenTest.runTest,ok
-tests.app_identity_tests.HostnameTest.runTest,ok
-tests.app_identity_tests.ProjectIDTest.runTest,ok
-tests.app_identity_tests.SignatureTest.runTest,ok
+tests.app_identity_tests.AccessTokenTest.test_access_token,ok
+tests.app_identity_tests.HostnameTest.test_hostname,ok
+tests.app_identity_tests.ProjectIDTest.test_project_id,ok
+tests.app_identity_tests.SignatureTest.test_blob_signing,ok
 tests.async_datastore_tests.AncestorQueryTest.runTest,ok
 tests.async_datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.async_datastore_tests.CompositeQueryTest.runTest,ok

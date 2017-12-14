@@ -1,5 +1,4 @@
 import base64
-import json
 from urlparse import urlparse
 
 from cryptography import x509
@@ -8,7 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from hawkeye_test_runner import DeprecatedHawkeyeTestCase, HawkeyeTestSuite
+from hawkeye_test_runner import HawkeyeTestCase, HawkeyeTestSuite
 
 
 def verify_signature(data, signature, x509_certificate):
@@ -31,39 +30,40 @@ def verify_signature(data, signature, x509_certificate):
   return True
 
 
-class ProjectIDTest(DeprecatedHawkeyeTestCase):
-  def run_hawkeye_test(self):
-    project_id = self.http_get('/app_identity/project_id').payload
+class ProjectIDTest(HawkeyeTestCase):
+  def test_project_id(self):
+    project_id = self.app.get('/python/app_identity/project_id').text.strip()
     self.assertEqual(project_id, 'hawkeyepython27')
 
 
-class HostnameTest(DeprecatedHawkeyeTestCase):
-  def run_hawkeye_test(self):
-    hostname = self.http_get('/app_identity/hostname').payload
+class HostnameTest(HawkeyeTestCase):
+  def test_hostname(self):
+    hostname = self.app.get('/python/app_identity/hostname').text.strip()
     version_location = self.app.build_url('/', https=False)
     expected_hostname = urlparse(version_location).netloc
     self.assertEqual(hostname, expected_hostname)
 
 
-class AccessTokenTest(DeprecatedHawkeyeTestCase):
-  def run_hawkeye_test(self):
-    response = self.http_get('/app_identity/service_account_name')
-    self.assertEqual(response.status, 200)
+class AccessTokenTest(HawkeyeTestCase):
+  def test_access_token(self):
+    response = self.app.get('/python/app_identity/service_account_name')
+    self.assertEqual(response.status_code, 200)
 
-    response = self.http_get('/app_identity/access_token')
+    response = self.app.get('/python/app_identity/access_token')
     # TODO: Test the token itself.
-    self.assertEqual(response.status, 200)
+    self.assertEqual(response.status_code, 200)
 
 
-class SignatureTest(DeprecatedHawkeyeTestCase):
-  def run_hawkeye_test(self):
+class SignatureTest(HawkeyeTestCase):
+  def test_blob_signing(self):
     blob = 'important message'
     payload = base64.urlsafe_b64encode(blob)
-    response = self.http_get('/app_identity/sign?blob={}'.format(payload))
-    signature = base64.b64decode(json.loads(response.payload)['signature'])
+    response = self.app.get(
+      '/python/app_identity/sign?blob={}'.format(payload))
+    signature = base64.b64decode(response.json()['signature'])
 
-    response = self.http_get('/app_identity/certificates')
-    certificates = json.loads(response.payload)
+    response = self.app.get('/python/app_identity/certificates')
+    certificates = response.json()
 
     valid_signature = False
     for cert in certificates:
