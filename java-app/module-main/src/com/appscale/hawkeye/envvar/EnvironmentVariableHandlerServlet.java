@@ -14,17 +14,8 @@ public class EnvironmentVariableHandlerServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
-	Map<String, String> env = System.getenv();
-	String value = System.getenv("SHOULD_BE_BAZ");
-
-        Map<String,Object> map = new HashMap<String, Object>();
-        if (value != null) {
-            map.put("success", true);
-            map.put("value", value);
-        } else {
-            map.put("success", false);
-            map.put("value", value);
-        }
-        JSONUtils.serialize(map, response);
+        Map<String,Object> env = new HashMap<String, Object>();
+        env.putAll(System.getenv());
+        JSONUtils.serialize(env, response);
     }
 }
