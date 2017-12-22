@@ -5,6 +5,7 @@ threadsafe: true
 
 env_variables:
   SHOULD_BE_BAZ: "baz"
+  SHOULD_HAVE_SPACE: "has space"
 
 includes:
 - another_env_var.yaml
