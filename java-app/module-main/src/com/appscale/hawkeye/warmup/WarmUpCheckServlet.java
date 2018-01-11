@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.appscale.hawkeye.JSONUtils;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 
 public class WarmUpCheckServlet extends HttpServlet {
     private String WARMUP_STATUS_KIND = "WARMUP_STATUS";
