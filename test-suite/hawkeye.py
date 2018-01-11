@@ -38,7 +38,7 @@ from tests import (
   datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
   user_tests, images_tests, secure_url_tests, xmpp_tests,
   environment_variable_tests, async_datastore_tests, cron_tests,
-  logservice_tests, modules_tests, urlfetch_tests
+  logservice_tests, modules_tests, runtime_tests, urlfetch_tests
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
@@ -76,6 +76,7 @@ def build_suites_list(lang, include, exclude, application):
     'cron' : cron_tests.suite(lang, application),
     'logservice': logservice_tests.suite(lang, application),
     'modules' : modules_tests.suite(lang, application),
+    'runtime': runtime_tests.suite(lang, application)
   }
   # Validation include and exclude lists
   for suite_name in include + exclude:
