@@ -8,7 +8,7 @@
     <service>xmpp_message</service>
     <service>xmpp_presence</service>
   </inbound-services>
-
+  <warmup-requests-enabled>true</warmup-requests-enabled>
   <env-variables>
     <env-var name="SHOULD_BE_BAZ" value="baz" />
     <env-var name="STATUS" value=":partyparrot:" />

@@ -71,4 +71,5 @@ tests.taskqueue_tests.QueueStatisticsTest.runTest,ok
 tests.taskqueue_tests.TaskRetryTest.runTest,ok
 tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.user_tests.LoginURLTest.runTest,ok
+tests.warmup_tests.WarmupRequestRanTest.runTest,ok
 tests.xmpp_tests.SendAndReceiveTest.runTest,ok
