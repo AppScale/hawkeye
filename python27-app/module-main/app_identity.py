@@ -1,7 +1,8 @@
-import webapp2
-import json
-from google.appengine.api import app_identity
 import base64
+import json
+
+import webapp2
+from google.appengine.api import app_identity
 
 
 class ProjectIDHandler(webapp2.RequestHandler):
