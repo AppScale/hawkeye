@@ -35,9 +35,9 @@ if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 from tests import (
-  datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
-  user_tests, images_tests, secure_url_tests, xmpp_tests,
-  environment_variable_tests, async_datastore_tests, cron_tests,
+  app_identity_tests, datastore_tests, ndb_tests, memcache_tests,
+  taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests,
+  xmpp_tests, environment_variable_tests, async_datastore_tests, cron_tests,
   logservice_tests, modules_tests, runtime_tests, urlfetch_tests
 )
 
@@ -61,6 +61,7 @@ def build_suites_list(lang, include, exclude, application):
     a list of HawkeyeTestSuite for specified language.
   """
   defined_suites  = {
+    'app_identity': app_identity_tests.suite(lang, application),
     'blobstore' : blobstore_tests.suite(lang, application),
     'datastore' : datastore_tests.suite(lang, application),
     'async_datastore' : async_datastore_tests.suite(lang, application),
