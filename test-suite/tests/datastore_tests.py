@@ -571,23 +571,32 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
 
 class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
-  IDS = [base64.urlsafe_b64encode('\xe2\x98\x85'),
-         base64.urlsafe_b64encode('multiple\nlines')]
+  KIND = 'TestModel'
+  IDS = [u'\u2605', 'multiple\nlines']
 
   def tearDown(self):
     for id_ in self.IDS:
-      self.http_delete('/datastore/manage_entity?id={}'.format(id_))
+      path = (self.KIND, id_)
+      encoded_path = base64.urlsafe_b64encode(
+        json.dumps(path, separators=(',', ':')))
+      self.http_delete(
+        '/datastore/manage_entity?pathBase64={}'.format(encoded_path))
 
   def run_hawkeye_test(self):
     for id_ in self.IDS:
       content = ''.join(random.choice(string.letters) for _ in range(10))
-      payload = urllib.urlencode({'id': id_, 'content': content})
+      payload = json.dumps({'name': id_, 'kind': self.KIND,
+                            'properties': {'content': content}})
       response = self.http_post('/datastore/manage_entity', payload)
       self.assertEqual(response.status, 200)
 
-      response = self.http_get('/datastore/manage_entity?id={}'.format(id_))
+      path = (self.KIND, id_)
+      encoded_path = base64.urlsafe_b64encode(
+        json.dumps(path, separators=(',', ':')))
+      response = self.http_get(
+        '/datastore/manage_entity?pathBase64={}'.format(encoded_path))
       self.assertEqual(response.status, 200)
-      self.assertEqual(response.payload, content)
+      self.assertEqual(json.loads(response.payload)['content'], content)
 
 class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
   def tearDown(self):

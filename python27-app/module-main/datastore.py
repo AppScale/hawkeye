@@ -8,6 +8,7 @@ import time
 import unittest
 import uuid
 
+from google.appengine.api import datastore
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
@@ -1818,18 +1819,26 @@ class LongTransactionRead(webapp2.RequestHandler):
 
 class ManageEntity(webapp2.RequestHandler):
   def post(self):
-    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
-    content = self.request.get('content')
-    TestModel(id=id_, field=content).put()
+    entity_info = json.loads(self.request.body)
+    entity = datastore.Entity(kind=entity_info['kind'],
+                              name=entity_info.get('name'),
+                              id=entity_info.get('id'))
+
+    entity.update(entity_info['properties'])
+    datastore.Put(entity)
 
   def get(self):
-    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
-    entity = ndb.Key(TestModel, id_).get()
-    self.response.write(entity.field)
+    encoded_path = self.request.get('pathBase64').encode('utf-8')
+    path = json.loads(base64.urlsafe_b64decode(encoded_path))
+    key = datastore.Key.from_path(*path)
+    entity = datastore.Get(key)
+    json.dump(entity, self.response)
 
   def delete(self):
-    id_ = base64.urlsafe_b64decode(self.request.get('id').encode('utf-8'))
-    ndb.Key(TestModel, id_).delete()
+    encoded_path = self.request.get('pathBase64').encode('utf-8')
+    path = json.loads(base64.urlsafe_b64decode(encoded_path))
+    key = datastore.Key.from_path(*path)
+    datastore.Delete(key)
 
 class CursorWithRepeatedProp(webapp2.RequestHandler):
   TOTAL_ENTITIES = 5
