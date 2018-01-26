@@ -1900,6 +1900,25 @@ class TxInvalidation(webapp2.RequestHandler):
   def delete(self):
     ndb.Key(TestModel, self.request.get('key')).delete()
 
+class SinglePropKeyInequality(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    prop = self.request.get('prop')
+    prop_val = self.request.get('propVal')
+    key_val = self.request.get('keyVal')
+    operator = self.request.get('operator')
+
+    key = datastore.Key.from_path(kind, key_val)
+    query = datastore.Query(kind)
+    query['{} ='.format(prop)] = prop_val
+    query[' '.join(['__key__', operator])] = key
+    entities = query.Get(limit=None)
+    response = [
+      {'kind': entity.kind(), 'name': entity.key().name(),
+       'properties': entity}
+      for entity in entities]
+    json.dump(response, self.response)
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -1929,5 +1948,6 @@ urls = [
   ('/python/datastore/long_tx_read', LongTransactionRead),
   ('/python/datastore/manage_entity', ManageEntity),
   ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
-  ('/python/datastore/tx_invalidation', TxInvalidation)
+  ('/python/datastore/tx_invalidation', TxInvalidation),
+  ('/python/datastore/single_prop_key_inequality', SinglePropKeyInequality)
 ]
