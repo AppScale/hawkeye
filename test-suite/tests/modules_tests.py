@@ -173,7 +173,8 @@ class TestTaskTargets(HawkeyeTestCase):
       assert time.time() < deadline
       response = self.app.get('/modules/get-entities',
                               params={'id': self.entity_ids.values()})
-      if response.status_code == requests.codes.ok:
+      if (response.status_code == requests.codes.ok and
+          all(response.json()['entities'])):
         break
       else:
         time.sleep(1)
