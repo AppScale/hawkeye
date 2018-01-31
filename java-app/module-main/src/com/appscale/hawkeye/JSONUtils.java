@@ -36,6 +36,17 @@ public class JSONUtils {
         response.getOutputStream().println(json.toString());
     }
 
+    public static void serializeMaps(Iterable<Map<String,Object>> maps,
+                                     HttpServletResponse response) throws IOException {
+        List<JSONObject> list = new ArrayList<JSONObject>();
+        for (Map<String,Object> map : maps) {
+            list.add(new JSONObject(map));
+        }
+        JSONArray jsonArray = new JSONArray(list);
+        setContentType(response);
+        response.getOutputStream().println(jsonArray.toString());
+    }
+
     private static JSONObject toJSON(Entity entity) {
         return new JSONObject(entity.getProperties());
     }

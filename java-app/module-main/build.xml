@@ -23,6 +23,7 @@
                 <include name="**/appengine-api-1.0-sdk*.jar" />
             </fileset>
             <fileset dir="lib/lib">
+                <include name="**/commons-codec*.jar" />
                 <include name="**/commons-fileupload*.jar" />
                 <include name="**/json-*.jar" />
             </fileset>

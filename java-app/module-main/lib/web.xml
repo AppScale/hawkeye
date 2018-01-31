@@ -11,6 +11,31 @@
     </servlet>
 
     <servlet>
+        <servlet-name>ProjectIDHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.ProjectIDHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HostnameHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.HostnameHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AccessTokenHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.AccessTokenHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SignBlobHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.SignBlobHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CertificateHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.CertificateHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ServiceAccountNameHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.appidentity.ServiceAccountNameHandler</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.ProjectHandlerServlet
         </servlet-class>
@@ -214,6 +239,31 @@
     <servlet-mapping>
         <servlet-name>JSPTest</servlet-name>
         <url-pattern>/java/jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ProjectIDHandler</servlet-name>
+        <url-pattern>/java/app_identity/project_id</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HostnameHandler</servlet-name>
+        <url-pattern>/java/app_identity/hostname</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AccessTokenHandler</servlet-name>
+        <url-pattern>/java/app_identity/access_token</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SignBlobHandler</servlet-name>
+        <url-pattern>/java/app_identity/sign</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CertificateHandler</servlet-name>
+        <url-pattern>/java/app_identity/certificates</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ServiceAccountNameHandler</servlet-name>
+        <url-pattern>/java/app_identity/service_account_name</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

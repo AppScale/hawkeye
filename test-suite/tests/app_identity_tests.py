@@ -32,13 +32,13 @@ def verify_signature(data, signature, x509_certificate):
 
 class ProjectIDTest(HawkeyeTestCase):
   def test_project_id(self):
-    project_id = self.app.get('/python/app_identity/project_id').text.strip()
-    self.assertEqual(project_id, 'hawkeyepython27')
+    project_id = self.app.get('/{lang}/app_identity/project_id').text.strip()
+    self.assertEqual(project_id, self.app.app_id)
 
 
 class HostnameTest(HawkeyeTestCase):
   def test_hostname(self):
-    hostname = self.app.get('/python/app_identity/hostname').text.strip()
+    hostname = self.app.get('/{lang}/app_identity/hostname').text.strip()
     version_location = self.app.build_url('/', https=False)
     expected_hostname = urlparse(version_location).netloc
     self.assertEqual(hostname, expected_hostname)
@@ -46,10 +46,10 @@ class HostnameTest(HawkeyeTestCase):
 
 class AccessTokenTest(HawkeyeTestCase):
   def test_access_token(self):
-    response = self.app.get('/python/app_identity/service_account_name')
+    response = self.app.get('/{lang}/app_identity/service_account_name')
     self.assertEqual(response.status_code, 200)
 
-    response = self.app.get('/python/app_identity/access_token')
+    response = self.app.get('/{lang}/app_identity/access_token')
     # TODO: Test the token itself.
     self.assertEqual(response.status_code, 200)
 
@@ -59,10 +59,10 @@ class SignatureTest(HawkeyeTestCase):
     blob = 'important message'
     payload = base64.urlsafe_b64encode(blob)
     response = self.app.get(
-      '/python/app_identity/sign?blob={}'.format(payload))
+      '/{{lang}}/app_identity/sign?blob={}'.format(payload))
     signature = base64.b64decode(response.json()['signature'])
 
-    response = self.app.get('/python/app_identity/certificates')
+    response = self.app.get('/{lang}/app_identity/certificates')
     certificates = response.json()
 
     valid_signature = False
@@ -76,10 +76,9 @@ class SignatureTest(HawkeyeTestCase):
 def suite(lang, app):
   suite = HawkeyeTestSuite('App Identity Test Suite', 'app_identity')
 
-  if lang == 'python':
-    suite.addTests(ProjectIDTest.all_cases(app))
-    suite.addTests(HostnameTest.all_cases(app))
-    suite.addTests(AccessTokenTest.all_cases(app))
-    suite.addTests(SignatureTest.all_cases(app))
+  suite.addTests(ProjectIDTest.all_cases(app))
+  suite.addTests(HostnameTest.all_cases(app))
+  suite.addTests(AccessTokenTest.all_cases(app))
+  suite.addTests(SignatureTest.all_cases(app))
 
   return suite
