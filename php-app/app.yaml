@@ -1,0 +1,7 @@
+application: hawkeyephp
+runtime: php
+api_version: 1
+
+handlers:
+- url: /.*
+  script: app.php
