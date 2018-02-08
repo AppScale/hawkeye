@@ -1,3 +1,4 @@
+tests.warmup_tests.WarmupRequestRanTest.runTest,ok
 tests.async_datastore_tests.AncestorQueryTest.runTest,ok
 tests.async_datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.async_datastore_tests.CompositeQueryTest.runTest,ok
@@ -127,5 +128,4 @@ tests.taskqueue_tests.TransactionalFailedTaskTest.runTest,ok
 tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.urlfetch_tests.CertificateValidation.runTest,ok
 tests.user_tests.LoginURLTest.runTest,ok
-tests.warmup_tests.WarmupRequestRanTest.runTest,ok
 tests.xmpp_tests.SendAndReceiveTest.runTest,ok
