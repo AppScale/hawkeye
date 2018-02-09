@@ -45,7 +45,6 @@ handlers:
 
 inbound_services:
 - xmpp_message
-- warmup
 
 libraries:
 - name: pycrypto

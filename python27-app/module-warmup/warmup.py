@@ -37,7 +37,8 @@ class WarmUpTestHandler(webapp2.RequestHandler):
     time.sleep(SDK_CONSISTENCY_WAIT)
     json.dump({'success': success}, self.response)
 
-urls = [
+# These are all all URL available for the module warmup
+app = webapp2.WSGIApplication([
   ('/_ah/warmup', WarmUpHandler),
   ('/warmup_status', WarmUpTestHandler),
-]
+])
