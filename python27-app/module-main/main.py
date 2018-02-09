@@ -1,5 +1,6 @@
 import webapp2
 
+from app_identity import urls as app_identity_urls
 from async_datastore import urls as async_datastore_urls
 from blobstore import urls as blobstore_urls
 from cron import urls as cron_urls
@@ -18,6 +19,7 @@ from warmup import urls as warmup_urls
 from xmpp import urls as xmpp_urls
 
 app = webapp2.WSGIApplication(
+  app_identity_urls +
   async_datastore_urls +
   blobstore_urls +
   cron_urls +
