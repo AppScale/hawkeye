@@ -63,6 +63,24 @@ class TestModel(ndb.Model):
   field = ndb.StringProperty()
   bool_field = ndb.BooleanProperty()
 
+class TestModel2(ndb.Model):
+  field = ndb.StringProperty()
+  field2 = ndb.StringProperty()
+  field3 = ndb.StringProperty()
+  field4 = ndb.StringProperty()
+  field5 = ndb.StringProperty()
+  field6 = ndb.StringProperty()
+  field7 = ndb.StringProperty()
+  field8 = ndb.StringProperty()
+  field9 = ndb.StringProperty()
+  field10 = ndb.StringProperty()
+  field11 = ndb.StringProperty()
+  field12 = ndb.StringProperty()
+  field13 = ndb.StringProperty()
+  field14 = ndb.StringProperty()
+  field15 = ndb.StringProperty()
+  bool_field = ndb.BooleanProperty()
+
 class Post(db.Model):
   content = db.StringProperty()
   tags = db.StringListProperty()
@@ -1494,30 +1512,23 @@ class TestCursorQueriesHandler(webapp.RequestHandler):
       self.response.write(utils.format_errors(result))
 
 class TestMaxGroupsInTxn(unittest.TestCase):
-  fetchers = [
-    ("Get (unordered)",
-     lambda: TestModel.query().get()),
-    ("Get (ordered by key)",
-     lambda: TestModel.query().order(TestModel._key).get()),
-    ("Get (ordered by field)",
-     lambda: TestModel.query().order(TestModel.field).get()),
-    ("Fetch (unordered)",
-     lambda: TestModel.query().fetch()),
-  ]
-
   @staticmethod
   def rand_str():
     return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
 
   def tearDown(self):
-    keys = TestModel.query().fetch(keys_only=True)
+    keys = TestModel2.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
 
   def test_max_groups_in_txn(self):
     @ndb.transactional(xg=True)
     def create(groups):
       for x in xrange(groups):
-        TestModel(id="entity-group-{}".format(x), field=self.rand_str()).put()
+        test_entity = TestModel2(id="entity-group-{}".format(x), field=self.rand_str())
+        for field_num in range(2, 16):
+          setattr(test_entity, 'field{}'.format(field_num), self.rand_str())
+        test_entity.put()
+
     create(25)
     self.assertRaises(datastore_errors.Error, create, 26)
 
