@@ -1597,8 +1597,8 @@ class TestCursorQueriesHandler(webapp.RequestHandler):
 
 class TestMaxGroupsInTxn(unittest.TestCase):
   @staticmethod
-  def rand_str():
-    return ''.join((random.choice(string.ascii_letters) for _ in xrange(10)))
+  def rand_str(len):
+    return ''.join((random.choice(string.ascii_letters) for _ in xrange(len)))
 
   def tearDown(self):
     keys = TestModel2.query().fetch(keys_only=True)
@@ -1608,9 +1608,9 @@ class TestMaxGroupsInTxn(unittest.TestCase):
     @ndb.transactional(xg=True)
     def create(groups):
       for x in xrange(groups):
-        test_entity = TestModel2(id="entity-group-{}".format(x), field=self.rand_str())
+        test_entity = TestModel2(id="entity-group-{}".format(x), field=self.rand_str(10))
         for field_num in range(2, 100):
-          setattr(test_entity, 'field{}'.format(field_num), self.rand_str())
+          setattr(test_entity, 'field{}'.format(field_num), self.rand_str(100))
         test_entity.put()
 
     create(25)
