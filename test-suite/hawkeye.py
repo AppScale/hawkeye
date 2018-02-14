@@ -77,8 +77,7 @@ def build_suites_list(lang, include, exclude, application):
     'cron' : cron_tests.suite(lang, application),
     'logservice': logservice_tests.suite(lang, application),
     'modules' : modules_tests.suite(lang, application),
-    'runtime': runtime_tests.suite(lang, application),
-    'warmup' : warmup_tests.suite(lang, application)
+    'runtime': runtime_tests.suite(lang, application)
   }
   # Validation include and exclude lists
   for suite_name in include + exclude:
@@ -89,10 +88,15 @@ def build_suites_list(lang, include, exclude, application):
   if include:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name in include]
+    if 'warmup' not in exclude or 'warmup' in include:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   else:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name not in exclude]
-
+    if 'warmup' not in exclude:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute')
   return suites
