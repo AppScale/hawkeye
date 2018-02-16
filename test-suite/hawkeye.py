@@ -88,7 +88,7 @@ def build_suites_list(lang, include, exclude, application):
   if include:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name in include]
-    if 'warmup' not in exclude or 'warmup' in include:
+    if 'warmup' in include and 'warmup' not in exclude:
       warmup = warmup_tests.suite(lang, application)
       suites.insert(0, warmup)
   else:
