@@ -210,16 +210,6 @@
         </servlet-class>
     </servlet>
     <!-- End Modules -->
-    <!-- Servlets for testing warmup functionality-->
-    <servlet>
-        <servlet-name>_ah_warmup</servlet-name>
-        <servlet-class>com.appscale.hawkeye.warmup.WarmUpServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>WarmUpCheckServlet</servlet-name>
-        <servlet-class>com.appscale.hawkeye.warmup.WarmUpCheckServlet</servlet-class>
-    </servlet>
-    <!-- End warmup -->
 
     <servlet-mapping>
         <servlet-name>JSPTest</servlet-name>
@@ -424,13 +414,6 @@
         <url-pattern>/modules/add-task</url-pattern>
     </servlet-mapping>
     <!-- End Modules -->
-
-    <!-- URLs for testing Warmup functionality -->
-    <servlet-mapping>
-        <servlet-name>WarmUpCheckServlet</servlet-name>
-        <url-pattern>/warmup_status</url-pattern>
-    </servlet-mapping>
-    <!-- End Warmup -->
 
     <security-constraint>
         <web-resource-collection>
