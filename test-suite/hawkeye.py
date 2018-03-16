@@ -31,6 +31,12 @@ from application_versions import AppVersion
 from hawkeye_test_runner import HawkeyeSuitesRunner, save_report_dict_to_csv, \
   DeprecatedHawkeyeTestCase
 
+import pip
+installed_packages = pip.get_installed_distributions()
+installed_packages_list = sorted(["%s==%s" % (i.key, i.version)
+     for i in installed_packages])
+print(installed_packages_list)
+
 if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
