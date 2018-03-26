@@ -1,3 +1,4 @@
+tests.warmup_tests.WarmupRequestRanTest.runTest,ok
 tests.blobstore_tests.DeleteBlobTest.runTest,ok
 tests.blobstore_tests.DownloadBlobTest.runTest,ok
 tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
