@@ -572,20 +572,32 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
 
 class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
-  ID = base64.urlsafe_b64encode('\xe2\x98\x85')
+  KIND = 'TestModel'
+  IDS = [u'\u2605', 'multiple\nlines']
 
   def tearDown(self):
-    self.http_delete('/datastore/manage_entity?id={}'.format(self.ID))
+    for id_ in self.IDS:
+      path = (self.KIND, id_)
+      encoded_path = base64.urlsafe_b64encode(
+        json.dumps(path, separators=(',', ':')))
+      self.http_delete(
+        '/datastore/manage_entity?pathBase64={}'.format(encoded_path))
 
   def run_hawkeye_test(self):
-    content = ''.join(random.choice(string.letters) for _ in range(10))
-    payload = urllib.urlencode({'id': self.ID, 'content': content})
-    response = self.http_post('/datastore/manage_entity', payload)
-    self.assertEqual(response.status, 200)
+    for id_ in self.IDS:
+      content = ''.join(random.choice(string.letters) for _ in range(10))
+      payload = json.dumps({'name': id_, 'kind': self.KIND,
+                            'properties': {'content': content}})
+      response = self.http_post('/datastore/manage_entity', payload)
+      self.assertEqual(response.status, 200)
 
-    response = self.http_get('/datastore/manage_entity?id={}'.format(self.ID))
-    self.assertEqual(response.status, 200)
-    self.assertEqual(response.payload, content)
+      path = (self.KIND, id_)
+      encoded_path = base64.urlsafe_b64encode(
+        json.dumps(path, separators=(',', ':')))
+      response = self.http_get(
+        '/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+      self.assertEqual(response.status, 200)
+      self.assertEqual(json.loads(response.payload)['content'], content)
 
 class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
   def tearDown(self):
@@ -668,6 +680,45 @@ class ScatterPropTest(HawkeyeTestCase):
     keys = response.json()
     self.assertListEqual(keys, self.KEY_NAMES['scattered'])
 
+class SinglePropKeyInequality(HawkeyeTestCase):
+  KIND = 'KeyInequality'
+  NAMES = ['test1', 'test2', 'test3', 'test4', 'test5']
+  PROPERTY = 'content'
+  CONTENT = 'foo'
+  COMPARISON_KEY = 'test3'
+
+  def setUp(self):
+    for name in self.NAMES:
+      entity = {'name': name, 'kind': self.KIND,
+                'properties': {self.PROPERTY: self.CONTENT}}
+      self.app.post('/{lang}/datastore/manage_entity', json=entity)
+
+  def tearDown(self):
+    for name in self.NAMES:
+      path = (self.KIND, name)
+      encoded_path = base64.urlsafe_b64encode(
+        json.dumps(path, separators=(',', ':')))
+      self.app.delete(
+        '/{{lang}}/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+
+  def test_key_inequality_filters(self):
+    ops = {'<': ['test1', 'test2'],
+           '<=': ['test1', 'test2', 'test3'],
+           '>': ['test4', 'test5'],
+           '>=': ['test3', 'test4', 'test5']}
+
+    for op, expected_keys in ops.iteritems():
+      args = urllib.urlencode(
+        {'kind': self.KIND, 'prop': self.PROPERTY, 'propVal': self.CONTENT,
+         'keyVal': self.COMPARISON_KEY, 'operator': op})
+      expected_keys = [
+        {'kind': self.KIND, 'name': key,
+         'properties': {self.PROPERTY: self.CONTENT}}
+        for key in expected_keys]
+      response = self.app.get(
+        '/{{lang}}/datastore/single_prop_key_inequality?{}'.format(args))
+      self.assertListEqual(response.json(), expected_keys)
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -711,6 +762,7 @@ def suite(lang, app):
     suite.addTests(CursorWithRepeatedProp.all_cases(app))
     suite.addTests(TxInvalidation.all_cases(app))
     suite.addTests(ScatterPropTest.all_cases(app))
+    suite.addTests(SinglePropKeyInequality.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))

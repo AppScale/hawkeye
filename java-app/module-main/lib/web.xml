@@ -6,6 +6,11 @@
            version="2.5">
 
     <servlet>
+        <servlet-name>JSPTest</servlet-name>
+        <jsp-file>jsp_test.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.ProjectHandlerServlet
         </servlet-class>
@@ -205,6 +210,11 @@
         </servlet-class>
     </servlet>
     <!-- End Modules -->
+
+    <servlet-mapping>
+        <servlet-name>JSPTest</servlet-name>
+        <url-pattern>/java/jsp</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>ProjectHandlerServlet</servlet-name>

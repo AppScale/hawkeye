@@ -42,9 +42,6 @@
                 <exclude name="**/*.java" />
             </fileset>
         </copy>
-        <copy todir="war">
-            <fileset dir="src/main/webapp"><include name="*.jsp" /></fileset>
-        </copy>
         <copy
                 todir="war/WEB-INF">
             <fileset dir="lib">

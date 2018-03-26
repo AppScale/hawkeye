@@ -35,10 +35,10 @@ if not sys.version_info[:2] > (2, 6):
   raise RuntimeError("Hawkeye will only run with Python 2.7 or newer.")
 
 from tests import (
-  datastore_tests, ndb_tests, memcache_tests, taskqueue_tests, blobstore_tests,
-  user_tests, images_tests, secure_url_tests, xmpp_tests,
-  environment_variable_tests, async_datastore_tests, cron_tests,
-  logservice_tests, modules_tests, urlfetch_tests
+  app_identity_tests, datastore_tests, ndb_tests, memcache_tests,
+  taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests,
+  xmpp_tests, environment_variable_tests, async_datastore_tests, cron_tests,
+  logservice_tests, modules_tests, runtime_tests, urlfetch_tests, warmup_tests
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
@@ -61,6 +61,7 @@ def build_suites_list(lang, include, exclude, application):
     a list of HawkeyeTestSuite for specified language.
   """
   defined_suites  = {
+    'app_identity': app_identity_tests.suite(lang, application),
     'blobstore' : blobstore_tests.suite(lang, application),
     'datastore' : datastore_tests.suite(lang, application),
     'async_datastore' : async_datastore_tests.suite(lang, application),
@@ -76,6 +77,7 @@ def build_suites_list(lang, include, exclude, application):
     'cron' : cron_tests.suite(lang, application),
     'logservice': logservice_tests.suite(lang, application),
     'modules' : modules_tests.suite(lang, application),
+    'runtime': runtime_tests.suite(lang, application)
   }
   # Validation include and exclude lists
   for suite_name in include + exclude:
@@ -86,10 +88,15 @@ def build_suites_list(lang, include, exclude, application):
   if include:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name in include]
+    if 'warmup' in include and 'warmup' not in exclude:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   else:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name not in exclude]
-
+    if 'warmup' not in exclude:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute')
   return suites

@@ -8,7 +8,8 @@ else
         wget http://googleappengine.googlecode.com/files/${JAVA_SDK_ZIP}
 fi
 
-unzip ${JAVA_SDK_ZIP}
+echo "Extracting ${JAVA_SDK_ZIP}"
+unzip -q ${JAVA_SDK_ZIP}
 rm ${JAVA_SDK_ZIP}
 
 cd -

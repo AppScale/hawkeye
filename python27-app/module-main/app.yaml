@@ -6,6 +6,9 @@ threadsafe: true
 env_variables:
   SHOULD_BE_BAZ: "baz"
 
+includes:
+- another_env_var.yaml
+
 builtins:
 - deferred: on
 

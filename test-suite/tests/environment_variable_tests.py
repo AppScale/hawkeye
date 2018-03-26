@@ -7,7 +7,8 @@ class GetConfigEnvironmentVariableTest(DeprecatedHawkeyeTestCase):
     response = self.http_get('/env/var')
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
-    self.assertEquals('baz', entry_info['value'])
+    self.assertEquals(entry_info['SHOULD_BE_BAZ'], 'baz')
+    self.assertEquals(entry_info['STATUS'], ':partyparrot:')
 
 class RequestAPI(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
