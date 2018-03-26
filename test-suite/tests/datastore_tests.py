@@ -12,7 +12,7 @@ from threading import Thread
 from time import sleep
 
 from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
-  DeprecatedHawkeyeTestCase)
+                                 DeprecatedHawkeyeTestCase)
 from hawkeye_utils import HawkeyeConstants
 
 __author__ = 'hiranya'
@@ -646,6 +646,40 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     # The first transaction should be invalidated by the concurrent put.
     self.assertFalse(response['txnSucceeded'])
 
+class ScatterPropTest(HawkeyeTestCase):
+  """ Tests queries on the __scatter__ reserved property.
+
+  This test will not work in GAE or the SDK, which both use different hash
+  functions to determine the scatter property.
+
+  In the SDK, there's a 50% chance an entity will get the scatter property. It
+  uses MD5. In GAE, there's a .78% chance for an entity to get the scatter
+  property.
+
+  AppScale uses the Murmur3 hash function, and there's a .78% chance for an
+  entity to get the property.
+  """
+  KEY_NAMES = {
+    'normal': ['1', '2'],  # These shouldn't get the property.
+    'scattered': ['8', '86']  # These should get the property.
+  }
+  KIND = 'ScatterEntity'
+
+  def tearDown(self):
+    self.app.delete('/python/datastore/scatter_prop?kind={}'.format(self.KIND))
+
+  def setUp(self):
+    for type, key_names in self.KEY_NAMES.items():
+      for name in key_names:
+        self.app.post('/python/datastore/scatter_prop',
+                      data={'kind': self.KIND, 'name': name})
+
+  def test_scatter_prop(self):
+    response = self.app.get(
+      '/python/datastore/scatter_prop?kind={}'.format(self.KIND))
+    keys = response.json()
+    self.assertListEqual(keys, self.KEY_NAMES['scattered'])
+
 class SinglePropKeyInequality(HawkeyeTestCase):
   KIND = 'KeyInequality'
   NAMES = ['test1', 'test2', 'test3', 'test4', 'test5']
@@ -684,6 +718,7 @@ class SinglePropKeyInequality(HawkeyeTestCase):
       response = self.app.get(
         '/{{lang}}/datastore/single_prop_key_inequality?{}'.format(args))
       self.assertListEqual(response.json(), expected_keys)
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -726,6 +761,7 @@ def suite(lang, app):
     suite.addTests(NonAsciiEntityKeys.all_cases(app))
     suite.addTests(CursorWithRepeatedProp.all_cases(app))
     suite.addTests(TxInvalidation.all_cases(app))
+    suite.addTests(ScatterPropTest.all_cases(app))
     suite.addTests(SinglePropKeyInequality.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))

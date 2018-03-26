@@ -65,10 +65,11 @@ tests.datastore_tests.QueryCursorTest.runTest,ok
 tests.datastore_tests.QueryPagination.runTest,ok
 tests.datastore_tests.QueryingAfterFailedTxn.runTest,ok
 tests.datastore_tests.RepeatedProperties.runTest,ok
-tests.datastore_tests.SinglePropKeyInequality.test_key_inequality_filters,ok
+tests.datastore_tests.ScatterPropTest.test_scatter_prop,ok
 tests.datastore_tests.SimpleKindAwareInsertTest.runTest,ok
 tests.datastore_tests.SimpleKindAwareQueryTest.runTest,ok
 tests.datastore_tests.SimpleTransactionTest.runTest,ok
+tests.datastore_tests.SinglePropKeyInequality.test_key_inequality_filters,ok
 tests.datastore_tests.SinglePropertyBasedQueryTest.runTest,ok
 tests.datastore_tests.TxInvalidation.runTest,ok
 tests.datastore_tests.ZigZagQueryTest.runTest,ok
