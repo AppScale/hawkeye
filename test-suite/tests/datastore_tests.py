@@ -572,20 +572,23 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
 
 class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
-  ID = base64.urlsafe_b64encode('\xe2\x98\x85')
+  IDS = [base64.urlsafe_b64encode('\xe2\x98\x85'),
+         base64.urlsafe_b64encode('multiple\nlines')]
 
   def tearDown(self):
-    self.http_delete('/datastore/manage_entity?id={}'.format(self.ID))
+    for id_ in self.IDS:
+      self.http_delete('/datastore/manage_entity?id={}'.format(id_))
 
   def run_hawkeye_test(self):
-    content = ''.join(random.choice(string.letters) for _ in range(10))
-    payload = urllib.urlencode({'id': self.ID, 'content': content})
-    response = self.http_post('/datastore/manage_entity', payload)
-    self.assertEqual(response.status, 200)
+    for id_ in self.IDS:
+      content = ''.join(random.choice(string.letters) for _ in range(10))
+      payload = urllib.urlencode({'id': id_, 'content': content})
+      response = self.http_post('/datastore/manage_entity', payload)
+      self.assertEqual(response.status, 200)
 
-    response = self.http_get('/datastore/manage_entity?id={}'.format(self.ID))
-    self.assertEqual(response.status, 200)
-    self.assertEqual(response.payload, content)
+      response = self.http_get('/datastore/manage_entity?id={}'.format(id_))
+      self.assertEqual(response.status, 200)
+      self.assertEqual(response.payload, content)
 
 class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
   def tearDown(self):

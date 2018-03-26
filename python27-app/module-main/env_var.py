@@ -1,6 +1,4 @@
 import os
-import wsgiref
-from google.appengine.ext import webapp
 import webapp2
 
 # Test import of pycrypto library.
@@ -15,19 +13,10 @@ except ImportError:
 class GetConfigEnvironmentVariableHandler(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = "application/json"
+    env_vars = {key: os.environ[key] for key in os.environ
+                if isinstance(os.environ[key], basestring)}
 
-    if 'SHOULD_BE_BAZ' in os.environ:
-      result = {
-        "success" : True,
-        "value" : os.environ['SHOULD_BE_BAZ']
-      }
-    else:
-      result = {
-        "success" : False,
-        "value" : None
-      }
-
-    self.response.out.write(json.dumps(result))
+    json.dump(env_vars, self.response)
 
 class MirrorHandler(webapp2.RequestHandler):
   def repulse(self):
