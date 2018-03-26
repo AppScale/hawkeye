@@ -1,8 +1,10 @@
 import time
 import uuid
-
 from collections import OrderedDict
 
+import requests
+
+from constants import TASK_EXECUTION_WAIT
 from hawkeye_test_runner import HawkeyeTestSuite, HawkeyeTestCase
 
 
@@ -165,11 +167,19 @@ class TestTaskTargets(HawkeyeTestCase):
                    params={'id': self.entity_ids['deferred-queue-for-module-a'],
                            'queue': 'queue-for-module-a'})
 
-    time.sleep(3)
-
   def test_task_targets(self):
-    response = self.app.get('/modules/get-entities',
-                            params={'id': self.entity_ids.values()})
+    deadline = time.time() + TASK_EXECUTION_WAIT
+    while True:
+      assert time.time() < deadline
+      response = self.app.get('/modules/get-entities',
+                              params={'id': self.entity_ids.values()})
+      if (response.status_code == requests.codes.ok and
+          all(response.json()['entities'])):
+        break
+      else:
+        time.sleep(1)
+        continue
+
     entities = zip(self.entity_ids.keys(), response.json()['entities'])
 
     expectation = {
