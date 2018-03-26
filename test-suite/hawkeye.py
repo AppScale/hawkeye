@@ -38,7 +38,7 @@ from tests import (
   app_identity_tests, datastore_tests, ndb_tests, memcache_tests,
   taskqueue_tests, blobstore_tests, user_tests, images_tests, secure_url_tests,
   xmpp_tests, environment_variable_tests, async_datastore_tests, cron_tests,
-  logservice_tests, modules_tests, runtime_tests, urlfetch_tests
+  logservice_tests, modules_tests, runtime_tests, urlfetch_tests, warmup_tests
 )
 
 SUPPORTED_LANGUAGES = ['java', 'python']
@@ -88,10 +88,15 @@ def build_suites_list(lang, include, exclude, application):
   if include:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name in include]
+    if 'warmup' in include and 'warmup' not in exclude:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   else:
     suites = [suite for suite_name, suite in defined_suites.iteritems()
               if suite_name not in exclude]
-
+    if 'warmup' not in exclude:
+      warmup = warmup_tests.suite(lang, application)
+      suites.insert(0, warmup)
   if not suites:
     print_usage_and_exit('Must specify at least one suite to execute')
   return suites
