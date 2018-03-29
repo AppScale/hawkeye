@@ -8,6 +8,7 @@ class GetConfigEnvironmentVariableTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['SHOULD_BE_BAZ'], 'baz')
+    self.assertEquals(entry_info['SHOULD_HAVE_SPACE'], 'has space')
     self.assertEquals(entry_info['STATUS'], ':partyparrot:')
 
 class RequestAPI(DeprecatedHawkeyeTestCase):

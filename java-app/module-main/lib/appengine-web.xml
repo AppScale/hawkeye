@@ -11,6 +11,7 @@
 
   <env-variables>
     <env-var name="SHOULD_BE_BAZ" value="baz" />
+    <env-var name="SHOULD_HAVE_SPACE" value="has space" />
     <env-var name="STATUS" value=":partyparrot:" />
   </env-variables>
 </appengine-web-app>
