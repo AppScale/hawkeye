@@ -1,3 +1,8 @@
+tests.warmup_tests.WarmupRequestRanTest.runTest,ok
+tests.app_identity_tests.AccessTokenTest.test_access_token,ok
+tests.app_identity_tests.HostnameTest.test_hostname,ok
+tests.app_identity_tests.ProjectIDTest.test_project_id,ok
+tests.app_identity_tests.SignatureTest.test_blob_signing,ok
 tests.async_datastore_tests.AncestorQueryTest.runTest,ok
 tests.async_datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.async_datastore_tests.CompositeQueryTest.runTest,ok
@@ -60,9 +65,11 @@ tests.datastore_tests.QueryCursorTest.runTest,ok
 tests.datastore_tests.QueryPagination.runTest,ok
 tests.datastore_tests.QueryingAfterFailedTxn.runTest,ok
 tests.datastore_tests.RepeatedProperties.runTest,ok
+tests.datastore_tests.ScatterPropTest.test_scatter_prop,ok
 tests.datastore_tests.SimpleKindAwareInsertTest.runTest,ok
 tests.datastore_tests.SimpleKindAwareQueryTest.runTest,ok
 tests.datastore_tests.SimpleTransactionTest.runTest,ok
+tests.datastore_tests.SinglePropKeyInequality.test_key_inequality_filters,ok
 tests.datastore_tests.SinglePropertyBasedQueryTest.runTest,ok
 tests.datastore_tests.TxInvalidation.runTest,ok
 tests.datastore_tests.ZigZagQueryTest.runTest,ok

@@ -1,0 +1,13 @@
+application: hawkeyepython27
+module: warmup
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /.*
+  script: warmup.app
+
+inbound_services:
+- warmup
+
