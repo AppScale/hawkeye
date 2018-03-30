@@ -9,6 +9,7 @@
     <servlet>
         <servlet-name>_ah_warmup</servlet-name>
         <servlet-class>com.appscale.hawkeye.warmup.WarmUpServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
         <servlet-name>WarmUpCheckServlet</servlet-name>
