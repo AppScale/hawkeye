@@ -20,7 +20,7 @@ public class WarmUpServlet extends HttpServlet
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         System.out.println(datastore.getClass().getCanonicalName());
-        Entity warmUpStatus = new Entity("WarmUpStatus");
+        Entity warmUpStatus = new Entity(Constants.WARMUP_KEY);
 
         warmUpStatus.setProperty("success", true);
 
