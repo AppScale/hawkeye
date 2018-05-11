@@ -7,6 +7,8 @@ from google.appengine.ext import ndb
 
 SDK_CONSISTENCY_WAIT = .5
 
+WARMUP_KEY = ndb.Key('WarmUpStatus', 'warmup-key')
+
 
 class WarmUpStatus(ndb.Model):
   success = ndb.BooleanProperty()
@@ -18,7 +20,7 @@ class WarmUpHandler(webapp2.RequestHandler):
   """
 
   def get(self):
-      WarmUpStatus(success=True).put()
+      WarmUpStatus(success=True, key=WARMUP_KEY).put()
       # Return a successful response to indicate the logic completed.
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.write('Warmup successful.')
@@ -29,11 +31,9 @@ class WarmUpTestHandler(webapp2.RequestHandler):
   value that is set during warmup.
   """
   def get(self):
-    query = WarmUpStatus.query()
-    success = all(status.success for status in query)
+    success = WARMUP_KEY.get() is not None
 
-    keys = WarmUpStatus.query().fetch(keys_only=True)
-    ndb.delete_multi(keys)
+    WARMUP_KEY.delete()
     time.sleep(SDK_CONSISTENCY_WAIT)
     json.dump({'success': success}, self.response)
 
