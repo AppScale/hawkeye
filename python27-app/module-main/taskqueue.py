@@ -85,6 +85,7 @@ class QueueHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps(results))
 
+
 class TaskCounterHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key')
@@ -137,6 +138,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
   def delete(self):
     db.delete(utils.TaskCounter.all())
+
 
 class PullTaskHandler(webapp2.RequestHandler):
   QUEUE = taskqueue.Queue(PULL_QUEUE_NAME)
@@ -193,6 +195,7 @@ class PullTaskHandler(webapp2.RequestHandler):
   def delete(self):
     self.QUEUE.purge()
 
+
 class LeaseModificationHandler(webapp2.RequestHandler):
   def get(self):
     payload = 'hello world'
@@ -238,6 +241,7 @@ class LeaseModificationHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write('Task lease was modified after expiration.')
 
+
 class BriefLeaseHandler(webapp2.RequestHandler):
   def get(self):
     payload = 'hello world'
@@ -255,6 +259,7 @@ class BriefLeaseHandler(webapp2.RequestHandler):
     if len(tasks) > 2:
       self.error(500)
       self.response.write('Leased: {}, Expected: {}'.format(tasks, to_add))
+
 
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
@@ -563,7 +568,6 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
       value = TaskEntity.get_by_key_name(key).value
       self.response.out.write(json.dumps({'value' : value}))
 
-
   def get(self):
     key = self.request.get('key')
     entity = TaskEntity.get_by_key_name(key)
@@ -574,12 +578,14 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps({ 'value' : value}))
 
+
 class TransactionalTaskWorker(webapp2.RequestHandler):
   def post(self):
     key = self.request.get('key')
     task_ent = TaskEntity.get_by_key_name(key)
     task_ent.value = UPDATED_BY_TQ
     task_ent.put()
+
 
 class TaskCounterWorker(webapp2.RequestHandler):
   def get(self):
@@ -597,6 +603,7 @@ class TaskCounterWorker(webapp2.RequestHandler):
     else:
       utils.process(self.request.get('key'))
 
+
 class CleanUpTaskEntities(webapp2.RequestHandler):
   def post(self):
     batch_size = 200
@@ -612,6 +619,7 @@ class CleanUpTaskEntities(webapp2.RequestHandler):
       if entities_fetched < batch_size:
         break
     self.response.set_status(200)
+
 
 urls = [
   ('/python/taskqueue/exists', QueueHandler),
