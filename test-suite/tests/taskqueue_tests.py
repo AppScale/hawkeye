@@ -1,9 +1,12 @@
 import datetime
 import json
+import time
 import uuid
 from time import sleep
 
-from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
+from constants import TASK_EXECUTION_WAIT
+from hawkeye_test_runner import (DeprecatedHawkeyeTestCase, HawkeyeTestCase,
+                                 HawkeyeTestSuite)
 
 
 class PushQueueTest(DeprecatedHawkeyeTestCase):
@@ -464,6 +467,26 @@ class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
 
 
+class PushHeadersTest(HawkeyeTestCase):
+  QUEUE = 'hawkeyepython-PushQueue-0'
+  def test_given_task_name(self):
+    response = self.app.post('/{lang}/taskqueue/name',
+                             data={'queueName': self.QUEUE})
+    task_name = response.text
+
+    url = '/{{lang}}/taskqueue/name?taskName={}'.format(task_name)
+    deadline = time.time() + TASK_EXECUTION_WAIT
+    while True:
+      self.assertLess(time.time(), deadline)
+      response = self.app.get(url)
+      if response.text == 'complete':
+        break
+
+      time.sleep(1)
+
+    self.app.delete(url)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTests(QueueExistsTest.all_cases(app))
@@ -480,6 +503,7 @@ def suite(lang, app):
   if lang == 'python':
     suite.addTests(RESTPullQueueTest.all_cases(app))
     suite.addTests(TransactionalFailedTaskTest.all_cases(app))
+    suite.addTests(PushHeadersTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
 
   # Does not work due to a bug in the dev server

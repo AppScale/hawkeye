@@ -3,6 +3,7 @@ import time
 import urllib
 
 import webapp2
+from google.appengine.api import datastore
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
@@ -621,6 +622,49 @@ class CleanUpTaskEntities(webapp2.RequestHandler):
     self.response.set_status(200)
 
 
+class UpdateCallback(webapp2.RequestHandler):
+  @datastore.Transactional
+  def update_status(self, task_name):
+    key = datastore.Key.from_path('TaskName', task_name)
+    entity = datastore.Get(key)
+    entity['status'] = 'complete'
+    datastore.Put(entity)
+
+  def post(self):
+    task_name = self.request.headers["X-AppEngine-TaskName"]
+    self.update_status(task_name)
+
+
+class NameHandler(webapp2.RequestHandler):
+  @datastore.Transactional
+  def add_in_tx(self, queue):
+    retry_options = taskqueue.TaskRetryOptions(task_retry_limit=5)
+    task = taskqueue.Task(url='/python/taskqueue/update_callback',
+                          retry_options=retry_options)
+    queue.add(task, transactional=True)
+    entity = datastore.Entity('TaskName', name=task.name)
+    entity['status'] = 'started'
+    datastore.Put(entity)
+    return task.name
+
+  def post(self):
+    queue_name = self.request.get('queueName')
+    queue = taskqueue.Queue(queue_name)
+    task_name = self.add_in_tx(queue)
+    self.response.write(task_name)
+
+  def get(self):
+    task_name = self.request.get('taskName')
+    key = datastore.Key.from_path('TaskName', task_name)
+    entity = datastore.Get(key)
+    self.response.write(entity['status'])
+
+  def delete(self):
+    task_name = self.request.get('taskName')
+    key = datastore.Key.from_path('TaskName', task_name)
+    datastore.Delete(key)
+
+
 urls = [
   ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
@@ -632,4 +676,6 @@ urls = [
   ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
   ('/python/taskqueue/pull/brief_lease', BriefLeaseHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
+  ('/python/taskqueue/update_callback', UpdateCallback),
+  ('/python/taskqueue/name', NameHandler),
 ]
