@@ -130,6 +130,8 @@ tests.taskqueue_tests.QueueExistsTest.runTest,ok
 tests.taskqueue_tests.QueueStatisticsTest.runTest,ok
 tests.taskqueue_tests.RESTPullQueueTest.runTest,ok
 tests.taskqueue_tests.TaskRetryTest.runTest,ok
+tests.taskqueue_tests.TaskExistsTest.test_adding_completed_task,ok
+tests.taskqueue_tests.TaskExistsTest.test_adding_enqueued_task,ok
 tests.taskqueue_tests.TransactionalFailedTaskTest.runTest,ok
 tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.urlfetch_tests.CertificateValidation.runTest,ok

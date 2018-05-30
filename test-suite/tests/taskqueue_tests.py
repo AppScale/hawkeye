@@ -3,7 +3,8 @@ import json
 import uuid
 from time import sleep
 
-from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
+from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
+                                 DeprecatedHawkeyeTestCase)
 
 
 class PushQueueTest(DeprecatedHawkeyeTestCase):
@@ -446,6 +447,49 @@ class TransactionalFailedTaskTest(DeprecatedHawkeyeTestCase):
       else:
         sleep(1)
 
+class TaskExistsTest(HawkeyeTestCase):
+  QUEUE = 'hawkeyepython-PushQueue-0'
+
+  def test_adding_completed_task(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id}
+    self.app.post('/{lang}/taskqueue/task', data=args)
+
+    # Wait for task to execute.
+    sleep(5)
+
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.json()['error'], 'InvalidTaskError')
+
+  def test_adding_enqueued_task(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    self.app.post('/{lang}/taskqueue/task', data=args)
+
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
+
+class DeleteTaskTest(HawkeyeTestCase):
+  QUEUE = 'hawkeyepython-PushQueue-0'
+
+  def test_delete_and_add(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.status_code, 200)
+
+    url = '/{{lang}}/taskqueue/task?queueName={}&taskId={}'.format(
+      self.QUEUE, task_id )
+    response = self.app.delete(url)
+    self.assertEqual(response.status_code, 200)
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.json()['error'], 'InvalidTaskError')
+
 class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/taskqueue/clean_up', '')
@@ -467,6 +511,8 @@ def suite(lang, app):
   if lang == 'python':
     suite.addTests(RESTPullQueueTest.all_cases(app))
     suite.addTests(TransactionalFailedTaskTest.all_cases(app))
+    suite.addTests(TaskExistsTest.all_cases(app))
+    suite.addTests(DeleteTaskTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
 
   # Does not work due to a bug in the dev server
