@@ -1,3 +1,7 @@
+tests.app_identity_tests.AccessTokenTest.test_access_token,ok
+tests.app_identity_tests.HostnameTest.test_hostname,ok
+tests.app_identity_tests.ProjectIDTest.test_project_id,ok
+tests.app_identity_tests.SignatureTest.test_blob_signing,ok
 tests.warmup_tests.WarmupRequestRanTest.runTest,ok
 tests.blobstore_tests.DeleteBlobTest.runTest,ok
 tests.blobstore_tests.DownloadBlobTest.runTest,ok

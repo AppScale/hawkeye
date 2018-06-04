@@ -7,7 +7,7 @@ Usage:
 
 Options:
   -h, --help           # show this help message and exit
-  --app                # Application ID to test
+  --app=APP_ID         # Application ID to test
   --versions-csv FILE  # File containing http and https URL to app versions
   -l LANG --lang=LANG  # Language binding to test (python or java) [default: python]
   --user=USER          # Admin username [default: a@a.com]
