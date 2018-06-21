@@ -719,6 +719,54 @@ class SinglePropKeyInequality(HawkeyeTestCase):
         '/{{lang}}/datastore/single_prop_key_inequality?{}'.format(args))
       self.assertListEqual(response.json(), expected_keys)
 
+class MergeJoinWithAncestor(HawkeyeTestCase):
+  def setUp(self):
+    brand_a = {'name': 'brand_a', 'kind': 'brand',
+               'properties': {'established': 2018}}
+    brand_b = {'name': 'brand_b', 'kind': 'brand',
+               'properties': {'established': 2018}}
+    self.app.post('/{lang}/datastore/manage_entity', json=brand_a)
+    self.app.post('/{lang}/datastore/manage_entity', json=brand_b)
+
+    colors = ['red', 'blue']
+    sizes = ['small', 'medium', 'large']
+    combinations = [{'color': color, 'size': size}
+                    for color in colors for size in sizes]
+    brand_a_shirts = [
+      {'parent': ['brand', 'brand_a'], 'kind': 'shirt', 'properties': props}
+      for props in combinations]
+    brand_b_shirts = [
+      {'parent': ['brand', 'brand_b'], 'kind': 'shirt', 'properties': props}
+      for props in combinations]
+    for shirt in brand_a_shirts + brand_b_shirts:
+      self.app.post('/{lang}/datastore/manage_entity', json=shirt)
+
+  def tearDown(self):
+    entities = self.app.get('/{lang}/datastore/kind_query?kind=shirt').json()
+    paths = [entity['path'] for entity in entities]
+    paths.extend([['brand', 'brand_a'], ['brand', 'brand_b']])
+    for path in paths:
+      encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+      self.app.delete(
+        '/{{lang}}/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+
+  def test_merge_join_with_ancestor(self):
+    ancestor_path = ['brand', 'brand_a']
+    encoded_ancestor = base64.urlsafe_b64encode(json.dumps(ancestor_path))
+    filter_a = urllib.quote('color=red')
+    filter_b = urllib.quote('size=medium')
+    response = self.app.get(
+      '/{{lang}}/datastore/merge_join_with_ancestor?'
+      'pathBase64={}&'
+      'kind={}&'
+      'filter={}&'
+      'filter={}'.format(encoded_ancestor, 'shirt', filter_a, filter_b))
+    entities = response.json()
+    self.assertEqual(len(entities), 1)
+    self.assertListEqual(entities[0]['path'][:2], ['brand', 'brand_a'])
+    self.assertDictEqual(entities[0]['properties'],
+                         {'size': 'medium', 'color': 'red'})
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -763,6 +811,7 @@ def suite(lang, app):
     suite.addTests(TxInvalidation.all_cases(app))
     suite.addTests(ScatterPropTest.all_cases(app))
     suite.addTests(SinglePropKeyInequality.all_cases(app))
+    suite.addTests(MergeJoinWithAncestor.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))

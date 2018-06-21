@@ -1820,9 +1820,13 @@ class LongTransactionRead(webapp2.RequestHandler):
 class ManageEntity(webapp2.RequestHandler):
   def post(self):
     entity_info = json.loads(self.request.body)
-    entity = datastore.Entity(kind=entity_info['kind'],
-                              name=entity_info.get('name'),
-                              id=entity_info.get('id'))
+    params = {'kind': entity_info['kind'],
+              'name': entity_info.get('name'),
+              'id': entity_info.get('id')}
+    if 'parent' in entity_info:
+      params['parent'] = datastore.Key.from_path(*entity_info['parent'])
+
+    entity = datastore.Entity(**params)
 
     entity.update(entity_info['properties'])
     datastore.Put(entity)
@@ -1945,6 +1949,35 @@ class SinglePropKeyInequality(webapp2.RequestHandler):
       for entity in entities]
     json.dump(response, self.response)
 
+class MergeJoinWithAncestor(webapp2.RequestHandler):
+  def get(self):
+    encoded_ancestor = self.request.get('pathBase64').encode('utf-8')
+    ancestor_path = json.loads(base64.urlsafe_b64decode(encoded_ancestor))
+    kind = self.request.get('kind')
+    filters = self.request.get_all('filter')
+
+    query = datastore.Query(kind)
+    query.Ancestor(datastore.Key.from_path(*ancestor_path))
+    for filter_ in filters:
+      prop, val = filter_.split('=')
+      query['{} ='.format(prop)] = val
+
+    entities = query.Get(limit=None)
+    response = [{'path': entity.key().to_path(), 'properties': entity}
+                for entity in entities]
+    json.dump(response, self.response)
+
+class KindQuery(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    query = datastore.Query(kind)
+    entities = query.Get(limit=None)
+    entities[0].key()
+    response = [
+      {'path': entity.key().to_path(), 'properties': entity}
+      for entity in entities]
+    json.dump(response, self.response)
+
 
 urls = [
   ('/python/datastore/project', ProjectHandler),
@@ -1977,5 +2010,7 @@ urls = [
   ('/python/datastore/manage_entity', ManageEntity),
   ('/python/datastore/cursor_with_repeated_prop', CursorWithRepeatedProp),
   ('/python/datastore/tx_invalidation', TxInvalidation),
-  ('/python/datastore/single_prop_key_inequality', SinglePropKeyInequality)
+  ('/python/datastore/single_prop_key_inequality', SinglePropKeyInequality),
+  ('/python/datastore/merge_join_with_ancestor', MergeJoinWithAncestor),
+  ('/python/datastore/kind_query', KindQuery)
 ]
