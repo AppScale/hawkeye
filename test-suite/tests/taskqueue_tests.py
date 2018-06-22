@@ -1,8 +1,10 @@
 import datetime
 import json
+import time
 import uuid
 from time import sleep
 
+from constants import TASK_EXECUTION_WAIT
 from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
                                  DeprecatedHawkeyeTestCase)
 
@@ -456,11 +458,17 @@ class TaskExistsTest(HawkeyeTestCase):
     args = {'queueName': self.QUEUE, 'taskId': task_id}
     self.app.post('/{lang}/taskqueue/task', data=args)
 
-    # Wait for task to execute.
-    sleep(5)
+    deadline = time.time() + TASK_EXECUTION_WAIT
+    while True:
+      self.assertLess(time.time(), deadline)
 
-    response = self.app.post('/{lang}/taskqueue/task', data=args)
-    self.assertEqual(response.json()['error'], 'InvalidTaskError')
+      response = self.app.post('/{lang}/taskqueue/task', data=args)
+      if response.json()['error'] == 'InvalidTaskError':
+        break
+      else:
+        self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
+
+      time.sleep(1)
 
   def test_adding_enqueued_task(self):
     task_id = uuid.uuid4().hex
