@@ -763,7 +763,7 @@ class MergeJoinWithAncestor(HawkeyeTestCase):
       'filter={}'.format(encoded_ancestor, 'shirt', filter_a, filter_b))
     entities = response.json()
     self.assertEqual(len(entities), 1)
-    self.assertListEqual(entities[0]['path'][:2], ['brand', 'brand_a'])
+    self.assertListEqual(entities[0]['path'][:2], ancestor_path)
     self.assertDictEqual(entities[0]['properties'],
                          {'size': 'medium', 'color': 'red'})
 
