@@ -20,12 +20,8 @@ class Application(object):
   """
 
   def __init__(self, app_id, url_builder):
-    self._app_id = app_id
+    self.app_id = app_id
     self._url_builder = url_builder
-
-  @property
-  def app_id(self):
-    return self._app_id
 
   def get(self, path, module=None, version=None, https=False, **kwargs):
     """

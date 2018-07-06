@@ -3,6 +3,7 @@ import time
 import urllib
 
 import webapp2
+from google.appengine.api import datastore
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
@@ -85,6 +86,7 @@ class QueueHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps(results))
 
+
 class TaskCounterHandler(webapp2.RequestHandler):
   def get(self):
     key = self.request.get('key')
@@ -137,6 +139,7 @@ class TaskCounterHandler(webapp2.RequestHandler):
 
   def delete(self):
     db.delete(utils.TaskCounter.all())
+
 
 class PullTaskHandler(webapp2.RequestHandler):
   QUEUE = taskqueue.Queue(PULL_QUEUE_NAME)
@@ -193,6 +196,7 @@ class PullTaskHandler(webapp2.RequestHandler):
   def delete(self):
     self.QUEUE.purge()
 
+
 class LeaseModificationHandler(webapp2.RequestHandler):
   def get(self):
     payload = 'hello world'
@@ -238,6 +242,7 @@ class LeaseModificationHandler(webapp2.RequestHandler):
       self.error(500)
       self.response.write('Task lease was modified after expiration.')
 
+
 class BriefLeaseHandler(webapp2.RequestHandler):
   def get(self):
     payload = 'hello world'
@@ -255,6 +260,7 @@ class BriefLeaseHandler(webapp2.RequestHandler):
     if len(tasks) > 2:
       self.error(500)
       self.response.write('Leased: {}, Expected: {}'.format(tasks, to_add))
+
 
 class RESTPullQueueHandler(webapp2.RequestHandler):
   def get(self):
@@ -563,7 +569,6 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
       value = TaskEntity.get_by_key_name(key).value
       self.response.out.write(json.dumps({'value' : value}))
 
-
   def get(self):
     key = self.request.get('key')
     entity = TaskEntity.get_by_key_name(key)
@@ -574,12 +579,14 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
 
     self.response.out.write(json.dumps({ 'value' : value}))
 
+
 class TransactionalTaskWorker(webapp2.RequestHandler):
   def post(self):
     key = self.request.get('key')
     task_ent = TaskEntity.get_by_key_name(key)
     task_ent.value = UPDATED_BY_TQ
     task_ent.put()
+
 
 class TaskCounterWorker(webapp2.RequestHandler):
   def get(self):
@@ -597,6 +604,7 @@ class TaskCounterWorker(webapp2.RequestHandler):
     else:
       utils.process(self.request.get('key'))
 
+
 class CleanUpTaskEntities(webapp2.RequestHandler):
   def post(self):
     batch_size = 200
@@ -613,9 +621,54 @@ class CleanUpTaskEntities(webapp2.RequestHandler):
         break
     self.response.set_status(200)
 
+
+class UpdateCallback(webapp2.RequestHandler):
+  @datastore.Transactional
+  def update_status(self, task_name):
+    key = datastore.Key.from_path('TaskName', task_name)
+    entity = datastore.Get(key)
+    entity['status'] = 'complete'
+    datastore.Put(entity)
+
+  def post(self):
+    task_name = self.request.headers["X-AppEngine-TaskName"]
+    self.update_status(task_name)
+
+
+class NameHandler(webapp2.RequestHandler):
+  @datastore.Transactional
+  def add_in_tx(self, queue):
+    retry_options = taskqueue.TaskRetryOptions(task_retry_limit=5)
+    task = taskqueue.Task(url='/python/taskqueue/update_callback',
+                          retry_options=retry_options)
+    queue.add(task, transactional=True)
+    entity = datastore.Entity('TaskName', name=task.name)
+    entity['status'] = 'started'
+    datastore.Put(entity)
+    return task.name
+
+  def post(self):
+    queue_name = self.request.get('queueName')
+    queue = taskqueue.Queue(queue_name)
+    task_name = self.add_in_tx(queue)
+    self.response.write(task_name)
+
+  def get(self):
+    task_name = self.request.get('taskName')
+    key = datastore.Key.from_path('TaskName', task_name)
+    entity = datastore.Get(key)
+    self.response.write(entity['status'])
+
+  def delete(self):
+    task_name = self.request.get('taskName')
+    key = datastore.Key.from_path('TaskName', task_name)
+    datastore.Delete(key)
+
+
 class EmptyCallback(webapp2.RequestHandler):
   def post(self):
     pass
+
 
 class TaskHandler(webapp2.RequestHandler):
   def post(self):
@@ -646,6 +699,7 @@ class TaskHandler(webapp2.RequestHandler):
     task = taskqueue.Task(name=task_id)
     queue.delete_tasks(task)
 
+
 urls = [
   ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
@@ -657,6 +711,8 @@ urls = [
   ('/python/taskqueue/pull/lease_modification', LeaseModificationHandler),
   ('/python/taskqueue/pull/brief_lease', BriefLeaseHandler),
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
+  ('/python/taskqueue/update_callback', UpdateCallback),
+  ('/python/taskqueue/name', NameHandler),
   ('/python/taskqueue/empty_callback', EmptyCallback),
-  ('/python/taskqueue/task', TaskHandler),
+  ('/python/taskqueue/task', TaskHandler)
 ]
