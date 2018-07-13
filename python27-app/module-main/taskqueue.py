@@ -549,7 +549,7 @@ class TransactionalTaskHandler(webapp2.RequestHandler):
       task_ent = TaskEntity(value=UPDATED_BY_TXN, key_name=key)
       task_ent.put()
       if throw_exception:
-        raise
+        raise Exception()
       # Client should poll to see if the task ran correctly
 
     key = self.request.get('key')
