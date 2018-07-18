@@ -219,6 +219,22 @@ class LeaseModificationHandler(webapp2.RequestHandler):
         'Initial Lease: ETA={}, Expected={}'.format(task.eta, expected))
       return
 
+    # Make sure the lease time cannot be modified if the ETA is incorrect.
+    invalid_eta = task.eta - datetime.timedelta(seconds=1)
+    invalid_task = taskqueue.Task(payload=task.payload,
+                                  name=task.name,
+                                  method=task.method,
+                                  eta=invalid_eta)
+    try:
+      q.modify_task_lease(invalid_task, 5)
+    except taskqueue.TaskLeaseExpiredError:
+      # This error is expected for an invalid ETA.
+      pass
+    else:
+      self.error(500)
+      self.response.write('Lease was updated with an invalid ETA')
+      return
+
     # Make sure the lease time has been modified.
     duration = 2
     q.modify_task_lease(task, lease_seconds=duration)
