@@ -120,6 +120,7 @@ tests.secure_url_tests.AlwaysSecureRegexTest.runTest,ok
 tests.secure_url_tests.AlwaysSecureTest.runTest,ok
 tests.secure_url_tests.NeverSecureRegexTest.runTest,ok
 tests.secure_url_tests.NeverSecureTest.runTest,ok
+tests.secure_url_tests.HandlerOrderTest.test_handler_order,ok
 tests.taskqueue_tests.BriefLeaseTest.runTest,ok
 tests.taskqueue_tests.CleanUpTaskEntities.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
