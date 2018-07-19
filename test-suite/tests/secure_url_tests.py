@@ -1,3 +1,5 @@
+import requests
+
 from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
 
 __author__ = 'hiranya'
@@ -10,8 +12,8 @@ class NeverSecureTest(DeprecatedHawkeyeTestCase):
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('http:'))
 
-    response = self.http_get(redirect_url, prepend_lang=False)
-    self.assertEquals(response.status, 200)
+    response = requests.get(redirect_url)
+    self.assertEquals(response.status_code, 200)
 
 class AlwaysSecureTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -21,8 +23,8 @@ class AlwaysSecureTest(DeprecatedHawkeyeTestCase):
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('https:'))
 
-    response = self.http_get(redirect_url, prepend_lang=False, use_ssl=True)
-    self.assertEquals(response.status, 200)
+    response = requests.get(redirect_url, verify=False)
+    self.assertEquals(response.status_code, 200)
 
 class AlwaysSecureRegexTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -32,8 +34,8 @@ class AlwaysSecureRegexTest(DeprecatedHawkeyeTestCase):
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('https:'))
 
-    response = self.http_get(redirect_url, prepend_lang=False, use_ssl=True)
-    self.assertEquals(response.status, 200)
+    response = requests.get(redirect_url, verify=False)
+    self.assertEquals(response.status_code, 200)
 
 class NeverSecureRegexTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -43,8 +45,8 @@ class NeverSecureRegexTest(DeprecatedHawkeyeTestCase):
     redirect_url = response.headers['location']
     self.assertTrue(redirect_url.startswith('http:'))
 
-    response = self.http_get(redirect_url, prepend_lang=False)
-    self.assertEquals(response.status, 200)
+    response = requests.get(redirect_url)
+    self.assertEquals(response.status_code, 200)
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Secure URL Test Suite', 'secure_url')
