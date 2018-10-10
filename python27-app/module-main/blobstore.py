@@ -1,21 +1,21 @@
-import unittest
+import json
+import logging
 import urllib
-import wsgiref
-from google.appengine.ext import webapp, blobstore
-from google.appengine.ext.blobstore.blobstore import BlobInfo
-from google.appengine.ext.webapp import blobstore_handlers
+
 import webapp2
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
+from google.appengine.api import app_identity
+from google.appengine.ext import blobstore
+from google.appengine.ext.blobstore.blobstore import BlobInfo
+from google.appengine.ext.webapp import blobstore_handlers
 
 __author__ = 'hiranya'
+
 
 def serialize(blob_info):
   if isinstance(blob_info, BlobInfo):
     return { 'filename' : blob_info.filename, 'size' : blob_info.size }
+
 
 class MainHandler(webapp2.RequestHandler):
   def get(self):
@@ -27,6 +27,7 @@ class MainHandler(webapp2.RequestHandler):
       upload_url = blobstore.create_upload_url('/python/blobstore/upload')
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'url' : upload_url }))
+
 
 class BlobQueryHandler(webapp2.RequestHandler):
   def get(self):
@@ -86,6 +87,7 @@ class BlobQueryHandler(webapp2.RequestHandler):
       else:
         self.response.out.write(json.dumps({ 'success' : False }))
 
+
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
   def post(self):
     upload_files = self.get_uploads('file')
@@ -93,16 +95,30 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'key' : str(blob_info.key()) }))
 
+
 class DownloadHandler(blobstore_handlers.BlobstoreDownloadHandler):
   def get(self, resource):
     resource = str(urllib.unquote(resource))
     blob_info = blobstore.BlobInfo.get(resource)
+    if blob_info is None:
+      self.response.set_status(404)
+      return
+
     self.send_blob(blob_info)
+
 
 class CreateURL(webapp2.RequestHandler):
   def get(self):
-    url = blobstore.create_upload_url('test')
+    use_gcs = self.request.get('useGCS')
+    if use_gcs:
+      bucket_name = app_identity.get_default_gcs_bucket_name()
+      url = blobstore.create_upload_url(
+        '/python/blobstore/upload', gs_bucket_name=bucket_name)
+    else:
+      url = blobstore.create_upload_url('test')
+
     self.response.write(url)
+
 
 urls = [
   ('/python/blobstore/url', MainHandler),

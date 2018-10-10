@@ -30,6 +30,7 @@ tests.blobstore_tests.AsyncUploadBlobTest.test_blob_creation,ok
 tests.blobstore_tests.CreateURLScheme.test_different_schemas,ok
 tests.blobstore_tests.DeleteBlobTest.runTest,ok
 tests.blobstore_tests.DownloadBlobTest.runTest,ok
+tests.blobstore_tests.GCSBlobstoreBackendTest.test_basic_operations,ok
 tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
 tests.blobstore_tests.QueryBlobByPropertyTest.runTest,ok
 tests.blobstore_tests.QueryBlobDataTest.runTest,ok
