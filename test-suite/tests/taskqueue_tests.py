@@ -461,12 +461,6 @@ class TransactionalFailedTaskTest(DeprecatedHawkeyeTestCase):
         sleep(1)
 
 
-class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
-  def run_hawkeye_test(self):
-    response = self.http_post('/taskqueue/clean_up', '')
-    self.assertEquals(response.status, 200)
-
-
 class PushHeadersTest(HawkeyeTestCase):
   QUEUE = 'hawkeyepython-PushQueue-0'
   def test_given_task_name(self):
@@ -487,6 +481,62 @@ class PushHeadersTest(HawkeyeTestCase):
     self.app.delete(url)
 
 
+class TaskExistsTest(HawkeyeTestCase):
+  QUEUE = 'hawkeyepython-PushQueue-0'
+
+  def test_adding_completed_task(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id}
+    self.app.post('/{lang}/taskqueue/task', data=args)
+
+    deadline = time.time() + TASK_EXECUTION_WAIT
+    while True:
+      self.assertLess(time.time(), deadline)
+
+      response = self.app.post('/{lang}/taskqueue/task', data=args)
+      if response.json()['error'] == 'InvalidTaskError':
+        break
+      else:
+        self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
+
+      time.sleep(1)
+
+  def test_adding_enqueued_task(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    self.app.post('/{lang}/taskqueue/task', data=args)
+
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
+
+class DeleteTaskTest(HawkeyeTestCase):
+  QUEUE = 'hawkeyepython-PushQueue-0'
+
+  def test_delete_and_add(self):
+    task_id = uuid.uuid4().hex
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.status_code, 200)
+
+    url = '/{{lang}}/taskqueue/task?queueName={}&taskId={}'.format(
+      self.QUEUE, task_id )
+    response = self.app.delete(url)
+    self.assertEqual(response.status_code, 200)
+
+    args = {'queueName': self.QUEUE, 'taskId': task_id, 'countdown': str(1e6)}
+    response = self.app.post('/{lang}/taskqueue/task', data=args)
+    self.assertEqual(response.json()['error'], 'InvalidTaskError')
+
+
+class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
+  def run_hawkeye_test(self):
+    response = self.http_post('/taskqueue/clean_up', '')
+    self.assertEquals(response.status, 200)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTests(QueueExistsTest.all_cases(app))
@@ -504,6 +554,8 @@ def suite(lang, app):
     suite.addTests(RESTPullQueueTest.all_cases(app))
     suite.addTests(TransactionalFailedTaskTest.all_cases(app))
     suite.addTests(PushHeadersTest.all_cases(app))
+    suite.addTests(TaskExistsTest.all_cases(app))
+    suite.addTests(DeleteTaskTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
 
   # Does not work due to a bug in the dev server

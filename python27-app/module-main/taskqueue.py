@@ -681,6 +681,41 @@ class NameHandler(webapp2.RequestHandler):
     datastore.Delete(key)
 
 
+class EmptyCallback(webapp2.RequestHandler):
+  def post(self):
+    pass
+
+
+class TaskHandler(webapp2.RequestHandler):
+  def post(self):
+    queue_name = self.request.get('queueName')
+    task_id = self.request.get('taskId')
+    countdown = self.request.get('countdown')
+
+    queue = taskqueue.Queue(queue_name)
+    kwargs = {'url': '/python/taskqueue/empty_callback', 'name': task_id}
+    if countdown:
+      kwargs['countdown'] = float(countdown)
+
+    task = taskqueue.Task(**kwargs)
+    try:
+      queue.add(task)
+      json.dump({'success': True}, self.response)
+    except taskqueue.TaskAlreadyExistsError:
+      json.dump({'success': False, 'error': 'TaskAlreadyExistsError'},
+                self.response)
+    except taskqueue.InvalidTaskError:
+      json.dump({'success': False, 'error': 'InvalidTaskError'}, self.response)
+
+  def delete(self):
+    queue_name = self.request.get('queueName')
+    task_id = self.request.get('taskId')
+
+    queue = taskqueue.Queue(queue_name)
+    task = taskqueue.Task(name=task_id)
+    queue.delete_tasks(task)
+
+
 urls = [
   ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
@@ -694,4 +729,6 @@ urls = [
   ('/python/taskqueue/clean_up', CleanUpTaskEntities),
   ('/python/taskqueue/update_callback', UpdateCallback),
   ('/python/taskqueue/name', NameHandler),
+  ('/python/taskqueue/empty_callback', EmptyCallback),
+  ('/python/taskqueue/task', TaskHandler)
 ]

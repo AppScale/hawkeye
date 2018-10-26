@@ -30,6 +30,7 @@ tests.blobstore_tests.AsyncUploadBlobTest.test_blob_creation,ok
 tests.blobstore_tests.CreateURLScheme.test_different_schemas,ok
 tests.blobstore_tests.DeleteBlobTest.runTest,ok
 tests.blobstore_tests.DownloadBlobTest.runTest,ok
+tests.blobstore_tests.GCSBlobstoreBackendTest.test_basic_operations,ok
 tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
 tests.blobstore_tests.QueryBlobByPropertyTest.runTest,ok
 tests.blobstore_tests.QueryBlobDataTest.runTest,ok
@@ -55,6 +56,7 @@ tests.datastore_tests.KindlessQueryTest.runTest,ok
 tests.datastore_tests.LimitedResultQueryTest.runTest,ok
 tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
+tests.datastore_tests.MergeJoinWithAncestor.test_merge_join_with_ancestor,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
 tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
@@ -120,6 +122,7 @@ tests.secure_url_tests.AlwaysSecureRegexTest.runTest,ok
 tests.secure_url_tests.AlwaysSecureTest.runTest,ok
 tests.secure_url_tests.NeverSecureRegexTest.runTest,ok
 tests.secure_url_tests.NeverSecureTest.runTest,ok
+tests.secure_url_tests.HandlerOrderTest.test_handler_order,ok
 tests.taskqueue_tests.BriefLeaseTest.runTest,ok
 tests.taskqueue_tests.CleanUpTaskEntities.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
@@ -131,6 +134,8 @@ tests.taskqueue_tests.QueueExistsTest.runTest,ok
 tests.taskqueue_tests.QueueStatisticsTest.runTest,ok
 tests.taskqueue_tests.RESTPullQueueTest.runTest,ok
 tests.taskqueue_tests.TaskRetryTest.runTest,ok
+tests.taskqueue_tests.TaskExistsTest.test_adding_completed_task,ok
+tests.taskqueue_tests.TaskExistsTest.test_adding_enqueued_task,ok
 tests.taskqueue_tests.TransactionalFailedTaskTest.runTest,ok
 tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.urlfetch_tests.CertificateValidation.runTest,ok

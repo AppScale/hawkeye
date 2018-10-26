@@ -18,6 +18,48 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /python/security-1/permissive-1
+  script: main.app
+
+- url: /python/security-1/.*
+  script: main.app
+  secure: always
+
+- url: /python/security-1/permissive-2
+  script: main.app
+
+- url: /python/security-2/permissive-1
+  script: main.app
+
+- url: /python/security-2/.*
+  script: main.app
+  secure: never
+
+- url: /python/security-2/permissive-2
+  script: main.app
+
+- url: /python/security-3/https-only-1
+  script: main.app
+  secure: always
+
+- url: /python/security-3/.*
+  script: main.app
+
+- url: /python/security-3/https-only-2
+  script: main.app
+  secure: always
+
+- url: /python/security-4/http-only-1
+  script: main.app
+  secure: never
+
+- url: /python/security-4/.*
+  script: main.app
+
+- url: /python/security-4/http-only-2
+  script: main.app
+  secure: never
+
 - url: /python/users/secure
   script: main.app
   login: required
