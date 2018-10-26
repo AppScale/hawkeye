@@ -19,10 +19,15 @@ class NeverSecureHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps({ 'success' : True }))
 
+class EmptyHandler(webapp2.RequestHandler):
+  def get(self):
+    pass
+
 
 urls = [
   ('/python/secure/always', AlwaysSecureHandler),
   ('/python/secure/never', NeverSecureHandler),
   ('/python/secure/always/regex1/regex2', AlwaysSecureHandler),
   ('/python/secure/never/regex1/regex2', NeverSecureHandler),
+  ('/python/security-.*', EmptyHandler)
 ]
