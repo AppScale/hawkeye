@@ -87,6 +87,9 @@ handlers:
 - url: /_ah/xmpp/message/chat/?
   script: main.app
 
+- url: /python/search/(.*)
+    script: search.py
+
 - url: /.*
   script: main.app
 
