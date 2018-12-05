@@ -3,6 +3,7 @@ import webapp2
 from app_identity import urls as app_identity_urls
 from async_datastore import urls as async_datastore_urls
 from blobstore import urls as blobstore_urls
+from channel import urls as channel_urls
 from cron import urls as cron_urls
 from datastore import urls as datastore_urls
 from env_var import urls as env_var_urls
@@ -21,6 +22,7 @@ app = webapp2.WSGIApplication(
   app_identity_urls +
   async_datastore_urls +
   blobstore_urls +
+  channel_urls +
   cron_urls +
   datastore_urls +
   env_var_urls +

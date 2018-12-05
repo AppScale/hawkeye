@@ -6,6 +6,8 @@ API fidelity test suite for AppScale
 prerequisites
 =======
 
+The `geckodriver` executable must be available on your current path.
+
 Start up appscale as usual:
 
 ```
