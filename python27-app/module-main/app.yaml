@@ -84,7 +84,7 @@ handlers:
   script: main.app
 
 - url: /python/search/(.*)
-    script: search.py
+  script: main.app
 
 - url: /.*
   script: main.app

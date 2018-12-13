@@ -107,13 +107,21 @@ class CleanUpHandler(webapp2.RequestHandler):
       index.delete(doc_ids)
 
 
-application = webapp.WSGIApplication([
+#application = webapp.WSGIApplication([
+#  ('/python/search/put', PutDocumentsHandler),
+#  ('/python/search/get', GetDocumentHandler),
+#  ('/python/search/get-range', GetDocumentsRangeHandler),
+#  ('/python/search/search', SearchDocumentsHandler),
+#  ('/python/search/clean-up', CleanUpHandler),
+#], debug=True)
+
+urls = [
   ('/python/search/put', PutDocumentsHandler),
   ('/python/search/get', GetDocumentHandler),
   ('/python/search/get-range', GetDocumentsRangeHandler),
   ('/python/search/search', SearchDocumentsHandler),
   ('/python/search/clean-up', CleanUpHandler),
-], debug=True)
+]
 
 if __name__ == '__main__':
-  wsgiref.handlers.CGIHandler().run(application)
+  wsgiref.handlers.CGIHandler().run(webapp.WSGIApplication(urls, debug=True))

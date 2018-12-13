@@ -11,6 +11,7 @@ from logservice import urls as logservice_urls
 from memcache import urls as memcache_urls
 from module_main import urls as modules_urls
 from ndb import urls as ndb_urls
+from search import urls as search_urls
 from secure_url import urls as secure_url_urls
 from taskqueue import urls as taskqueue_urls
 from urlfetch import urls as urlfetch_urls
@@ -33,5 +34,6 @@ app = webapp2.WSGIApplication(
   taskqueue_urls +
   urlfetch_urls +
   user_urls +
-  xmpp_urls
+  xmpp_urls +
+  search_urls
 )
