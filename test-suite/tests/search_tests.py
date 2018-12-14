@@ -90,7 +90,6 @@ class SearchTest(SearchTestCase):
     self.assertEquals(response.status_code, 200)
     self.assertIn('documents', response.json())
     documents = response.json()['documents']
-    print documents
     self.assertEquals(len(documents), 2)
 
   def test_search_query_OR(self):
@@ -101,7 +100,6 @@ class SearchTest(SearchTestCase):
     self.assertEquals(response.status_code, 200)
     self.assertIn('documents', response.json())
     documents = response.json()['documents']
-    print documents
     self.assertEquals(len(documents), 2)
 
   def test_search_query_date_global_equal(self):
@@ -152,12 +150,11 @@ class SearchTest(SearchTestCase):
     self.assertIn('documents', response.json())
     documents = response.json()['documents']
     # Should only be one document
-    print documents
-    self.assertEquals(len(documents), 2)
+    self.assertEquals(len(documents), 1)
     doc = documents[0]
     # Make sure we got the right document back with that date.
-    self.assertEquals(doc['date_entered'], '2019-04-04')
-    self.assertEquals(doc['text5'], "Who are the britons?")
+    self.assertEquals(doc['date_entered'], '2018-12-12')
+    self.assertEquals(doc['text4'], 'This is a test of the national broadcasting system')
 
 #
 #
