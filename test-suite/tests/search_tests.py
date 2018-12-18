@@ -28,11 +28,17 @@ default_documents = {"index": "index-1", "documents": [
         }
       ]}
 
+# Documents that will need to be deleted
+document_ids = {'index':'index-1',
+                'document_ids': [i["id"]
+                                 for i in
+                                 default_documents['documents']]}
+
 class SearchTestCase(HawkeyeTestCase):
 
   def tearDown(self):
-    self.app.post('/python/search/clean-up','')
-
+    self.app.post('/python/search/clean-up',
+                  json=document_ids)
 
 class PutTest(SearchTestCase):
   def test_search_put(self):
