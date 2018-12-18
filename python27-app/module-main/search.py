@@ -101,10 +101,12 @@ class SearchDocumentsHandler(webapp2.RequestHandler):
 class CleanUpHandler(webapp2.RequestHandler):
 
   def post(self):
-    indexes = search.get_indexes()
-    for index in indexes:
-      doc_ids = index.get_range(ids_only=True)
-      index.delete(doc_ids)
+    payload = json.loads(self.request.body)
+    document_ids = payload['document_ids']
+    index = payload['index']
+    idx = search.Index(name=index)
+
+    idx.delete(document_ids)
 
 urls = [
   ('/python/search/put', PutDocumentsHandler),
