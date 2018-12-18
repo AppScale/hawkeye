@@ -2,19 +2,7 @@ import json
 
 from hawkeye_test_runner import HawkeyeTestCase, HawkeyeTestSuite
 
-
-class SearchTestCase(HawkeyeTestCase):
-
-  def tearDown(self):
-    self.app.post('/python/search/clean-up','')
-
-
-class PutTest(SearchTestCase):
-
-  def test_search_put(self):
-    response = self.app.post(
-      '/python/search/put',
-      json={"index": "index-1", "documents": [
+default_documents = {"index": "index-1", "documents": [
         {
           "id": "a",
           "text1": "hello world",
@@ -38,10 +26,25 @@ class PutTest(SearchTestCase):
           "date_entered": "2019-04-04",
           "text5": "Who are the britons?"
         }
-      ]})
+      ]}
+
+class SearchTestCase(HawkeyeTestCase):
+
+  def tearDown(self):
+    self.app.post('/python/search/clean-up','')
+
+
+class PutTest(SearchTestCase):
+  def test_search_put(self):
+    response = self.app.post(
+      '/python/search/put',
+      json=default_documents)
     self.assertEquals(response.status_code, 200)
 
 class GetTest(SearchTestCase):
+  def setUp(self):
+    self.app.post('/python/search/put',
+                  json=default_documents)
   
   def test_search_get(self):
     response = self.app.post(
@@ -60,6 +63,9 @@ class GetTest(SearchTestCase):
 #
 #
 class SearchTest(SearchTestCase):
+  def setUp(self):
+    self.app.post('/python/search/put',
+                  json=default_documents)
 
   def test_search_simple_query(self):
     response = self.app.post(
