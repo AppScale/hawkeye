@@ -10,12 +10,13 @@ try:
   from termcolor import cprint
 except ImportError:
   sys.stderr.write('termcolor module not found\n')
-  def cprint(msg, **kwargs):
+  def cprint(msg, *args, **kwargs):
     """
     Fallback definition of cprint in case the termcolor module is not available.
 
     Args:
       msg: a str to be printed stdout.
+      args: additional positional arguments for cprint that are ignored.
       kwargs: keyword arguments for cprint. It is ignored in dummy cprint.
     """
     print(msg)
