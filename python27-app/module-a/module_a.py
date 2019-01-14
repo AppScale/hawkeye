@@ -1,6 +1,7 @@
 import json
 
 import webapp2
+from google.appengine.api import datastore
 from google.appengine.ext import ndb
 from google.appengine.api.modules import (
   get_current_instance_id, get_current_module_name, get_current_version_name,
@@ -90,12 +91,20 @@ class CreateEntityHandler(webapp2.RequestHandler):
            created_at_version='v1', new_field='new').put()
 
 
+class RecordCronHandler(webapp2.RequestHandler):
+  def get(self):
+    entity = datastore.Entity('CronTarget', name='cron-target-entity')
+    entity['content'] = 'success'
+    datastore.Put(entity)
+
+
 # These are all all URL available for module-a
 app = webapp2.WSGIApplication([
   ('/modules/versions-details', GetVersionDetailsHandler),
   ('/modules/get-entity', GetEntityHandler),
   ('/modules/get-entities', GetEntitiesHandler),
   ('/modules/create-entity', CreateEntityHandler),
+  ('/cron/record-cron', RecordCronHandler)
 ])
 
 
