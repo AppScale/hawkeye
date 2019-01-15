@@ -1,32 +1,58 @@
 import json
+import datetime
 
 from hawkeye_test_runner import HawkeyeTestCase, HawkeyeTestSuite
 
-default_documents = {"index": "index-1", "documents": [
-        {
-          "id": "a",
-          "text1": "hello world",
-          "text2": "testing search api and world"
-        },
-        {
-          "id": "b",
-          "anotherText": "There is also a corresponding asynchronous method, "
-        },
-        {
-	  "id": "c",
-          "text3": "This string also contains the word world and api"
-        },
-        {
-          "id": "firstdate",
-          "date_entered": "2018-12-12",
-          "text4": "This is a test of the national broadcasting system"
-        },
-        {
-          "id": "seconddate",
-          "date_entered": "2019-04-04",
-          "text5": "Who are the britons?"
-        }
-      ]}
+default_documents = {"index": "index-1",
+                     "documents": [
+                       {
+                         "id": "a",
+                         "fields": [ {"name":"text1",
+                                      "type":"text",
+                                      "lang":"en",
+                                      "value": "hello world"},
+                                     {"name":"text2",
+                                      "lang":"en",
+                                      "value":"testing search api and world",
+                                      "type":"text"
+                                     },
+                         ]
+                       },
+                       {
+                         "id": "b",
+                         "fields": [ {"name":"anotherText",
+                                      "value":"There is also a corresponding asynchronous method, ",
+                                      "type":"text"}
+                         ]
+                       },
+                       {
+	                 "id": "c",
+                         "fields": [ {"name":"text3",
+                                      "value":"This string also contains the word world and api",
+                                      "type":"text"},
+                         ]
+                       },
+                       {
+                         "id": "firstdate",
+                         "fields": [ {"name":"date_entered",
+                                      "type":'date',
+                                      "value":"2018-12-12"},
+                                     {"name":"text4",
+                                      "value":"This is a test of the national broadcasting system",
+                                      "type":"text"},
+                         ]
+                       },
+                       {
+                         "id": "seconddate",
+                         "fields": [ {"name": "date_entered",
+                                      "value": "2019-04-04",
+                                      "type": "date"},
+                                     {"name": "text5",
+                                      "value": "Who are the britons?",
+                                      "type": "text"},
+                         ]
+                       },
+                     ]}
 
 # Documents that will need to be deleted
 document_ids = {'index':'index-1',
@@ -104,6 +130,12 @@ class SearchTest(SearchTestCase):
     documents = response.json()['documents']
     self.assertEquals(len(documents), 2)
 
+    # Documents 'a' and 'c' should be in the results as they
+    # both have 'api, world' in the content
+    ids = [doc['id'] for doc in documents]
+    self.assertIn('a', ids)
+    self.assertIn('c', ids)
+
   def test_search_query_OR(self):
     response = self.app.post(
       '/python/search/search',
@@ -114,13 +146,17 @@ class SearchTest(SearchTestCase):
     documents = response.json()['documents']
     self.assertEquals(len(documents), 2)
 
+    ids = [doc['id'] for doc in documents]
+    self.assertIn('a', ids)
+    self.assertIn('seconddate', ids)
+
   def test_search_query_date_global_equal(self):
     """
     Generic date entry in the query string
     """
     response = self.app.post(
       '/python/search/search',
-      json={"index": "index-1", "query": "2018-12-12"})
+      json={"index": "index-1", "query": "2018"})
 
     self.assertEquals(response.status_code, 200)
     self.assertIn('documents', response.json())
@@ -129,7 +165,7 @@ class SearchTest(SearchTestCase):
     self.assertEquals(len(documents), 1)
     doc = documents[0]
     # Make sure we got the right document back with that date.
-    self.assertEquals(doc['date_entered'], '2018-12-12')
+    self.assertEquals(doc['date_entered'],"2018-12-12T00:00:00")
     self.assertEquals(doc['text4'], 'This is a test of the national broadcasting system')
 
   def test_search_query_date_equal_by_field(self):
@@ -138,7 +174,7 @@ class SearchTest(SearchTestCase):
     """
     response = self.app.post(
       '/python/search/search',
-      json={"index": "index-1", "query": "date_entered: 2019-04-04"})
+      json={"index": "index-1", "query": "date_entered: 2019"})
 
     self.assertEquals(response.status_code, 200)
     self.assertIn('documents', response.json())
@@ -147,7 +183,7 @@ class SearchTest(SearchTestCase):
     self.assertEquals(len(documents), 1)
     doc = documents[0]
     # Make sure we got the right document back with that date.
-    self.assertEquals(doc['date_entered'], '2019-04-04')
+    self.assertEquals(doc['date_entered'], '2019-04-04T00:00:00')
     self.assertEquals(doc['text5'], "Who are the britons?")
 
   def test_search_query_date_less_than(self):
