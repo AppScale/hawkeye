@@ -141,3 +141,12 @@ tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.urlfetch_tests.CertificateValidation.runTest,ok
 tests.user_tests.LoginURLTest.runTest,ok
 tests.xmpp_tests.SendAndReceiveTest.runTest,ok
+tests.search_tests.PutTest.test_search_put,ok
+tests.search_tests.GetTest.test_search_get,ok
+tests.search_tests.SearchTest.test_search_query_AND_no_results,ok
+tests.search_tests.SearchTest.test_search_query_AND_two_results,ok
+tests.search_tests.SearchTest.test_search_query_OR,ok
+tests.search_tests.SearchTest.test_search_query_date_equal_by_field,ok
+tests.search_tests.SearchTest.test_search_query_date_global_equal,ok
+tests.search_tests.SearchTest.test_search_query_date_less_than,ok
+tests.search_tests.SearchTest.test_search_simple_query,ok

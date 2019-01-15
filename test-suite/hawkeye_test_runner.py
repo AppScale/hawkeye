@@ -209,7 +209,7 @@ def load_report_dict_from_csv(file_name):
     A dictionary with statuses of tests (<test_id>: <status>).
   """
   with open(file_name, "r") as csv_file:
-    return {test_id: result for test_id, result in csv.reader(csv_file)}
+    return {test_id: result.rstrip() for test_id, result in csv.reader(csv_file)}
 
 
 class ReportsDiff(object):

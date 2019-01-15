@@ -1,4 +1,5 @@
 import json
+import datetime
 import wsgiref
 
 import webapp2
@@ -7,6 +8,14 @@ from google.appengine.api.search import search
 from google.appengine.api.search.search import QueryOptions, ScoredDocument, Query
 from google.appengine.ext import webapp
 
+field_type_dict = {'text':search.TextField,
+                   'html':search.HtmlField,
+                   'atom':search.AtomField,
+                   'number':search.NumberField,
+                   'date':search.DateField}
+
+def get_field(field_name):
+  return field_type_dict[field_name]
 
 def render_doc(document):
   """
@@ -21,6 +30,9 @@ def render_doc(document):
   document_dict = {
     field.name: unicode(field.value) for field in document.fields
   }
+  # Pull over document id as it isn't included in fields.
+  document_dict['id'] = document.doc_id
+
   if isinstance(document, ScoredDocument):
     document_dict["_sort_scores"] = document.sort_scores
   return document_dict
@@ -33,12 +45,30 @@ def parse_doc(raw_document):
   :param raw_document: {<field_name>: <text_field_value>}
   :return: search.Document
   """
+  fields = []
+  # make sure fields exists?
+  for f in raw_document.get('fields'):
+
+    field = get_field(f['type'])       # get class by simple name: text,atom
+    if f['type'] in ['text','html']:
+      # text/html has a lang field, lang should be a two character
+      # specifier as required by the sdk.
+      fields.append(field(f['name'],
+                          f['value'],
+                          f['lang'] if 'lang' in f else 'en'))
+    elif f['type'] == 'date':
+      # for date field we need to convert to a datetime
+      fields.append(field(f['name'],
+                    datetime.datetime.strptime(f['value'], '%Y-%m-%d')))
+    else:
+      # All other fields just have a name/value pair.
+      fields.append(field(f['name'],
+                          f['value']))
+
   return search.Document(
     doc_id=raw_document.get('id'),
-    fields=[
-      search.TextField(name, value)
-      for name, value in raw_document.iteritems() if name != 'id'
-    ])
+    fields=fields
+  )
 
 
 
