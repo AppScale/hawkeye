@@ -511,6 +511,7 @@ class TaskExistsTest(HawkeyeTestCase):
     response = self.app.post('/{lang}/taskqueue/task', data=args)
     self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
 
+
 class DeleteTaskTest(HawkeyeTestCase):
   QUEUE = 'hawkeyepython-PushQueue-0'
 
@@ -537,6 +538,25 @@ class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
 
 
+class AdminWorkerTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.app.delete('/{lang}/taskqueue/admin_manager')
+
+  def test_admin_worker(self):
+    response = self.app.post('/{lang}/taskqueue/admin_manager')
+    self.assertEqual(response.status_code, 200)
+    deadline = time.time() + 10
+    while True:
+      self.assertLess(time.time(), deadline)
+      response = self.app.get('/{lang}/taskqueue/admin_manager')
+      if response.status_code == 404:
+        time.sleep(1)
+        continue
+
+      self.assertEqual(response.status_code, 200)
+      break
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTests(QueueExistsTest.all_cases(app))
@@ -549,6 +569,9 @@ def suite(lang, app):
   suite.addTests(TaskEtaTest.all_cases(app))
   suite.addTests(BriefLeaseTest.all_cases(app))
   suite.addTests(TransactionalTaskTest.all_cases(app))
+
+  if lang == 'java':
+    suite.addTests(AdminWorkerTest.all_cases(app))
 
   if lang == 'python':
     suite.addTests(RESTPullQueueTest.all_cases(app))
