@@ -1,5 +1,6 @@
 import json
 import datetime
+import logging
 import wsgiref
 
 import webapp2
@@ -137,6 +138,7 @@ class CleanUpHandler(webapp2.RequestHandler):
     idx = search.Index(name=index)
 
     idx.delete(document_ids)
+    idx.delete_schema()
 
 urls = [
   ('/python/search/put', PutDocumentsHandler),
