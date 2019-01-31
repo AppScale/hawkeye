@@ -1,15 +1,10 @@
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
+import uuid
 
 from google.appengine.api import memcache
-from google.appengine.ext import webapp
 import webapp2
-import wsgiref
-import logging
-import uuid
 __author__ = 'hiranya'
+
 
 class MemcacheHandler(webapp2.RequestHandler):
 
@@ -48,6 +43,7 @@ class MemcacheHandler(webapp2.RequestHandler):
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
 
+
 class MemcacheIncrHandler(webapp2.RequestHandler):
 
   def post(self):
@@ -75,6 +71,7 @@ class MemcacheIncrHandler(webapp2.RequestHandler):
       self.response.out.write(json.dumps({ 'success' : True }))
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
+
 
 class MemcacheMultiKeyHandler(webapp2.RequestHandler):
 
@@ -113,6 +110,7 @@ class MemcacheMultiKeyHandler(webapp2.RequestHandler):
     else:
       self.response.out.write(json.dumps({ 'success' : False }))
 
+
 class MemcacheCasHandler(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = "application/json"
@@ -134,11 +132,34 @@ class MemcacheCasHandler(webapp2.RequestHandler):
           'cas returned True, should have returned False'}))
       else:
         self.response.out.write(json.dumps({ 'success' : True}))
-    
+
+
+class Counter(webapp2.RequestHandler):
+  def post(self):
+    key = self.request.get('key')
+    initial_type = self.request.get('type')
+    if initial_type == 'long':
+      initial_type = long
+    else:
+      initial_type = int
+
+    initial_value = initial_type(self.request.get('initialValue'))
+    memcache.incr(key, initial_value=initial_value)
+
+  def get(self):
+    key = self.request.get('key')
+    value = memcache.get(key)
+    json.dump({'type': str(type(value)), 'value': value}, self.response)
+
+  def delete(self):
+    key = self.request.get('key')
+    memcache.delete(key)
+
 
 urls = [
   ('/python/memcache', MemcacheHandler),
   ('/python/memcache/multi', MemcacheMultiKeyHandler),
   ('/python/memcache/incr', MemcacheIncrHandler),
   ('/python/memcache/cas', MemcacheCasHandler),
+  ('/python/memcache/counter', Counter)
 ]
