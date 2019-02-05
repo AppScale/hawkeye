@@ -20,6 +20,7 @@ __author__ = 'hiranya'
 ALL_PROJECTS = {}
 SYNAPSE_MODULES = {}
 
+
 class DataStoreCleanupTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/datastore/module')
@@ -28,6 +29,7 @@ class DataStoreCleanupTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     response = self.http_delete('/datastore/transactions')
     self.assertEquals(response.status, 200)
+
 
 class SimpleKindAwareInsertTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -64,6 +66,7 @@ class SimpleKindAwareInsertTest(DeprecatedHawkeyeTestCase):
     # Allow some time to eventual consistency to run its course
     sleep(5)
 
+
 class KindAwareInsertWithParentTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/datastore/module',
@@ -88,6 +91,7 @@ class KindAwareInsertWithParentTest(DeprecatedHawkeyeTestCase):
     self.assertTrue(module_id is not None)
     SYNAPSE_MODULES[HawkeyeConstants.MOD_NHTTP] = module_id
 
+
 class SimpleKindAwareQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     project_list = self.assert_and_get_list('/datastore/project')
@@ -108,10 +112,12 @@ class SimpleKindAwareQueryTest(DeprecatedHawkeyeTestCase):
       self.assertEquals(len(entity_list), 1)
       self.assertEquals(mod_info['name'], entry['name'])
 
+
 class ZigZagQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/zigzag')
     self.assertEquals(response.status, 200)
+
 
 class AncestorQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -125,6 +131,7 @@ class AncestorQueryTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(len(modules), 2)
     self.assertTrue(modules.index(HawkeyeConstants.MOD_CORE) != -1)
     self.assertTrue(modules.index(HawkeyeConstants.MOD_NHTTP) != -1)
+
 
 class OrderedKindAncestorQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -176,6 +183,7 @@ class KindlessQueryTest(DeprecatedHawkeyeTestCase):
         break
     self.assertTrue(project_seen)
 
+
 class KindlessAncestorQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list(
@@ -200,6 +208,7 @@ class KindlessAncestorQueryTest(DeprecatedHawkeyeTestCase):
         break
     self.assertTrue(project_seen)
 
+
 class QueryByKeyNameTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/entity_names?project_name={0}'.
@@ -214,6 +223,7 @@ class QueryByKeyNameTest(DeprecatedHawkeyeTestCase):
     entity = json.loads(response.payload)
     self.assertEquals(entity['module_id'],
       SYNAPSE_MODULES[HawkeyeConstants.MOD_CORE])
+
 
 class SinglePropertyBasedQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -256,6 +266,7 @@ class SinglePropertyBasedQueryTest(DeprecatedHawkeyeTestCase):
     except AssertionError:
       pass
 
+
 class OrderedResultQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/datastore/project_ratings?'
@@ -265,6 +276,7 @@ class OrderedResultQueryTest(DeprecatedHawkeyeTestCase):
     for entity in entity_list:
       self.assertTrue(entity['rating'], last_rating)
       last_rating = entity['rating']
+
 
 class LimitedResultQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -279,6 +291,7 @@ class LimitedResultQueryTest(DeprecatedHawkeyeTestCase):
     for entity in entity_list:
       self.assertTrue(entity['rating'], last_rating)
       last_rating = entity['rating']
+
 
 class ProjectionQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -301,6 +314,7 @@ class ProjectionQueryTest(DeprecatedHawkeyeTestCase):
       self.assertTrue(entity['name'] is not None)
       self.assertNotEquals(entity['name'], HawkeyeConstants.PROJECT_XERCES)
 
+
 class GQLProjectionQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     entity_list = self.assert_and_get_list('/datastore/project_fields?'
@@ -311,6 +325,7 @@ class GQLProjectionQueryTest(DeprecatedHawkeyeTestCase):
       self.assertTrue(entity.get('description') is None)
       self.assertTrue(entity.get('project_id') is None)
       self.assertTrue(entity['name'] is not None)
+
 
 class CompositeQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -329,6 +344,7 @@ class CompositeQueryTest(DeprecatedHawkeyeTestCase):
                                            'license=L2&rate_limit=5')
     self.assertEquals(len(entity_list), 1)
     self.assertEquals(entity_list[0]['name'], HawkeyeConstants.PROJECT_HADOOP)
+
 
 class SimpleTransactionTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -350,6 +366,7 @@ class SimpleTransactionTest(DeprecatedHawkeyeTestCase):
     entity = json.loads(response.payload)
     self.assertFalse(entity['success'])
     self.assertEquals(entity['counter'], 2)
+
 
 class CrossGroupTransactionTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -375,6 +392,7 @@ class CrossGroupTransactionTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(entity['counter'], 2)
     self.assertEquals(entity['backup'], 2)
 
+
 class QueryCursorTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     project1 = self.assert_and_get_list('/datastore/project_cursor')
@@ -391,6 +409,7 @@ class QueryCursorTest(DeprecatedHawkeyeTestCase):
                                         'cursor={0}'.format(project3['next']))
     self.assertTrue(project4['project'] is None)
     self.assertTrue(project4['next'] is None)
+
 
 class JDOIntegrationTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -422,6 +441,7 @@ class JDOIntegrationTest(DeprecatedHawkeyeTestCase):
     response = self.http_get('/datastore/jdo_project?project_id=' + project_id)
     self.assertEquals(response.status, 404)
 
+
 class JPAIntegrationTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_put('/datastore/jpa_project',
@@ -452,75 +472,90 @@ class JPAIntegrationTest(DeprecatedHawkeyeTestCase):
     response = self.http_get('/datastore/jpa_project?project_id=' + project_id)
     self.assertEquals(response.status, 404)
 
+
 class ComplexQueryCursorTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/complex_cursor')
     self.assertEquals(response.status, 200)
+
 
 class CountQueryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/count_query')
     self.assertEquals(response.status, 200)
 
+
 class CompositeMultiple(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/composite_multiple')
     self.assertEquals(response.status, 200)
+
 
 class ConcurrentTransactionTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/concurrent_transactions')
     self.assertEquals(response.status, 200)
 
+
 class QueryingAfterFailedTxn(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/querying_after_failed_txn')
     self.assertEquals(response.status, 200)
+
 
 class QueryPagination(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/query_pagination')
     self.assertEquals(response.status, 200)
 
+
 class MaxGroupsInTxn(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/max_groups_in_txn')
     self.assertEquals(response.status, 200)
+
 
 class IndexIntegrity(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/index_integrity')
     self.assertEquals(response.status, 200)
 
+
 class MultipleEqualityFilters(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/multiple_equality_filters')
     self.assertEquals(response.status, 200)
+
 
 class CursorWithZigzagMerge(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/cursor_with_zigzag_merge')
     self.assertEquals(response.status, 200)
 
+
 class RepeatedProperties(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/repeated_properties')
     self.assertEquals(response.status, 200)
+
 
 class CompositeProjection(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/composite_projection')
     self.assertEquals(response.status, 200)
 
+
 class CursorQueries(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/cursor_queries')
     self.assertEquals(response.status, 200)
 
+
 class IndexVersatility(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/index_versatility')
     self.assertEquals(response.status, 200)
+
 
 class JavaProjectionQueryTest(DeprecatedHawkeyeTestCase):
   def tearDown(self):
@@ -531,6 +566,7 @@ class JavaProjectionQueryTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     response = self.http_get('/datastore/projection_query')
 
+
 class QueryLimitTest(DeprecatedHawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/datastore/limit_test')
@@ -538,6 +574,7 @@ class QueryLimitTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_get('/datastore/limit_test')
     self.assertEquals(response.status, 200)
+
 
 class LongTxRead(DeprecatedHawkeyeTestCase):
   ID = 'long-tx-test'
@@ -571,6 +608,7 @@ class LongTxRead(DeprecatedHawkeyeTestCase):
     self.assertTrue(self.RESPONSES.get())
     self.assertTrue(self.RESPONSES.get())
 
+
 class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
   KIND = 'TestModel'
   IDS = [u'\u2605', 'multiple\nlines']
@@ -599,6 +637,7 @@ class NonAsciiEntityKeys(DeprecatedHawkeyeTestCase):
       self.assertEqual(response.status, 200)
       self.assertEqual(json.loads(response.payload)['content'], content)
 
+
 class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
   def tearDown(self):
     self.http_delete('/datastore/cursor_with_repeated_prop')
@@ -612,6 +651,7 @@ class CursorWithRepeatedProp(DeprecatedHawkeyeTestCase):
     self.assertEqual(response.status, 200)
     results = json.loads(response.payload)
     self.assertEqual(len(results), 1)
+
 
 class TxInvalidation(DeprecatedHawkeyeTestCase):
   KEY = 'tx-invalidation-test'
@@ -646,6 +686,7 @@ class TxInvalidation(DeprecatedHawkeyeTestCase):
     # The first transaction should be invalidated by the concurrent put.
     self.assertFalse(response['txnSucceeded'])
 
+
 class ScatterPropTest(HawkeyeTestCase):
   """ Tests queries on the __scatter__ reserved property.
 
@@ -679,6 +720,7 @@ class ScatterPropTest(HawkeyeTestCase):
       '/python/datastore/scatter_prop?kind={}'.format(self.KIND))
     keys = response.json()
     self.assertListEqual(keys, self.KEY_NAMES['scattered'])
+
 
 class SinglePropKeyInequality(HawkeyeTestCase):
   KIND = 'KeyInequality'
@@ -718,6 +760,7 @@ class SinglePropKeyInequality(HawkeyeTestCase):
       response = self.app.get(
         '/{{lang}}/datastore/single_prop_key_inequality?{}'.format(args))
       self.assertListEqual(response.json(), expected_keys)
+
 
 class MergeJoinWithAncestor(HawkeyeTestCase):
   def setUp(self):
