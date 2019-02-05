@@ -2040,6 +2040,26 @@ class KindQuery(webapp2.RequestHandler):
     json.dump(response, self.response)
 
 
+class BatchQuery(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    limit = self.request.get('limit', default_value=None)
+    prefetch_size = self.request.get('prefetchSize', default_value=None)
+    args = {}
+    if limit is not None:
+      args['limit'] = int(limit)
+
+    if prefetch_size is not None:
+      args['prefetch_size'] = int(prefetch_size)
+
+    query = datastore.Query(kind)
+    entities = query.Run(**args)
+    response = [
+      {'path': entity.key().to_path(), 'properties': entity}
+      for entity in entities]
+    json.dump(response, self.response)
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -2073,5 +2093,6 @@ urls = [
   ('/python/datastore/tx_invalidation', TxInvalidation),
   ('/python/datastore/single_prop_key_inequality', SinglePropKeyInequality),
   ('/python/datastore/merge_join_with_ancestor', MergeJoinWithAncestor),
-  ('/python/datastore/kind_query', KindQuery)
+  ('/python/datastore/kind_query', KindQuery),
+  ('/python/datastore/batch_query', BatchQuery)
 ]

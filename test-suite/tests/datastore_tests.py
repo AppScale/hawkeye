@@ -811,6 +811,42 @@ class MergeJoinWithAncestor(HawkeyeTestCase):
                          {'size': 'medium', 'color': 'red'})
 
 
+class TestBatchQueries(HawkeyeTestCase):
+  KEYS = ['a', 'b', 'c', 'd', 'e']
+  KIND = 'BatchResult'
+
+  def setUp(self):
+    for key in self.KEYS:
+      data = {'name': key, 'kind': self.KIND, 'properties': {}}
+      self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+  def tearDown(self):
+    entities = self.app.get(
+      '/{{lang}}/datastore/kind_query?kind={}'.format(self.KIND)).json()
+    paths = [entity['path'] for entity in entities]
+    for path in paths:
+      encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+      self.app.delete(
+        '/{{lang}}/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+
+  def test_prefetch(self):
+    args = urllib.urlencode({'kind': self.KIND, 'prefetchSize': 1})
+    entities = self.app.get('/{{lang}}/datastore/batch_query?{}'.format(args)).\
+      json()
+    expected_results = [{'path': [self.KIND, key], 'properties': {}}
+                        for key in self.KEYS]
+    self.assertListEqual(entities, expected_results)
+
+  def test_prefetch_with_limit(self):
+    args = urllib.urlencode(
+      {'kind': self.KIND, 'prefetchSize': 1, 'limit': 3})
+    entities = self.app.get(
+      '/{{lang}}/datastore/batch_query?{}'.format(args)).json()
+    expected_results = [{'path': [self.KIND, key], 'properties': {}}
+                        for key in self.KEYS][:3]
+    self.assertListEqual(entities, expected_results)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -855,6 +891,7 @@ def suite(lang, app):
     suite.addTests(ScatterPropTest.all_cases(app))
     suite.addTests(SinglePropKeyInequality.all_cases(app))
     suite.addTests(MergeJoinWithAncestor.all_cases(app))
+    suite.addTests(TestBatchQueries.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
