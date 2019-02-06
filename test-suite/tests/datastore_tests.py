@@ -767,6 +767,52 @@ class MergeJoinWithAncestor(HawkeyeTestCase):
     self.assertDictEqual(entities[0]['properties'],
                          {'size': 'medium', 'color': 'red'})
 
+class TestMoreResults(HawkeyeTestCase):
+  KEYS = ['a', 'b', 'c', 'd', 'e']
+  KIND = 'BatchResult'
+
+  def setUp(self):
+    for key in self.KEYS:
+      data = {'name': key, 'kind': self.KIND, 'properties': {}}
+      self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+  def tearDown(self):
+    entities = self.app.get(
+      '/{{lang}}/datastore/kind_query?kind={}'.format(self.KIND)).json()
+    paths = [entity['path'] for entity in entities]
+    for path in paths:
+      encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+      self.app.delete(
+        '/{{lang}}/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+
+  def test_more_results(self):
+    # Maps query options to expected results (result_slice, more_results).
+    queries = [
+      ({'limit': 5}, (slice(5), False)),
+      ({'limit': 6, 'batchSize': 5}, (slice(5), False)),
+      ({'limit': 5, 'batchSize': 3}, (slice(3), True)),
+      ({'offset': 2}, (slice(2, 5), False)),
+      ({'limit': 0}, (slice(0), False)),
+      ({'batchSize': 1}, (slice(1), True)),
+      ({'batchSize': 6, 'limit': 3}, (slice(3), False)),
+      ({'offset': 0}, (slice(5), False)),
+      ({'offset': 6}, (slice(6, len(self.KEYS)), False)),
+      ({'offset': 1, 'batchSize': 4, 'limit': 5}, (slice(1, 5), False)),
+      ({'offset': 1, 'batchSize': 3, 'limit': 5}, (slice(1, 4), True))
+    ]
+    for query_options, expected_result in queries:
+      query_options['kind'] = self.KIND
+      args = urllib.urlencode(query_options)
+      response = self.app.get(
+        '/{{lang}}/datastore/more_results?{}'.format(args)).json()
+
+      result_slice, more_results = expected_result
+      expected_response = {
+        'results': [{'path': [self.KIND, key], 'properties': {}}
+        for key in self.KEYS][result_slice],
+        'moreResults': more_results}
+      self.assertDictEqual(response, expected_response)
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -812,6 +858,7 @@ def suite(lang, app):
     suite.addTests(ScatterPropTest.all_cases(app))
     suite.addTests(SinglePropKeyInequality.all_cases(app))
     suite.addTests(MergeJoinWithAncestor.all_cases(app))
+    suite.addTests(TestMoreResults.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
