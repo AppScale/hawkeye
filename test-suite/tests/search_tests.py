@@ -1140,7 +1140,6 @@ class FacetedSearch(SearchTestCase):
     # We've only asked for one facet
     self.assertEqual(len(facets), 1)
 
-    # type change
     facet = facets.pop()
 
     # This should match the expected title count below
@@ -1174,6 +1173,47 @@ class FacetedSearch(SearchTestCase):
 
     # Verify the number of documents returned in the facet request
     self.assertEqual(facet_rating_document_count, len(expected_titles))
+
+  def test_facet_options_all_documents(self):
+    """
+    Set the discover_facet_limit and value limit to 1 and make sure
+    that results are limited to 1 each.
+    """
+    response = self.app.post(
+      "/python/search/search",
+      json={"index": "books",
+            "query": "price > 5",
+            "auto_discover_facet_count": 1,
+            "facet_auto_detect_limit": 1
+            }
+    )
+    self.assertEquals(response.status_code, 200)
+    self.assertIn("documents", response.json())
+    self.assertIn("facets", response.json())
+
+    facets = response.json()["facets"]
+
+    # We've only asked for one facet
+    self.assertEqual(len(facets), 1)
+
+    facet = facets.pop()
+
+    self.assertIn(facet["name"], facet_lookup)
+
+    self.assertEqual(len(facet["values"]), 1)
+
+    # Find the facet value column in faceted_docs.
+    # assertion above would have fired if the name wasn't in the lookup
+    # so we don't need to try/except here.
+    idx = facet_lookup.index(facet["name"])
+
+    facet_value = facet["values"][0][FACET_RES_VALUE]
+
+    # all possible values for the facet
+    expected_values = set([i[FACETS][idx] for i in faceted_docs])
+
+    # Check that the facet value is correct
+    self.assertIn(facet_value, expected_values)
 
 
 def suite(lang, app):
