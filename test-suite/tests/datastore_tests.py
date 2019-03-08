@@ -767,6 +767,45 @@ class MergeJoinWithAncestor(HawkeyeTestCase):
     self.assertDictEqual(entities[0]['properties'],
                          {'size': 'medium', 'color': 'red'})
 
+class MergeJoinWithKey(HawkeyeTestCase):
+  def setUp(self):
+    brand_a = {'kind': 'shirt', 'name': 'shirt_a',
+               'properties': {'color': 'red', 'size': 'medium'}}
+    self.app.post('/{lang}/datastore/manage_entity', json=brand_a)
+
+  def tearDown(self):
+    path = ['shirt', 'shirt_a']
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    self.app.delete(
+      '/{{lang}}/datastore/manage_entity?pathBase64={}'.format(encoded_path))
+
+  def test_merge_join_with_key(self):
+    kind = 'shirt'
+    filter_a = urllib.quote('__key__=shirt_a')
+    filter_b = urllib.quote('color=red')
+    filter_c = urllib.quote('size=medium')
+    response = self.app.get(
+      '/{{lang}}/datastore/merge_join_with_key?'
+      'kind={}&'
+      'filter={}&'
+      'filter={}&'
+      'filter={}'.format(kind, filter_a, filter_b, filter_c))
+    entities = response.json()
+    self.assertEqual(len(entities), 1)
+
+    kind = 'shirt'
+    filter_a = urllib.quote('__key__=shirt_a')
+    filter_b = urllib.quote('color=blue')
+    filter_c = urllib.quote('size=medium')
+    response = self.app.get(
+      '/{{lang}}/datastore/merge_join_with_key?'
+      'kind={}&'
+      'filter={}&'
+      'filter={}&'
+      'filter={}'.format(kind, filter_a, filter_b, filter_c))
+    entities = response.json()
+    self.assertEqual(len(entities), 0)
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
@@ -812,6 +851,7 @@ def suite(lang, app):
     suite.addTests(ScatterPropTest.all_cases(app))
     suite.addTests(SinglePropKeyInequality.all_cases(app))
     suite.addTests(MergeJoinWithAncestor.all_cases(app))
+    suite.addTests(MergeJoinWithKey.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
