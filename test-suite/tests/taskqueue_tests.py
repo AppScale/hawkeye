@@ -531,6 +531,15 @@ class DeleteTaskTest(HawkeyeTestCase):
     self.assertEqual(response.json()['error'], 'InvalidTaskError')
 
 
+class PurgePullQueueTest(HawkeyeTestCase):
+  def test_purge_pull_queue(self):
+    response = self.app.post('/{lang}/taskqueue/pull',
+                             data={'action': 'add', 'key': 'foo'})
+    self.assertEqual(response.status_code, 200)
+    response = self.app.delete('/{lang}/taskqueue/pull')
+    self.assertEqual(response.status_code, 200)
+
+
 class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/taskqueue/clean_up', '')
@@ -557,6 +566,7 @@ def suite(lang, app):
     suite.addTests(TaskExistsTest.all_cases(app))
     suite.addTests(DeleteTaskTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
+    suite.addTests(PurgePullQueueTest.all_cases(app))
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend
