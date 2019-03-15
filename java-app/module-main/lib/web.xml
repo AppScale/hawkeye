@@ -36,6 +36,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>SessionHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.sessions.SessionHandler</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>ProjectHandlerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.datastore.ProjectHandlerServlet
         </servlet-class>
@@ -264,6 +269,11 @@
     <servlet-mapping>
         <servlet-name>ServiceAccountNameHandler</servlet-name>
         <url-pattern>/java/app_identity/service_account_name</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>SessionHandler</servlet-name>
+        <url-pattern>/java/sessions/session_handler</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

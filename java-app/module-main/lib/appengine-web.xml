@@ -14,4 +14,9 @@
     <env-var name="SHOULD_HAVE_SPACE" value="has space" />
     <env-var name="STATUS" value=":partyparrot:" />
   </env-variables>
+  <sessions-enabled>true</sessions-enabled>
+  <automatic-scaling>
+    <min-instances>2</min-instances>
+    <max-instances>5</max-instances>
+  </automatic-scaling>
 </appengine-web-app>
