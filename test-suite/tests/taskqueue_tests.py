@@ -164,6 +164,7 @@ class QueueStatisticsTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     task_info = json.loads(response.payload)
     self.assertEquals(task_info['queue'], 'default')
+    self.assertEquals(task_info['tasks'], 0)
 
 
 class PullQueueTest(DeprecatedHawkeyeTestCase):

@@ -73,7 +73,6 @@ tests.taskqueue_tests.LeaseModificationTest.runTest,ok
 tests.taskqueue_tests.PullQueueTest.runTest,ok
 tests.taskqueue_tests.PushQueueTest.runTest,ok
 tests.taskqueue_tests.QueueExistsTest.runTest,ok
-tests.taskqueue_tests.QueueStatisticsTest.runTest,ok
 tests.taskqueue_tests.TaskRetryTest.runTest,ok
 tests.taskqueue_tests.TransactionalTaskTest.runTest,ok
 tests.user_tests.LoginURLTest.runTest,ok
