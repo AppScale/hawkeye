@@ -8,7 +8,7 @@ from hawkeye_test_runner import HawkeyeTestSuite
 class CertificateValidation(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     good_cert = 'https://redmine.appscale.com/'
-    bad_cert = 'https://ocd.appscale.com:8080/'
+    bad_cert = 'https://ocd.appscale.net:8081/'
 
     vars = {'url': base64.urlsafe_b64encode(good_cert), 'validate': 'false'}
     response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
