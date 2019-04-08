@@ -18,13 +18,15 @@ class CertificateValidation(DeprecatedHawkeyeTestCase):
     response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
     self.assertEqual(response.status, 200)
 
-    vars = {'url': base64.urlsafe_b64encode(bad_cert), 'validate': 'false'}
-    response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
-    self.assertEqual(response.status, 200)
+# Remove bad cert tests since we don't expose them to the outside world anymore
 
-    vars = {'url': base64.urlsafe_b64encode(bad_cert), 'validate': 'true'}
-    response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
-    self.assertEqual(response.status, 500)
+#    vars = {'url': base64.urlsafe_b64encode(bad_cert), 'validate': 'false'}
+#    response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
+#    self.assertEqual(response.status, 200)
+
+#    vars = {'url': base64.urlsafe_b64encode(bad_cert), 'validate': 'true'}
+#    response = self.http_get('/urlfetch?{}'.format(urllib.urlencode(vars)))
+#    self.assertEqual(response.status, 500)
 
 
 def suite(lang, app):
