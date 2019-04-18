@@ -130,6 +130,7 @@ tests.taskqueue_tests.CleanUpTaskEntities.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
 tests.taskqueue_tests.LeaseModificationTest.runTest,ok
 tests.taskqueue_tests.PullQueueTest.runTest,ok
+tests.taskqueue_tests.PurgePullQueueTest.test_purge_pull_queue,ok
 tests.taskqueue_tests.PushHeadersTest.test_given_task_name,ok
 tests.taskqueue_tests.PushQueueTest.runTest,ok
 tests.taskqueue_tests.QueueExistsTest.runTest,ok
