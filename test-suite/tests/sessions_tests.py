@@ -25,6 +25,7 @@ class SessionsTest(HawkeyeTestCase):
         continue
 
       self.assertEqual(response.json()['name'], name)
+      break
 
 
 def suite(lang, app):
