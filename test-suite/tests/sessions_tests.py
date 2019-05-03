@@ -8,6 +8,7 @@ class SessionsTest(HawkeyeTestCase):
                              data={'name': name})
     self.assertEqual(response.status_code, 200)
     instance_id = response.text.strip()
+    cookies = response.cookies
 
     # Assuming there are at least two instances for the version
     # (the appengine-web.xml specifies that there should be at least two), it's
@@ -15,7 +16,8 @@ class SessionsTest(HawkeyeTestCase):
     max_retries = 20
     retry = 0
     while True:
-      response = self.app.get('/{lang}/sessions/session_handler')
+      response = self.app.get('/{lang}/sessions/session_handler',
+                              cookies=cookies)
       self.assertEqual(response.status_code, 200)
       if response.json()['instanceId'] == instance_id:
         retry += 1
