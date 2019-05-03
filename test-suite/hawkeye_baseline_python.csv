@@ -59,6 +59,7 @@ tests.datastore_tests.LimitedResultQueryTest.runTest,ok
 tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MergeJoinWithAncestor.test_merge_join_with_ancestor,ok
+tests.datastore_tests.MergeJoinWithKey.test_merge_join_with_key,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
 tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
@@ -131,6 +132,7 @@ tests.taskqueue_tests.CleanUpTaskEntities.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
 tests.taskqueue_tests.LeaseModificationTest.runTest,ok
 tests.taskqueue_tests.PullQueueTest.runTest,ok
+tests.taskqueue_tests.PurgePullQueueTest.test_purge_pull_queue,ok
 tests.taskqueue_tests.PushHeadersTest.test_given_task_name,ok
 tests.taskqueue_tests.PushQueueTest.runTest,ok
 tests.taskqueue_tests.QueueExistsTest.runTest,ok
