@@ -2027,6 +2027,23 @@ class MergeJoinWithAncestor(webapp2.RequestHandler):
                 for entity in entities]
     json.dump(response, self.response)
 
+class MergeJoinWithKey(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    filters = self.request.get_all('filter')
+
+    query = datastore.Query(kind)
+    for filter_ in filters:
+      prop, val = filter_.split('=')
+      if prop == '__key__':
+        val = datastore.Key.from_path(kind, val)
+
+      query['{} ='.format(prop)] = val
+
+    entities = query.Get(limit=None)
+    response = [{'path': entity.key().to_path(), 'properties': entity}
+                for entity in entities]
+    json.dump(response, self.response)
 
 class KindQuery(webapp2.RequestHandler):
   def get(self):
@@ -2094,5 +2111,6 @@ urls = [
   ('/python/datastore/single_prop_key_inequality', SinglePropKeyInequality),
   ('/python/datastore/merge_join_with_ancestor', MergeJoinWithAncestor),
   ('/python/datastore/kind_query', KindQuery),
+  ('/python/datastore/merge_join_with_key', MergeJoinWithKey),
   ('/python/datastore/batch_query', BatchQuery)
 ]
