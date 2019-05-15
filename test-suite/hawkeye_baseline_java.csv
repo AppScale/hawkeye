@@ -67,6 +67,7 @@ tests.modules_tests.TestCreatingAndGettingEntity.test_default_module,ok
 tests.modules_tests.TestCreatingAndGettingEntity.test_module_a,ok
 tests.modules_tests.TestTaskTargets.test_task_targets,ok
 tests.runtime_tests.JSPCompilationTest.test_jsp_compilation,ok
+tests.taskqueue_tests.AdminWorkerTest.test_admin_worker,ok
 tests.taskqueue_tests.BriefLeaseTest.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
 tests.taskqueue_tests.LeaseModificationTest.runTest,ok
