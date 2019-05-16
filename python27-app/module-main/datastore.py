@@ -20,6 +20,7 @@ import utils
 
 SDK_CONSISTENCY_WAIT = .5
 
+
 def remove_db_entities(query):
   """ Remove all DB entities that match a given query.
 
@@ -35,6 +36,7 @@ def remove_db_entities(query):
     if entities_fetched < batch_size:
       break
 
+
 class Project(db.Model):
   project_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
@@ -42,18 +44,22 @@ class Project(db.Model):
   rating = db.IntegerProperty(required=True)
   license = db.StringProperty(required=True)
 
+
 class Module(db.Model):
   module_id = db.StringProperty(required=True)
   name = db.StringProperty(required=True)
   description = db.StringProperty(required=True)
 
+
 class Counter(db.Model):
   counter = db.IntegerProperty(required=True)
+
 
 class Cars(db.Model):
   model = db.StringProperty(required=True)
   make = db.StringProperty(required=True)
   color = db.StringProperty(required=True)
+
 
 class CompositeCars(db.Model):
   model = db.StringProperty()
@@ -61,27 +67,33 @@ class CompositeCars(db.Model):
   color = db.StringProperty()
   value = db.IntegerProperty()
 
+
 class TestModel(ndb.Model):
   field = ndb.StringProperty()
   bool_field = ndb.BooleanProperty()
+
 
 class Post(db.Model):
   content = db.StringProperty()
   tags = db.StringListProperty()
   date_added = db.DateTimeProperty(auto_now_add=True)
 
+
 class User(ndb.Model):
   username = ndb.StringProperty(required=True)
   brands = ndb.StringProperty(repeated=True)
   status = ndb.StringProperty(default='pending')
+
 
 class NDBCompositeCar(ndb.Model):
   model = ndb.StringProperty()
   color = ndb.StringProperty()
   value = ndb.IntegerProperty()
 
+
 class TestException(Exception):
   pass
+
 
 class CompositeMultipleFiltersOnProperty(unittest.TestCase):
   """ Queries that use a set of equality filters use the zigzag merge join 
@@ -192,6 +204,7 @@ class CompositeMultipleFiltersOnProperty(unittest.TestCase):
           values_fetched = [car.value for car in results]
           self.assertListEqual(value_options, values_fetched)
 
+
 class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -200,6 +213,7 @@ class CompositeMultipleFiltersOnPropertyHandler(webapp2.RedirectHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class IndexVersatility(unittest.TestCase):
   def tearDown(self):
@@ -277,6 +291,7 @@ class IndexVersatility(unittest.TestCase):
     for index in query.index_list():
       self.log_index(index)
 
+
 class IndexVersatilityHandler(webapp2.RedirectHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -285,6 +300,7 @@ class IndexVersatilityHandler(webapp2.RedirectHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class ZigZagQuery(unittest.TestCase):
   def tearDown(self):
@@ -328,6 +344,7 @@ class ZigZagQuery(unittest.TestCase):
     results = q.fetch(100)
     self.assertEqual(len(results), 3)
 
+
 class ZigZagQueryHandler(webapp2.RequestHandler):
   """ Queries that use a set of equality filters use the zigzag merge join
   algorithm.
@@ -339,6 +356,7 @@ class ZigZagQueryHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 def serialize(entity):
   dict = {'name': entity.name, 'description': entity.description}
@@ -353,6 +371,7 @@ def serialize(entity):
   else:
     dict['type'] = 'unknown'
   return dict
+
 
 class ProjectHandler(webapp2.RequestHandler):
   def get(self):
@@ -391,6 +410,7 @@ class ProjectHandler(webapp2.RequestHandler):
   def delete(self):
     db.delete(Project.all())
 
+
 class ModuleHandler(webapp2.RequestHandler):
   def get(self):
     id = self.request.get('id')
@@ -426,6 +446,7 @@ class ModuleHandler(webapp2.RequestHandler):
   def delete(self):
     db.delete(Module.all())
 
+
 class ProjectModuleHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
@@ -451,6 +472,7 @@ class ProjectModuleHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
+
 class ProjectKeyHandler(webapp2.RequestHandler):
   def get(self):
     project_id = self.request.get('project_id')
@@ -474,6 +496,7 @@ class ProjectKeyHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
+
 class EntityNameHandler(webapp2.RequestHandler):
   def get(self):
     project_name = self.request.get('project_name')
@@ -489,6 +512,7 @@ class EntityNameHandler(webapp2.RequestHandler):
       self.response.out.write(json.dumps(entity, default=serialize))
     else:
       raise Exception('Missing parameters')
+
 
 class ProjectRatingHandler(webapp2.RequestHandler):
   def get(self):
@@ -524,6 +548,7 @@ class ProjectRatingHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
+
 class ProjectFieldHandler(webapp2.RequestHandler):
   def get(self):
     fields = self.request.get('fields')
@@ -543,6 +568,7 @@ class ProjectFieldHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
 
+
 class ProjectBrowserHandler(webapp2.RequestHandler):
   def get(self):
     cursor_str = self.request.get('cursor')
@@ -560,6 +586,7 @@ class ProjectBrowserHandler(webapp2.RequestHandler):
       self.response.out.write(
         json.dumps({ 'project' :  None, 'next' : None }))
 
+
 class ProjectFilterHandler(webapp2.RequestHandler):
   def get(self):
     license = self.request.get('license')
@@ -571,6 +598,7 @@ class ProjectFilterHandler(webapp2.RequestHandler):
       data.append(entity)
     self.response.headers['Content-Type'] = "application/json"
     self.response.out.write(json.dumps(data, default=serialize))
+
 
 class TransactionHandler(webapp2.RequestHandler):
   def increment_counter(self, key, amount):
@@ -637,6 +665,7 @@ class TransactionHandler(webapp2.RequestHandler):
 
   def delete(self):
     db.delete(Counter.all())
+
 
 """
   This test will create Company, Employee and PhoneNumber
@@ -706,6 +735,7 @@ class ComplexCursorHandler(webapp2.RequestHandler):
     db.delete(Employee.all())
     db.delete(PhoneNumber.all())
 
+
 class CountQueryHandler(webapp2.RequestHandler):
   def get(self):
     status = {'success' : True}
@@ -730,14 +760,18 @@ class CountQueryHandler(webapp2.RequestHandler):
     finally:
       db.delete(Employee.all())
 
+
 class Employee(db.Model):
   name = db.StringProperty(required=True)
+
 
 class Company(db.Model):
   name = db.StringProperty(required=True)
 
+
 class PhoneNumber(db.Model):
   work = db.StringProperty(required=True)
+
 
 # The following test checks if a concurrent transaction exception is raised
 # when it shouldn't be.
@@ -888,6 +922,7 @@ class TestConcurrentTransaction(unittest.TestCase):
     self.assertRaises(TestException, failed_update)
     ndb.transaction(lambda: ndb.Key(TestModel, identifier).delete())
 
+
 class TestConcurrentTransactionHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -896,6 +931,7 @@ class TestConcurrentTransactionHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 # The following test checks if entities can be found even after a delete
 # succeeds in a failed transaction.
@@ -1101,6 +1137,7 @@ class TestQueryingAfterFailedTxn(unittest.TestCase):
     ctx = "Create > Delete in failed txn (invalid-xg: 30 groups) > Check"
     self.assertEqual(len(self.errors), 0, self._errors_to_msg(ctx))
 
+
 class TestQueryingAfterFailedTxnHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1109,6 +1146,7 @@ class TestQueryingAfterFailedTxnHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestQueryPagination(unittest.TestCase):
   page_size = 3
@@ -1187,6 +1225,7 @@ class TestQueryPagination(unittest.TestCase):
     ctx = "Cursor pagination - fetch(limit, start_cursor)"
     self._check_and_delete(cursor_fetcher, ctx)
 
+
 class TestQueryPaginationHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1195,6 +1234,7 @@ class TestQueryPaginationHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestCursorQueries(unittest.TestCase):
   def setUp(self):
@@ -1486,6 +1526,7 @@ class TestCursorQueries(unittest.TestCase):
     # Make sure all of the results were fetched.
     self.assertEqual(len(results), total_entities)
 
+
 class TestCursorQueriesHandler(webapp.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1494,6 +1535,7 @@ class TestCursorQueriesHandler(webapp.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestMaxGroupsInTxn(unittest.TestCase):
   fetchers = [
@@ -1523,6 +1565,7 @@ class TestMaxGroupsInTxn(unittest.TestCase):
     create(25)
     self.assertRaises(datastore_errors.Error, create, 26)
 
+
 class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1531,6 +1574,7 @@ class TestMaxGroupsInTxnHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestIndexIntegrity(unittest.TestCase):
   def tearDown(self):
@@ -1578,6 +1622,7 @@ class TestIndexIntegrity(unittest.TestCase):
     field_values = [(entity.field, entity.bool_field) for entity in results]
     self.assertEqual(field_values, [("value", True)])
 
+
 class TestIndexIntegrityHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1586,6 +1631,7 @@ class TestIndexIntegrityHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestMultipleEqualityFilters(unittest.TestCase):
   def setUp(self):
@@ -1670,6 +1716,7 @@ class TestMultipleEqualityFilters(unittest.TestCase):
       User.brands == 'brand2', User.brands == 'brand3'))
     self.assertEqual(query.count(), 1)
 
+
 class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1678,6 +1725,7 @@ class TestMultipleEqualityFiltersHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestCursorWithZigZagMerge(unittest.TestCase):
   def tearDown(self):
@@ -1734,6 +1782,7 @@ class TestCursorWithZigZagMerge(unittest.TestCase):
 
     self.assertListEqual(expected_usernames, retrieved_usernames)
 
+
 class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1742,6 +1791,7 @@ class TestCursorWithZigZagMergeHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestRepeatedProperties(unittest.TestCase):
   def tearDown(self):
@@ -1763,6 +1813,7 @@ class TestRepeatedProperties(unittest.TestCase):
     query = Post.all().filter('tags = ', 'boo').filter('tags = ', 'baz')
     self.assertEqual(query.count(), 0)
 
+
 class TestRepeatedPropertiesHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1771,6 +1822,7 @@ class TestRepeatedPropertiesHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class TestCompositeProjection(unittest.TestCase):
   def tearDown(self):
@@ -1791,6 +1843,7 @@ class TestCompositeProjection(unittest.TestCase):
     for _ in query.run():
       pass
 
+
 class TestCompositeProjectionHandler(webapp2.RequestHandler):
   def get(self):
     suite = unittest.TestSuite()
@@ -1799,6 +1852,7 @@ class TestCompositeProjectionHandler(webapp2.RequestHandler):
     if not result.wasSuccessful():
       self.error(500)
       self.response.write(utils.format_errors(result))
+
 
 class LongTransactionRead(webapp2.RequestHandler):
   def get(self):
@@ -1817,6 +1871,7 @@ class LongTransactionRead(webapp2.RequestHandler):
   def delete(self):
     entity_key = ndb.Key(TestModel, self.request.get('id'))
     entity_key.delete()
+
 
 class ManageEntity(webapp2.RequestHandler):
   def post(self):
@@ -1844,6 +1899,7 @@ class ManageEntity(webapp2.RequestHandler):
     path = json.loads(base64.urlsafe_b64decode(encoded_path))
     key = datastore.Key.from_path(*path)
     datastore.Delete(key)
+
 
 class CursorWithRepeatedProp(webapp2.RequestHandler):
   TOTAL_ENTITIES = 5
@@ -1880,6 +1936,7 @@ class CursorWithRepeatedProp(webapp2.RequestHandler):
     keys = User.query().fetch(keys_only=True)
     ndb.delete_multi(keys)
 
+
 class TxInvalidation(webapp2.RequestHandler):
   def post(self):
     @ndb.transactional(retries=0)
@@ -1904,6 +1961,7 @@ class TxInvalidation(webapp2.RequestHandler):
 
   def delete(self):
     ndb.Key(TestModel, self.request.get('key')).delete()
+
 
 class ScatterProp(webapp2.RequestHandler):
   def get(self):
@@ -1931,6 +1989,7 @@ class ScatterProp(webapp2.RequestHandler):
     keys = query.Get(limit=None)
     datastore.Delete(keys)
 
+
 class SinglePropKeyInequality(webapp2.RequestHandler):
   def get(self):
     kind = self.request.get('kind')
@@ -1949,6 +2008,7 @@ class SinglePropKeyInequality(webapp2.RequestHandler):
        'properties': entity}
       for entity in entities]
     json.dump(response, self.response)
+
 
 class MergeJoinWithAncestor(webapp2.RequestHandler):
   def get(self):
@@ -2024,6 +2084,26 @@ class CheckMoreResults(webapp2.RequestHandler):
     json.dump(response, self.response)
 
 
+class BatchQuery(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    limit = self.request.get('limit', default_value=None)
+    prefetch_size = self.request.get('prefetchSize', default_value=None)
+    args = {}
+    if limit is not None:
+      args['limit'] = int(limit)
+
+    if prefetch_size is not None:
+      args['prefetch_size'] = int(prefetch_size)
+
+    query = datastore.Query(kind)
+    entities = query.Run(**args)
+    response = [
+      {'path': entity.key().to_path(), 'properties': entity}
+      for entity in entities]
+    json.dump(response, self.response)
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -2059,5 +2139,6 @@ urls = [
   ('/python/datastore/merge_join_with_ancestor', MergeJoinWithAncestor),
   ('/python/datastore/kind_query', KindQuery),
   ('/python/datastore/merge_join_with_key', MergeJoinWithKey),
+  ('/python/datastore/batch_query', BatchQuery),
   ('/python/datastore/more_results', CheckMoreResults)
 ]
