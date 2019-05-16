@@ -42,7 +42,7 @@ from tests import (
   urlfetch_tests, warmup_tests
 )
 
-SUPPORTED_LANGUAGES = ['java', 'python']
+SUPPORTED_LANGUAGES = ['java', 'python', 'go', 'php']
 
 
 def build_suites_list(lang, include, exclude, application):
