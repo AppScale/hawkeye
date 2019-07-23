@@ -1218,6 +1218,9 @@ class FacetedSearch(SearchTestCase):
 
 def suite(lang, app):
   suite = HawkeyeTestSuite("Search API Test Suite", "search")
+  if lang != 'python':
+    return suite
+
   suite.addTests(PutTest.all_cases(app))
   suite.addTests(GetTest.all_cases(app))
   suite.addTests(GetRangeTest.all_cases(app))
