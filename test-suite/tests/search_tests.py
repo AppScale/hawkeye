@@ -1214,6 +1214,7 @@ class FacetedSearch(SearchTestCase):
 
     # Check that the facet value is correct
     self.assertIn(facet_value, expected_values)
+    # TODO: this test fails, but it's not critical at the moment.
 
 
 def suite(lang, app):
