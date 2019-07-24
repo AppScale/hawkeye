@@ -1,14 +1,12 @@
 import json
 import datetime
 import logging
-import wsgiref
 
 import webapp2
 
 from google.appengine.api.search import search
 from google.appengine.api.search.search import QueryOptions, ScoredDocument, Query
 from google.appengine.api.search.search import FacetRange, FacetOptions, FacetRequest
-from google.appengine.ext import webapp
 
 
 field_type_dict = {'text': search.TextField,
@@ -20,32 +18,38 @@ field_type_dict = {'text': search.TextField,
 facet_type_dict = {'atom': search.AtomFacet,
                    'number': search.NumberFacet}
 
-def get_facet(facet_name):
-  return facet_type_dict[facet_name]
 
-def get_field(field_name):
-  return field_type_dict[field_name]
+def get_facet(facet_type_name):
+  return facet_type_dict[facet_type_name]
+
+
+def get_field(field_type_name):
+  return field_type_dict[field_type_name]
+
 
 def render_doc(document):
-  """
-  Generates JSON-compatible object from object of type search.Document
+  """ Generates JSON-compatible object from object of type search.Document
   All fields are expected to be TextField for now
   :param document: document to render
   :type document: search.Document
-  :return: dict {<field_name>: <string_repr_of_value>}
+  :return: dict {<field_name>: <field_value>}
   """
   if not document:
     return None
-  document_dict = {
-    field.name: unicode(field.value) for field in document.fields
-  }
 
   # Pull over document id as it isn't included in fields.
-  document_dict['id'] = document.doc_id
+  document_dict = {'id': document.doc_id}
+  for field in document.fields:
+    if isinstance(field, search.DateField):
+      value = str(field.value)
+    else:
+      value = field.value
+    document_dict[field.name] = value
 
   if isinstance(document, ScoredDocument):
     document_dict["_sort_scores"] = document.sort_scores
   return document_dict
+
 
 def render_facet(facet):
   """
@@ -54,8 +58,9 @@ def render_facet(facet):
   :return: dict {
   """
   return {"name": facet.name,
-          "values": [(i.label, i.count, i.refinement_token)
-                     for i in facet.values]}
+          "values": [(value.label, value.count, value.refinement_token)
+                     for value in facet.values]}
+
 
 def parse_doc(raw_document):
   """
@@ -71,7 +76,7 @@ def parse_doc(raw_document):
   for f in raw_document.get('fields'):
 
     field = get_field(f['type'])       # get class by simple name: text,atom
-    if f['type'] in ['text','html']:
+    if f['type'] in ['text', 'html']:
       # text/html has a lang field, lang should be a two character
       # specifier as required by the sdk.
       fields.append(field(f['name'],
@@ -222,6 +227,7 @@ class CleanUpHandler(webapp2.RequestHandler):
 
     idx.delete(document_ids)
     idx.delete_schema()
+
 
 urls = [
   ('/python/search/put', PutDocumentsHandler),

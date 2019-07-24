@@ -1,7 +1,5 @@
-import sys
 import time
 import itertools
-import pprint
 from collections import Counter
 
 from hawkeye_test_runner import HawkeyeTestCase, HawkeyeTestSuite
@@ -13,8 +11,8 @@ field_lookup = ["id", "title", "author", "price"]
 facet_lookup = ["type", "format", "publisher", "rating"]
 
 # List of (fields, facets) tuples
-# fields:id, title, author, price
-# facets:type, format, publisher, rating
+# fields: id, title, author, price
+# facets: type, format, publisher, rating
 faceted_docs = [
   (("1", "IT", "Stephen King", 9.99), ("horror", "paperback", "viking press", 5)),
   (("2", "IT", "Stephen King", 9.99), ("horror", "digital", "viking press", 5)),
@@ -47,57 +45,45 @@ FACET_RES_VALUE = 0
 FACET_RES_COUNT = 1
 FACET_RES_TOKEN = 2
 
-#
-# Gather some stats on the list of books as a whole.
-#
-facet_stats = { }
-for i in facet_lookup:
-  facet_stats[i] = Counter()
 
-facet_lists = [i[FACETS] for i in faceted_docs]
-for facet_list in facet_lists:
-  for i,facet in enumerate(facet_list):
-    facet_stats[facet_lookup[i]][facet] += 1
-
-
-def construct_faceted_dict(index_name, docs):
-  """
-  Constructs a document dictionary with facets similar to 'default_documents' below
+def construct_faceted_dict(index_name, docs_info):
+  """ Constructs a document dictionary with facets similar to 'default_documents' below
   but does so in a way that makes it easier to add books for faceted test cases
   :param index_name: name of index to add documents to
-  :param docs: list of docs which contain a field, facet tuple
-  :return: dict{} with an index field and document field
+  :param docs_info: list of docs which contain a field, facet tuple
+  :return: dict with an index field and document field
   """
-  fd = {"index": index_name, "documents": []}
+  documents = []
 
   # loop through docs and construct a dictionary
   # that will get passed to the application
-  for i in docs:
-    fields, facets = i
-
-    # Initial document
-    d = {"id": fields[0], "fields": [], "facets": []}
+  for field_values, facet_values in docs_info:
+    fields = []
+    facets = []
 
     # build the fields
-    for i, j in enumerate(fields):
+    for index, field_value in enumerate(field_values):
       # Skip the "id" used only for the document
-      if i == 0:
+      if index == FIELD_ID:
         continue
-
-      name = field_lookup[i]
-      # only supports text and numbers
-      stype = "text" if isinstance(j, str) else "number"
-      d["fields"].append({"name": name, "type": stype, "value": j})
+      fields.append({
+        "name": field_lookup[index],
+        "type": "text" if isinstance(field_value, str) else "number",
+        "value": field_value
+      })
 
     # build the facets
-    for i, j in enumerate(facets):
-      name = facet_lookup[i]
-      stype = "atom" if isinstance(j, str) else "number"
-      d["facets"].append({"name": name, "type": stype, "value": j})
+    for index, facet_value in enumerate(facet_values):
+      facets.append({
+        "name": facet_lookup[index],
+        "type": "atom" if isinstance(facet_value, str) else "number",
+        "value": facet_value
+      })
 
     # Attach the doc
-    fd["documents"].append(d)
-  return fd
+    doc = {"id": field_values[FIELD_ID], "fields": fields, "facets": facets}
+    documents.append(doc)
+  return {"index": index_name, "documents": documents}
 
 
 default_documents = {
@@ -189,24 +175,19 @@ default_documents = {
   ]
 }
 
-# Documents that will need to be deleted from the index
-document_ids = {"index": "index-1",
-                "document_ids": [i["id"]
-                                 for i in
-                                 default_documents["documents"]]}
-
-# Faceted documents, these belong to the 'books' index.
-faceted_doc_ids = {"index": "books",
-                   "document_ids": [i[FIELDS][FIELD_ID] for i in faceted_docs]}
 
 class SearchTestCase(HawkeyeTestCase):
+  # Documents that will need to be deleted from the index
+  document_ids = {"index": "index-1",
+                  "document_ids": [doc["id"] for doc
+                                   in default_documents["documents"]]}
 
   def tearDown(self):
     """
     Tear down of the test will remove all documents from the index
     and clear the index_schema
     """
-    self.app.post("/python/search/clean-up", json=document_ids)
+    self.app.post("/python/search/clean-up", json=self.document_ids)
 
 
 class PutTest(SearchTestCase):
@@ -320,8 +301,8 @@ class SearchTest(SearchTestCase):
     self.assertIn("documents", response_json)
     documents = response_json["documents"]
     self.assertEqual(len(documents), 1)
-    self.assertIn("text1",documents[0])
-    self.assertIn("text2",documents[0])
+    self.assertIn("text1", documents[0])
+    self.assertIn("text2", documents[0])
 
   def test_search_query_AND_no_results(self):
     """
@@ -411,7 +392,8 @@ class SearchTest(SearchTestCase):
     doc = documents[0]
     # Make sure we got the right document back with that date.
     self.assertEquals(doc["date_entered"], "2018-12-12 00:00:00")
-    self.assertEquals(doc["text4"], "This is a test of the national broadcasting system")
+    self.assertEquals(doc["text4"],
+                      "This is a test of the national broadcasting system")
 
   def test_search_query_date_equal_by_field(self):
     """
@@ -447,7 +429,8 @@ class SearchTest(SearchTestCase):
 
     doc = documents[0]
     self.assertEquals(doc["date_entered"], "2018-12-12 00:00:00")
-    self.assertEquals(doc["text4"], "This is a test of the national broadcasting system")
+    self.assertEquals(doc["text4"],
+                      "This is a test of the national broadcasting system")
 
   def test_search_query_number_by_field_equal(self):
     """
@@ -465,7 +448,7 @@ class SearchTest(SearchTestCase):
 
     doc = documents[0]
     self.assertEquals(doc["id"], "importantnumbers")
-    self.assertEquals(doc["meaning_of_life"], u'42.0')
+    self.assertEquals(doc["meaning_of_life"], 42.0)
 
   def test_search_query_number_by_field_equal_colon(self):
     """
@@ -483,7 +466,7 @@ class SearchTest(SearchTestCase):
 
     doc = documents[0]
     self.assertEquals(doc["id"], "importantnumbers")
-    self.assertEquals(doc["meaning_of_life"], u'42.0')
+    self.assertEquals(doc["meaning_of_life"], 42.0)
 
   def test_search_query_number_less_than(self):
     """
@@ -501,7 +484,7 @@ class SearchTest(SearchTestCase):
 
     doc = documents[0]
     self.assertEquals(doc["id"], "importantnumbers")
-    self.assertEquals(doc["meaning_of_life"], u'42.0')
+    self.assertEquals(doc["meaning_of_life"], 42.0)
 
   def test_search_query_number_less_than_no_results(self):
     """
@@ -531,7 +514,7 @@ class SearchTest(SearchTestCase):
     documents = response.json()["documents"]
     self.assertEquals(len(documents), 2)
 
-    docs = [i["id"] for i in documents]
+    docs = [doc["id"] for doc in documents]
     self.assertIn("numbers", docs)
     self.assertIn("numbers2", docs)
 
@@ -549,7 +532,7 @@ class SearchTest(SearchTestCase):
     documents = response.json()["documents"]
     self.assertEquals(len(documents), 1)
 
-    docs = [i["id"] for i in documents]
+    docs = [doc["id"] for doc in documents]
     self.assertIn("numbers", docs)
 
   def test_search_query_number_greater_than_equal_one(self):
@@ -566,7 +549,7 @@ class SearchTest(SearchTestCase):
     documents = response.json()["documents"]
     self.assertEquals(len(documents), 1)
 
-    docs = [i["id"] for i in documents]
+    docs = [doc["id"] for doc in documents]
     self.assertIn("numbers", docs)
 
   def test_search_query_number_greater_than_equal_two(self):
@@ -583,7 +566,7 @@ class SearchTest(SearchTestCase):
     documents = response.json()["documents"]
     self.assertEquals(len(documents), 2)
 
-    docs = [i["id"] for i in documents]
+    docs = [doc["id"] for doc in documents]
     self.assertIn("numbers", docs)
     self.assertIn("numbers2", docs)
 
@@ -668,16 +651,31 @@ class SearchTest(SearchTestCase):
 
 
 class FacetedSearch(SearchTestCase):
+  # Faceted documents, these belong to the 'books' index.
+  faceted_doc_ids = {"index": "books",
+                     "document_ids": [doc_info[FIELDS][FIELD_ID] for doc_info
+                                      in faceted_docs]}
+
+  # Gather some stats on the list of books as a whole.
+  facet_stats = {}
+  for facet_name in facet_lookup:
+    facet_stats[facet_name] = Counter()
+
+  facet_lists = [doc_info[FACETS] for doc_info in faceted_docs]
+  for facet_list in facet_lists:
+    for index, facet_value in enumerate(facet_list):
+      facet_stats[facet_lookup[index]][facet_value] += 1
 
   def setUp(self):
-    self.app.post("/python/search/put", json=construct_faceted_dict("books", faceted_docs))
+    self.app.post("/python/search/put",
+                  json=construct_faceted_dict("books", faceted_docs))
     time.sleep(CONSISTENCY_WAIT_TIME)
 
   def tearDown(self):
     """
     Remove faceted documents
     """
-    self.app.post("/python/search/clean-up", json=faceted_doc_ids)
+    self.app.post("/python/search/clean-up", json=self.faceted_doc_ids)
 
   def test_automatic_facet_discovery_all_documents(self):
     """
@@ -725,21 +723,17 @@ class FacetedSearch(SearchTestCase):
         continue
 
       self.assertIn(facet_name, facet_lookup)
-      self.assertIn(facet_name, facet_stats)
+      self.assertIn(facet_name, self.facet_stats)
 
       # Iterate through the values for the facets
       # they should match the stats we gathered from faceted_docs.
       values = facet["values"]
-      for i in values:
-        v, count, _ = i  # tuple of (value name, count, facet_refinement token.)
-        actual = "{}-{}-{}".format(facet_name,
-                                   v,
-                                   count)
+      for value in values:
+        label, count, _ = value  # tuple of (label, count, facet_refinement)
+        actual = (facet_name, label, count)
 
-        e_count = facet_stats[facet_name][v]
-        expected = "{}-{}-{}".format(facet_name,
-                                     v,
-                                     e_count)
+        expected_count = self.facet_stats[facet_name][label]
+        expected = (facet_name, label, expected_count)
         self.assertEquals(actual, expected)
 
   def test_automatic_facet_discovery_priced_above_15(self):
@@ -764,12 +758,13 @@ class FacetedSearch(SearchTestCase):
     # Should get back all documents
     self.assertEquals(len(documents), 3)
 
-    document_titles = [i["title"] for i in documents]
+    document_titles = [doc["title"] for doc in documents]
     document_titles.sort()
 
     # should be: Ready Player One, Swan Song, Wizard and Glass
-    expected_titles = [unicode(i[FIELDS][FIELD_TITLE]) for i in faceted_docs
-                       if i[FIELDS][FIELD_PRICE] > 15]
+    expected_titles = [unicode(doc_info[FIELDS][FIELD_TITLE])
+                       for doc_info in faceted_docs
+                       if doc_info[FIELDS][FIELD_PRICE] > 15]
     expected_titles.sort()
 
     self.assertEquals(document_titles, expected_titles)
@@ -780,25 +775,26 @@ class FacetedSearch(SearchTestCase):
     # Should be a count of 3 for format: hardcover
     # Should be a count of 2 for type: science-fiction
     #                      1 for type: horror
-    # Should be 3 publishers, 'crown publishers', 'simon and schuster', 'viking press'
+    # Should be 3 publishers
+    # 'crown publishers', 'simon and schuster', 'viking press'
 
     #
     # TODO These assertion checks should be dynamic.
     #
-    for i in facets:
-      if i["name"] == "format":
-        values = i["values"][0]
+    for facet in facets:
+      if facet["name"] == "format":
+        values = facet["values"][0]
         self.assertEquals(values[FACET_RES_VALUE], 'hardcover')
         self.assertEquals(values[FACET_RES_COUNT], 3)
-      elif i["name"] == "type":
-        values = i["values"]
-        for v in values:
-          if v[FACET_RES_VALUE] == 'science-fiction':
-            self.assertEquals(v[FACET_RES_COUNT], 2)
-          elif v[0] == 'horror':
-            self.assertEquals(v[FACET_RES_COUNT], 1)
-      elif i["name"] == "publisher":
-        self.assertEquals(len(i["values"]), 3)
+      elif facet["name"] == "type":
+        values = facet["values"]
+        for value in values:
+          if value[FACET_RES_VALUE] == 'science-fiction':
+            self.assertEquals(value[FACET_RES_COUNT], 2)
+          elif value[0] == 'horror':
+            self.assertEquals(value[FACET_RES_COUNT], 1)
+      elif facet["name"] == "publisher":
+        self.assertEquals(len(facet["values"]), 3)
 
   def test_automatic_facet_refine_by_paperback_from_all_documents(self):
     """
@@ -825,18 +821,18 @@ class FacetedSearch(SearchTestCase):
     self.assertEquals(len(facets), len(facet_lookup))
 
     # refine by format:paperback
-    formats = [i for i in facets if i["name"] == "format"]
+    formats = [facet for facet in facets if facet["name"] == "format"]
     self.assertEquals(len(formats), 1)
 
     book_format = formats.pop()
 
-    # should be list of 1 element
-    refinement_facets = [i for i in book_format['values']
-                         if i[FACET_RES_VALUE] in ['paperback']]
-    self.assertEquals(len(refinement_facets), 1)
-
     # Gather the list of refinement tokens to pass to the query
-    refinements = [i[FACET_RES_TOKEN] for i in refinement_facets]
+    refinements = [
+      facet_tuple[FACET_RES_TOKEN]
+      for facet_tuple in book_format['values']
+      if facet_tuple[FACET_RES_VALUE] in ['paperback']
+    ]
+    self.assertEquals(len(refinements), 1)
 
     # Run the search again, with refinements.
     second_response = self.app.post(
@@ -851,12 +847,12 @@ class FacetedSearch(SearchTestCase):
     self.assertIn("facets", response.json())
 
     second_documents = second_response.json()["documents"]
-    actual_titles = [i["title"] for i in second_documents]
+    actual_titles = [doc["title"] for doc in second_documents]
     actual_titles.sort()
 
-    expected_titles = [unicode(i[FIELDS][FIELD_TITLE])
-                        for i in faceted_docs
-                        if i[FACETS][FACET_FORMAT] == "paperback"]
+    expected_titles = [unicode(doc_info[FIELDS][FIELD_TITLE])
+                       for doc_info in faceted_docs
+                       if doc_info[FACETS][FACET_FORMAT] == "paperback"]
     expected_titles.sort()
 
     self.assertEqual(actual_titles, expected_titles)
@@ -868,8 +864,8 @@ class FacetedSearch(SearchTestCase):
 
     This is testing the OR of similar facets.
 
-    This test is dynamic in that it finds the number of paperback and digital books
-    from the faceted_docs global list.
+    This test is dynamic in that it finds the number of paperback
+    and digital books from the faceted_docs global list.
     """
     response = self.app.post(
       "/python/search/search",
@@ -888,16 +884,16 @@ class FacetedSearch(SearchTestCase):
     self.assertEquals(len(facets), len(facet_lookup))
 
     # refine by format:paperback
-    formats = [i for i in facets if i["name"] == "format"]
+    formats = [facet for facet in facets if facet["name"] == "format"]
     self.assertEquals(len(formats), 1)
     book_format = formats.pop()
 
-    refinement_facets = [i for i in book_format['values']
-                         if i[FACET_RES_VALUE] in ['paperback', 'digital']]
-
-    self.assertEquals(len(refinement_facets), 2)
-
-    refinements = [i[FACET_RES_TOKEN] for i in refinement_facets]
+    refinements = [
+      facet_tuple[FACET_RES_TOKEN]
+      for facet_tuple in book_format['values']
+      if facet_tuple[FACET_RES_VALUE] in ['paperback', 'digital']
+    ]
+    self.assertEquals(len(refinements), 2)
 
     second_response = self.app.post(
       "/python/search/search",
@@ -911,13 +907,15 @@ class FacetedSearch(SearchTestCase):
     self.assertIn("facets", response.json())
 
     second_documents = second_response.json()["documents"]
-    actual_titles = [i["title"] for i in second_documents]
+    actual_titles = [doc["title"] for doc in second_documents]
     actual_titles.sort()
 
     # paperback and digital
-    expected_titles = [unicode(i[FIELDS][FIELD_TITLE])
-                       for i in faceted_docs
-                       if i[FACETS][FACET_FORMAT] in ["paperback", "digital"]]
+    expected_titles = [
+      unicode(doc_info[FIELDS][FIELD_TITLE])
+      for doc_info in faceted_docs
+      if doc_info[FACETS][FACET_FORMAT] in ["paperback", "digital"]
+    ]
     expected_titles.sort()
 
     self.assertEqual(actual_titles, expected_titles)
@@ -927,12 +925,12 @@ class FacetedSearch(SearchTestCase):
     This query will return all of the results, and supply facet refinements
     that we'll use to refine the query down.
 
-    This is testing the OR of similar facets, and the AND of a different facet using
-    'type' and 'format'.
+    This is testing the OR of similar facets, and the AND
+    of a different facet using 'type' and 'format'.
 
     This test is dynamic in that it finds the number of paperback,digital books
-    and for type: non-fiction and verifies the titles from the global faceted_docs
-    list. Currently there should only be one book that matches.
+    and for type: non-fiction and verifies the titles from the global
+    faceted_docs list. Currently there should only be one book that matches.
     """
     response = self.app.post(
       "/python/search/search",
@@ -953,22 +951,26 @@ class FacetedSearch(SearchTestCase):
     #
     # refine by format:paperback, format: digital
     #
-    formats = [i for i in facets if i["name"] == "format"]
+    formats = [facet for facet in facets if facet["name"] == "format"]
     book_format = formats.pop()
 
-    format_facets = [i for i in book_format['values']
-                     if i[FACET_RES_VALUE] in ['paperback', 'digital']]
-    format_refinements = [i[FACET_RES_TOKEN] for i in format_facets]
+    format_refinements = [
+      facet_tuple[FACET_RES_TOKEN]
+      for facet_tuple in book_format['values']
+      if facet_tuple[FACET_RES_VALUE] in ['paperback', 'digital']
+    ]
 
     #
     # Get the 'non-fiction' refinement token
     #
-    book_type = [i for i in facets if i["name"] == "type"]
+    book_type = [facet for facet in facets if facet["name"] == "type"]
     book_type = book_type.pop()
 
-    type_facets = [i for i in book_type['values']
-                   if i[FACET_RES_VALUE] in ['non-fiction']]
-    type_refinements = [i[FACET_RES_TOKEN] for i in type_facets]
+    type_refinements = [
+      facet_tuple[FACET_RES_TOKEN]
+      for facet_tuple in book_type['values']
+      if facet_tuple[FACET_RES_VALUE] in ['non-fiction']
+    ]
 
     # combine the refinement token lists
     refinements = list(itertools.chain(format_refinements,
@@ -985,14 +987,16 @@ class FacetedSearch(SearchTestCase):
     self.assertIn("facets", response.json())
 
     second_documents = second_response.json()["documents"]
-    actual_titles = [i["title"] for i in second_documents]
+    actual_titles = [doc["title"] for doc in second_documents]
     actual_titles.sort()
 
     # paperback or digital and 'non-fiction' titles.
-    expected_titles = [unicode(i[FIELDS][FIELD_TITLE])
-                       for i in faceted_docs
-                       if i[FACETS][FACET_FORMAT] in ["paperback", "digital"]
-                       and i[FACETS][FACET_TYPE] in ['non-fiction']]
+    expected_titles = [
+      unicode(doc_info[FIELDS][FIELD_TITLE])
+      for doc_info in faceted_docs
+      if doc_info[FACETS][FACET_FORMAT] in ["paperback", "digital"]
+      and doc_info[FACETS][FACET_TYPE] in ['non-fiction']
+    ]
     expected_titles.sort()
 
     self.assertEqual(actual_titles, expected_titles)
@@ -1022,10 +1026,12 @@ class FacetedSearch(SearchTestCase):
 
     # no longer a list
     facet = facets.pop()
-    actual_values = [i[FACET_RES_VALUE] for i in facet["values"]]
+    actual_values = [facet_tuple[FACET_RES_VALUE]
+                     for facet_tuple in facet["values"]]
     actual_values.sort()
 
-    expected_values = [unicode(i) for i in facet_stats['type'].keys()]
+    expected_values = [unicode(value) for value
+                       in self.facet_stats['type'].keys()]
     expected_values.sort()
 
     self.assertEqual(actual_values, expected_values)
@@ -1034,11 +1040,13 @@ class FacetedSearch(SearchTestCase):
     # Compare strings of 'value'-'count' to make it easier to see
     # incorrect facets.
     #
-    value_counts = [(i[FACET_RES_VALUE], i[FACET_RES_COUNT])
-                    for i in facet["values"]]
+    value_counts = [
+      (facet_tuple[FACET_RES_VALUE], facet_tuple[FACET_RES_COUNT])
+      for facet_tuple in facet["values"]
+    ]
     for value, count in value_counts:
       actual = "{}-{}".format(value, count)
-      expected = "{}-{}".format(value, facet_stats["type"][value])
+      expected = "{}-{}".format(value, self.facet_stats["type"][value])
       self.assertEqual(actual, expected)
 
   def test_select_facet_by_name_value_all_documents(self):
@@ -1073,7 +1081,8 @@ class FacetedSearch(SearchTestCase):
     facet = facets.pop()
     self.assertEqual(facet["name"], "type")
 
-    actual_values = [i[FACET_RES_VALUE] for i in facet["values"]]
+    actual_values = [facet_tuple[FACET_RES_VALUE]
+                     for facet_tuple in facet["values"]]
     actual_values.sort()
 
     # expected is hard coded since we asked for type:horror
@@ -1082,7 +1091,8 @@ class FacetedSearch(SearchTestCase):
     self.assertEqual(actual_values, expected_values)
 
     # verify the count matches
-    self.assertEqual(facet["values"][0][FACET_RES_COUNT], facet_stats['type']['horror'])
+    self.assertEqual(facet["values"][0][FACET_RES_COUNT],
+                     self.facet_stats['type']['horror'])
 
   def test_select_facet_rating_by_name_all_documents(self):
     """
@@ -1160,12 +1170,14 @@ class FacetedSearch(SearchTestCase):
     self.assertIn("facets", response.json())
 
     second_documents = second_response.json()["documents"]
-    actual_titles = [i["title"] for i in second_documents]
+    actual_titles = [doc["title"] for doc in second_documents]
     actual_titles.sort()
 
-    expected_titles = [unicode(i[FIELDS][FIELD_TITLE])
-                       for i in faceted_docs
-                       if float(4) <= float(i[FACETS][FACET_RATING]) < float(6)]
+    expected_titles = [
+      unicode(doc_info[FIELDS][FIELD_TITLE])
+      for doc_info in faceted_docs
+      if float(4) <= float(doc_info[FACETS][FACET_RATING]) < float(6)
+    ]
     expected_titles.sort()
 
     # Verify the document titles
@@ -1210,7 +1222,7 @@ class FacetedSearch(SearchTestCase):
     facet_value = facet["values"][0][FACET_RES_VALUE]
 
     # all possible values for the facet
-    expected_values = set([i[FACETS][idx] for i in faceted_docs])
+    expected_values = {doc_info[FACETS][idx] for doc_info in faceted_docs}
 
     # Check that the facet value is correct
     self.assertIn(facet_value, expected_values)
@@ -1218,14 +1230,13 @@ class FacetedSearch(SearchTestCase):
 
 
 def suite(lang, app):
-  suite = HawkeyeTestSuite("Search API Test Suite", "search")
+  test_suite = HawkeyeTestSuite("Search API Test Suite", "search")
   if lang != 'python':
-    return suite
+    return test_suite
 
-  suite.addTests(PutTest.all_cases(app))
-  suite.addTests(GetTest.all_cases(app))
-  suite.addTests(GetRangeTest.all_cases(app))
-  suite.addTests(SearchTest.all_cases(app))
-  suite.addTests(FacetedSearch.all_cases(app))
-
-  return suite
+  test_suite.addTests(PutTest.all_cases(app))
+  test_suite.addTests(GetTest.all_cases(app))
+  test_suite.addTests(GetRangeTest.all_cases(app))
+  test_suite.addTests(SearchTest.all_cases(app))
+  test_suite.addTests(FacetedSearch.all_cases(app))
+  return test_suite
