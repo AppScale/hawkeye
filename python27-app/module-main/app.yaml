@@ -87,6 +87,10 @@ handlers:
 - url: /_ah/xmpp/message/chat/?
   script: main.app
 
+- url: /python/blobstore/upload
+  script: main.app
+  login: admin
+
 - url: /.*
   script: main.app
 
