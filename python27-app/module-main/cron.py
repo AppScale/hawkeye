@@ -1,18 +1,13 @@
-try:
-  import json
-except ImportError:
-  import simplejson as json
-
-from google.appengine.ext import webapp, db
-import uuid
-import webapp2
-import wsgiref
 import datetime
-import logging
-import time
+import webapp2
+
+from google.appengine.api import datastore
+from google.appengine.ext import db
+
 
 class CronObj(db.Model):
   last_update = db.DateTimeProperty()
+
 
 class CronHandler(webapp2.RequestHandler):
   def get(self):
@@ -44,8 +39,17 @@ class CronHandler(webapp2.RequestHandler):
       return False        
     else:
       return True
- 
+
+
+class CronTargetHandler(webapp2.RequestHandler):
+  def get(self):
+    key = datastore.Key.from_path('CronTarget', 'cron-target-entity')
+    entity = datastore.Get(key)
+    if entity['content'] != 'success':
+      raise Exception('Unexpected CronTarget content')
+
 
 urls = [
   ('/python/cron', CronHandler),
+  ('/python/cron-target', CronTargetHandler)
 ]

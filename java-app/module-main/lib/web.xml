@@ -175,6 +175,14 @@
         <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
         <servlet-class>com.appscale.hawkeye.taskqueue.TransactionalTaskWorkerServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AdminWorkerHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.AdminWorkerHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AdminTaskManager</servlet-name>
+        <servlet-class>com.appscale.hawkeye.taskqueue.AdminTaskManager</servlet-class>
+    </servlet>
 
     <servlet>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -411,6 +419,14 @@
         <servlet-name>TransactionalTaskWorkerServlet</servlet-name>
         <url-pattern>/java/taskqueue/transworker</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AdminWorkerHandler</servlet-name>
+        <url-pattern>/java/taskqueue/admin_worker</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AdminTaskManager</servlet-name>
+        <url-pattern>/java/taskqueue/admin_manager</url-pattern>
+    </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>MemcacheHandlerServlet</servlet-name>
@@ -489,6 +505,14 @@
         </web-resource-collection>
         <auth-constraint>
             <role-name>*</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/java/taskqueue/admin_worker</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
         </auth-constraint>
     </security-constraint>
 </web-app>

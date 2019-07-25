@@ -2,9 +2,11 @@ import json
 from time import sleep
 import uuid
 import urllib
-from hawkeye_test_runner import HawkeyeTestSuite, DeprecatedHawkeyeTestCase
+from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
+                                 DeprecatedHawkeyeTestCase)
 
 __author__ = 'hiranya'
+
 
 class MemcacheAddTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -32,6 +34,7 @@ class MemcacheAddTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['value'], value)
 
+
 class MemcacheKeyTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = urllib.quote(str(uuid.uuid1()) + " /.,';l][/!@#$%^\n&*()_+-=")
@@ -57,6 +60,7 @@ class MemcacheKeyTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['value'], value)
+
 
 class MemcacheSetTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -84,6 +88,7 @@ class MemcacheSetTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['value'], 'foo')
 
+
 class MemcacheKeyExpiryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -102,6 +107,7 @@ class MemcacheKeyExpiryTest(DeprecatedHawkeyeTestCase):
     sleep(8)
     response = self.http_get('/memcache?key={0}'.format(key))
     self.assertEquals(response.status, 404)
+
 
 class MemcacheAsyncAddTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -129,6 +135,7 @@ class MemcacheAsyncAddTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['value'], value)
 
+
 class MemcacheAsyncSetTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -155,6 +162,7 @@ class MemcacheAsyncSetTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info['value'], 'foo')
 
+
 class MemcacheAsyncKeyExpiryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -173,6 +181,7 @@ class MemcacheAsyncKeyExpiryTest(DeprecatedHawkeyeTestCase):
     sleep(8)
     response = self.http_get('/memcache?key={0}&async=true'.format(key))
     self.assertEquals(response.status, 404)
+
 
 class MemcacheDeleteTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -197,6 +206,7 @@ class MemcacheDeleteTest(DeprecatedHawkeyeTestCase):
     response = self.http_get('/memcache?key={0}'.format(key))
     self.assertEquals(response.status, 404)
 
+
 class MemcacheAsyncDeleteTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -219,6 +229,7 @@ class MemcacheAsyncDeleteTest(DeprecatedHawkeyeTestCase):
 
     response = self.http_get('/memcache?key={0}&async=true'.format(key))
     self.assertEquals(response.status, 404)
+
 
 class MemcacheMultiAddTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -251,6 +262,7 @@ class MemcacheMultiAddTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info[key1], value1)
     self.assertEquals(entry_info[key2], value2)
+
 
 class MemcacheMultiSetTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -285,6 +297,7 @@ class MemcacheMultiSetTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(entry_info[key1], 'foo')
     self.assertEquals(entry_info[key2], 'bar')
 
+
 class MemcacheMultiDeleteTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key1 = str(uuid.uuid1())
@@ -315,6 +328,7 @@ class MemcacheMultiDeleteTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(len(entry_info), 0)
+
 
 class MemcacheMultiAsyncAddTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -347,6 +361,7 @@ class MemcacheMultiAsyncAddTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info[key1], value1)
     self.assertEquals(entry_info[key2], value2)
+
 
 class MemcacheMultiAsyncSetTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -381,6 +396,7 @@ class MemcacheMultiAsyncSetTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(entry_info[key1], 'foo')
     self.assertEquals(entry_info[key2], 'bar')
 
+
 class MemcacheMultiAsyncDeleteTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key1 = str(uuid.uuid1())
@@ -412,6 +428,7 @@ class MemcacheMultiAsyncDeleteTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(len(entry_info), 0)
 
+
 class SimpleJCacheTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -438,6 +455,7 @@ class SimpleJCacheTest(DeprecatedHawkeyeTestCase):
     response = self.http_delete('/memcache/jcache?key={0}&cache=simple'.format(key))
     self.assertEquals(response.status, 404)
 
+
 class JCacheExpiryTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -456,6 +474,7 @@ class JCacheExpiryTest(DeprecatedHawkeyeTestCase):
     sleep(8)
     response = self.http_get('/memcache/jcache?key={0}&cache=expiring'.format(key))
     self.assertEquals(response.status, 404)
+
 
 class JCacheAddPolicyTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -482,6 +501,7 @@ class JCacheAddPolicyTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(entry_info[key], value)
+
 
 class MemcacheIncrTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -520,6 +540,7 @@ class MemcacheIncrTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '19')
 
+
 class MemcacheDecrTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -551,6 +572,7 @@ class MemcacheDecrTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '0')
+
 
 class MemcacheAsyncIncrTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -589,6 +611,7 @@ class MemcacheAsyncIncrTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '19')
 
+
 class MemcacheIncrInitTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -602,6 +625,7 @@ class MemcacheIncrInitTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '8')
+
 
 class MemcacheAsyncIncrInitTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
@@ -617,6 +641,7 @@ class MemcacheAsyncIncrInitTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertEquals(str(entry_info['value']), '8')
 
+
 class MemcacheCasTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     key = str(uuid.uuid1())
@@ -624,6 +649,24 @@ class MemcacheCasTest(DeprecatedHawkeyeTestCase):
     entry_info = json.loads(response.payload)
     self.assertTrue(entry_info['success'])
     self.assertEquals(response.status, 200)
+
+
+class TestIncrementTypes(HawkeyeTestCase):
+  def tearDown(self):
+    self.app.delete('/{lang}/memcache/counter?key=intCounter')
+    self.app.delete('/{lang}/memcache/counter?key=longCounter')
+
+  def test_increment_types(self):
+    data = {'initialValue': 5, 'key': 'intCounter', 'type': 'int'}
+    self.app.post('/{lang}/memcache/counter', data=data)
+    response = self.app.get('/{lang}/memcache/counter?key=intCounter')
+    self.assertDictEqual(response.json(), {'type': str(int), 'value': 6})
+
+    data = {'initialValue': 10, 'key': 'longCounter', 'type': 'long'}
+    self.app.post('/{lang}/memcache/counter', data=data)
+    response = self.app.get('/{lang}/memcache/counter?key=longCounter')
+    self.assertDictEqual(response.json(), {'type': str(long), 'value': 11})
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Memcache Test Suite', 'memcache')
@@ -652,5 +695,8 @@ def suite(lang, app):
     suite.addTests(MemcacheAsyncIncrInitTest.all_cases(app))
     suite.addTests(SimpleJCacheTest.all_cases(app))
     suite.addTests(JCacheExpiryTest.all_cases(app))
-  
+
+  if lang == 'python':
+    suite.addTests(TestIncrementTypes.all_cases(app))
+
   return suite

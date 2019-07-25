@@ -4,6 +4,7 @@ import urllib
 
 import webapp2
 from google.appengine.api import datastore
+from google.appengine.api import datastore_errors
 from google.appengine.api import taskqueue
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
@@ -716,6 +717,30 @@ class TaskHandler(webapp2.RequestHandler):
     queue.delete_tasks(task)
 
 
+class AdminManagerHandler(webapp2.RequestHandler):
+  def post(self):
+    queue = DEFAULT_PUSH_QUEUE
+    taskqueue.Queue(queue).add(
+      taskqueue.Task(url='/python/taskqueue/admin_worker'))
+
+  def get(self):
+    key = datastore.Key.from_path('Task', 'admin')
+    try:
+      entity = datastore.Get(key)
+    except datastore_errors.EntityNotFoundError:
+      self.response.set_status(404)
+
+  def delete(self):
+    key = datastore.Key.from_path('Task', 'admin')
+    datastore.Delete(key)
+
+
+class AdminWorkerHandler(webapp2.RequestHandler):
+  def post(self):
+    entity = datastore.Entity('Task', name='admin')
+    datastore.Put(entity)
+
+
 urls = [
   ('/python/taskqueue/exists', QueueHandler),
   ('/python/taskqueue/counter', TaskCounterHandler),
@@ -730,5 +755,7 @@ urls = [
   ('/python/taskqueue/update_callback', UpdateCallback),
   ('/python/taskqueue/name', NameHandler),
   ('/python/taskqueue/empty_callback', EmptyCallback),
-  ('/python/taskqueue/task', TaskHandler)
+  ('/python/taskqueue/task', TaskHandler),
+  ('/python/taskqueue/admin_manager', AdminManagerHandler),
+  ('/python/taskqueue/admin_worker', AdminWorkerHandler)
 ]

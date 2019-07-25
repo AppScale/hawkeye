@@ -37,6 +37,7 @@ tests.blobstore_tests.QueryBlobDataTest.runTest,ok
 tests.blobstore_tests.UploadBlobTest.test_blobstore_upload_handler,ok
 tests.channel_tests.TestChannelAPI.test_js_receive,ok
 tests.cron_tests.CronTest.runTest,ok
+tests.cron_tests.CronTargetTest.test_cron_target,ok
 tests.datastore_tests.AncestorQueryTest.runTest,ok
 tests.datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.datastore_tests.CompositeMultiple.runTest,ok
@@ -58,6 +59,7 @@ tests.datastore_tests.LimitedResultQueryTest.runTest,ok
 tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MergeJoinWithAncestor.test_merge_join_with_ancestor,ok
+tests.datastore_tests.MergeJoinWithKey.test_merge_join_with_key,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
 tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
@@ -74,6 +76,8 @@ tests.datastore_tests.SimpleKindAwareQueryTest.runTest,ok
 tests.datastore_tests.SimpleTransactionTest.runTest,ok
 tests.datastore_tests.SinglePropKeyInequality.test_key_inequality_filters,ok
 tests.datastore_tests.SinglePropertyBasedQueryTest.runTest,ok
+tests.datastore_tests.TestBatchQueries.test_prefetch,ok
+tests.datastore_tests.TestBatchQueries.test_prefetch_with_limit,ok
 tests.datastore_tests.TxInvalidation.runTest,ok
 tests.datastore_tests.ZigZagQueryTest.runTest,ok
 tests.environment_variable_tests.GetConfigEnvironmentVariableTest.runTest,ok
@@ -101,6 +105,7 @@ tests.memcache_tests.MemcacheMultiAddTest.runTest,ok
 tests.memcache_tests.MemcacheMultiDeleteTest.runTest,ok
 tests.memcache_tests.MemcacheMultiSetTest.runTest,ok
 tests.memcache_tests.MemcacheSetTest.runTest,ok
+tests.memcache_tests.TestIncrementTypes.test_increment_types,ok
 tests.modules_tests.TestCreatingAndGettingEntity.test_default_module,ok
 tests.modules_tests.TestCreatingAndGettingEntity.test_module_a,ok
 tests.modules_tests.TestTaskTargets.test_task_targets,ok
@@ -124,11 +129,13 @@ tests.secure_url_tests.AlwaysSecureTest.runTest,ok
 tests.secure_url_tests.NeverSecureRegexTest.runTest,ok
 tests.secure_url_tests.NeverSecureTest.runTest,ok
 tests.secure_url_tests.HandlerOrderTest.test_handler_order,ok
+tests.taskqueue_tests.AdminWorkerTest.test_admin_worker,ok
 tests.taskqueue_tests.BriefLeaseTest.runTest,ok
 tests.taskqueue_tests.CleanUpTaskEntities.runTest,ok
 tests.taskqueue_tests.DeferredTaskTest.runTest,ok
 tests.taskqueue_tests.LeaseModificationTest.runTest,ok
 tests.taskqueue_tests.PullQueueTest.runTest,ok
+tests.taskqueue_tests.PurgePullQueueTest.test_purge_pull_queue,ok
 tests.taskqueue_tests.PushHeadersTest.test_given_task_name,ok
 tests.taskqueue_tests.PushQueueTest.runTest,ok
 tests.taskqueue_tests.QueueExistsTest.runTest,ok

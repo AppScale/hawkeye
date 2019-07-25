@@ -164,6 +164,7 @@ class QueueStatisticsTest(DeprecatedHawkeyeTestCase):
     self.assertEquals(response.status, 200)
     task_info = json.loads(response.payload)
     self.assertEquals(task_info['queue'], 'default')
+    self.assertEquals(task_info['tasks'], 0)
 
 
 class PullQueueTest(DeprecatedHawkeyeTestCase):
@@ -511,6 +512,7 @@ class TaskExistsTest(HawkeyeTestCase):
     response = self.app.post('/{lang}/taskqueue/task', data=args)
     self.assertEqual(response.json()['error'], 'TaskAlreadyExistsError')
 
+
 class DeleteTaskTest(HawkeyeTestCase):
   QUEUE = 'hawkeyepython-PushQueue-0'
 
@@ -531,10 +533,38 @@ class DeleteTaskTest(HawkeyeTestCase):
     self.assertEqual(response.json()['error'], 'InvalidTaskError')
 
 
+class PurgePullQueueTest(HawkeyeTestCase):
+  def test_purge_pull_queue(self):
+    response = self.app.post('/{lang}/taskqueue/pull',
+                             data={'action': 'add', 'key': 'foo'})
+    self.assertEqual(response.status_code, 200)
+    response = self.app.delete('/{lang}/taskqueue/pull')
+    self.assertEqual(response.status_code, 200)
+
+
 class CleanUpTaskEntities(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_post('/taskqueue/clean_up', '')
     self.assertEquals(response.status, 200)
+
+
+class AdminWorkerTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.app.delete('/{lang}/taskqueue/admin_manager')
+
+  def test_admin_worker(self):
+    response = self.app.post('/{lang}/taskqueue/admin_manager')
+    self.assertEqual(response.status_code, 200)
+    deadline = time.time() + 10
+    while True:
+      self.assertLess(time.time(), deadline)
+      response = self.app.get('/{lang}/taskqueue/admin_manager')
+      if response.status_code == 404:
+        time.sleep(1)
+        continue
+
+      self.assertEqual(response.status_code, 200)
+      break
 
 
 def suite(lang, app):
@@ -549,6 +579,7 @@ def suite(lang, app):
   suite.addTests(TaskEtaTest.all_cases(app))
   suite.addTests(BriefLeaseTest.all_cases(app))
   suite.addTests(TransactionalTaskTest.all_cases(app))
+  suite.addTests(AdminWorkerTest.all_cases(app))
 
   if lang == 'python':
     suite.addTests(RESTPullQueueTest.all_cases(app))
@@ -557,6 +588,7 @@ def suite(lang, app):
     suite.addTests(TaskExistsTest.all_cases(app))
     suite.addTests(DeleteTaskTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
+    suite.addTests(PurgePullQueueTest.all_cases(app))
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend

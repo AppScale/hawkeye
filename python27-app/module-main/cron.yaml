@@ -2,3 +2,7 @@ cron:
 - description: db update job
   url: /python/cron
   schedule: every 1 minutes
+- description: record cron target
+  url: /cron/record-cron
+  schedule: every 1 minutes
+  target: module-a
