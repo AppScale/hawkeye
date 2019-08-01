@@ -10,6 +10,7 @@ import uuid
 
 from google.appengine.api import datastore
 from google.appengine.api import datastore_errors
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
@@ -2056,6 +2057,32 @@ class KindQuery(webapp2.RequestHandler):
       for entity in entities]
     json.dump(response, self.response)
 
+class CheckMoreResults(webapp2.RequestHandler):
+  def get(self):
+    kind = self.request.get('kind')
+    limit = self.request.get('limit', default_value=None)
+    batch_size = self.request.get('batchSize', default_value=None)
+    offset = self.request.get('offset', default_value=None)
+    kwargs = {}
+    if limit is not None:
+      kwargs['limit'] = int(limit)
+
+    if batch_size is not None:
+      kwargs['batch_size'] = int(batch_size)
+
+    if offset is not None:
+      kwargs['offset'] = int(offset)
+
+    query = datastore.Query(kind)
+    config = datastore_query.QueryOptions(**kwargs)
+    batcher = query.GetBatcher(config)
+    batch = batcher.next_batch(datastore_query.Batcher.ASYNC_ONLY)
+    results = [
+      {'path': entity.key().to_path(), 'properties': entity}
+      for entity in batch.results]
+    response = {'results': results, 'moreResults': batch.more_results}
+    json.dump(response, self.response)
+
 
 class BatchQuery(webapp2.RequestHandler):
   def get(self):
@@ -2127,5 +2154,6 @@ urls = [
   ('/python/datastore/kind_query', KindQuery),
   ('/python/datastore/merge_join_with_key', MergeJoinWithKey),
   ('/python/datastore/batch_query', BatchQuery),
+  ('/python/datastore/more_results', CheckMoreResults),
   ('/python/datastore/query_in_transaction', QueryInTransaction)
 ]
