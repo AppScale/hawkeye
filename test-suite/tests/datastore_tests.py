@@ -11,6 +11,8 @@ import string
 from threading import Thread
 from time import sleep
 
+from concurrent.futures import ThreadPoolExecutor
+
 from hawkeye_test_runner import (HawkeyeTestCase, HawkeyeTestSuite,
                                  DeprecatedHawkeyeTestCase)
 from hawkeye_utils import HawkeyeConstants
@@ -932,6 +934,69 @@ class TestBatchQueries(HawkeyeTestCase):
     self.assertListEqual(entities, expected_results)
 
 
+class QueryInTransaction(HawkeyeTestCase):
+  PARENT_1 = ('Guestbook', '1')
+  CHILDREN_1 = (('Greeting', 'a'), ('Greeting', 'b'))
+  PARENT_2 = ('Guestbook', '2')
+  CHILDREN_2 = (('Greeting', 'a'), ('Greeting', 'b'))
+  WAIT_TIME = 0.1
+
+  def setUp(self):
+    data = {'kind': self.PARENT_1[0], 'name': self.PARENT_1[1]}
+    self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+    data = {'kind': self.PARENT_2[0], 'name': self.PARENT_2[1]}
+    self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+    for key in self.CHILDREN_1:
+      data = {'parent': self.PARENT_1, 'kind': key[0], 'name': key[1]}
+      self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+    for key in self.CHILDREN_1:
+      data = {'parent': self.PARENT_2, 'kind': key[0], 'name': key[1]}
+      self.app.post('/{lang}/datastore/manage_entity', json=data)
+
+  def tearDown(self):
+    for kind in (self.PARENT_1[0], self.CHILDREN_1[0][0]):
+      entities = self.app.get(
+        '/{{lang}}/datastore/kind_query?kind={}'.format(kind)).json()
+      paths = [entity['path'] for entity in entities]
+      for path in paths:
+        encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+        self.app.delete('/{{lang}}/datastore/manage_entity'
+                        '?pathBase64={}'.format(encoded_path))
+
+  def test_query_in_transaction(self):
+    url = '/{lang}/datastore/query_in_transaction'
+
+    # Transactions that take place in separate entity groups should succeed.
+    thread_pool = ThreadPoolExecutor(2)
+    query_1_info = {'parent': self.PARENT_1, 'kind': self.CHILDREN_1[0][0],
+                    'waitTime': self.WAIT_TIME, 'putParent': self.PARENT_1,
+                    'putKind': self.CHILDREN_1[0][0]}
+    query_2_info = {'parent': self.PARENT_2, 'kind': self.CHILDREN_2[0][0],
+                    'waitTime': self.WAIT_TIME, 'putParent': self.PARENT_2,
+                    'putKind': self.CHILDREN_2[0][0]}
+    future_1 = thread_pool.submit(self.app.post, url, json=query_1_info)
+    future_2 = thread_pool.submit(self.app.post, url, json=query_2_info)
+    self.assertEqual(future_1.result().status_code, 200)
+    self.assertEqual(future_2.result().status_code, 200)
+
+    # Transactions that query the same group and have a side effect should
+    # not both succeed.
+    query_1_info = {'parent': self.PARENT_1, 'kind': self.CHILDREN_1[0][0],
+                    'waitTime': self.WAIT_TIME, 'putParent': self.PARENT_1,
+                    'putKind': self.CHILDREN_1[0][0]}
+    query_2_info = {'parent': self.PARENT_1, 'kind': self.CHILDREN_1[0][0],
+                    'waitTime': self.WAIT_TIME, 'putParent': self.PARENT_1,
+                    'putKind': self.CHILDREN_1[0][0]}
+    future_1 = thread_pool.submit(self.app.post, url, json=query_1_info)
+    future_2 = thread_pool.submit(self.app.post, url, json=query_2_info)
+    status_codes = [future.result().status_code
+                    for future in [future_1, future_2]]
+    self.assertEqual(len([code for code in status_codes if code == 200]), 1)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -979,6 +1044,7 @@ def suite(lang, app):
     suite.addTests(MergeJoinWithKey.all_cases(app))
     suite.addTests(TestBatchQueries.all_cases(app))
     suite.addTests(TestMoreResults.all_cases(app))
+    suite.addTests(QueryInTransaction.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))

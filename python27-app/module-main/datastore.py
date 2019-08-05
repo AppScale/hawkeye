@@ -1884,7 +1884,7 @@ class ManageEntity(webapp2.RequestHandler):
 
     entity = datastore.Entity(**params)
 
-    entity.update(entity_info['properties'])
+    entity.update(entity_info.get('properties', {}))
     datastore.Put(entity)
 
   def get(self):
@@ -2104,6 +2104,20 @@ class BatchQuery(webapp2.RequestHandler):
     json.dump(response, self.response)
 
 
+class QueryInTransaction(webapp2.RequestHandler):
+  @datastore.Transactional(retries=0)
+  def post(self):
+    query_info = json.loads(self.request.body)
+    ancestor = datastore.Key.from_path(*query_info['parent'])
+    query = datastore.Query(query_info['kind'])
+    query.Ancestor(ancestor)
+    list(query.Run())
+    time.sleep(query_info['waitTime'])
+    put_ancestor = datastore.Key.from_path(*query_info['putParent'])
+    entity = datastore.Entity(query_info['putKind'], put_ancestor)
+    datastore.Put(entity)
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -2140,5 +2154,6 @@ urls = [
   ('/python/datastore/kind_query', KindQuery),
   ('/python/datastore/merge_join_with_key', MergeJoinWithKey),
   ('/python/datastore/batch_query', BatchQuery),
-  ('/python/datastore/more_results', CheckMoreResults)
+  ('/python/datastore/more_results', CheckMoreResults),
+  ('/python/datastore/query_in_transaction', QueryInTransaction)
 ]
