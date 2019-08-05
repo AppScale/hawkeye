@@ -90,6 +90,10 @@ handlers:
 - url: /python/search/(.*)
   script: main.app
 
+- url: /python/blobstore/upload
+  script: main.app
+  login: admin
+
 - url: /.*
   script: main.app
 
