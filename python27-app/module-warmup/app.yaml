@@ -5,6 +5,10 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /_ah/warmup
+  script: warmup.app
+  login: admin
+
 - url: /.*
   script: warmup.app
 

@@ -579,9 +579,7 @@ def suite(lang, app):
   suite.addTests(TaskEtaTest.all_cases(app))
   suite.addTests(BriefLeaseTest.all_cases(app))
   suite.addTests(TransactionalTaskTest.all_cases(app))
-
-  if lang == 'java':
-    suite.addTests(AdminWorkerTest.all_cases(app))
+  suite.addTests(AdminWorkerTest.all_cases(app))
 
   if lang == 'python':
     suite.addTests(RESTPullQueueTest.all_cases(app))

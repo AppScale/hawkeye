@@ -80,8 +80,19 @@ handlers:
   script: main.app
   secure: never
 
+- url: /python/taskqueue/admin_worker
+  script: main.app
+  login: admin
+
 - url: /_ah/xmpp/message/chat/?
   script: main.app
+
+- url: /python/search/(.*)
+  script: main.app
+
+- url: /python/blobstore/upload
+  script: main.app
+  login: admin
 
 - url: /.*
   script: main.app
