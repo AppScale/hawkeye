@@ -2051,7 +2051,6 @@ class KindQuery(webapp2.RequestHandler):
     kind = self.request.get('kind')
     query = datastore.Query(kind)
     entities = query.Get(limit=None)
-    entities[0].key()
     response = [
       {'path': entity.key().to_path(), 'properties': entity}
       for entity in entities]

@@ -60,6 +60,7 @@ tests.datastore_tests.LongTxRead.runTest,ok
 tests.datastore_tests.MaxGroupsInTxn.runTest,ok
 tests.datastore_tests.MergeJoinWithAncestor.test_merge_join_with_ancestor,ok
 tests.datastore_tests.MergeJoinWithKey.test_merge_join_with_key,ok
+tests.datastore_tests.MetadataQueries.test_kind_list,ok
 tests.datastore_tests.MultipleEqualityFilters.runTest,ok
 tests.datastore_tests.NonAsciiEntityKeys.runTest,ok
 tests.datastore_tests.OrderedKindAncestorQueryTest.runTest,ok
