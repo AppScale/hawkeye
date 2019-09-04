@@ -1974,14 +1974,8 @@ class ScatterProp(webapp2.RequestHandler):
 
   def post(self):
     kind = self.request.get('kind')
-    entity_name = self.request.get('name')
-    content = self.request.get('content')
-    if not content:
-      content = ''.join(random.choice(string.letters) for _ in range(5))
-
-    entity = datastore.Entity(kind=kind, name=entity_name)
-    entity['content'] = content
-    datastore.Put(entity)
+    count = int(self.request.get('count'))
+    datastore.Put([datastore.Entity(kind=kind) for _ in xrange(count)])
 
   def delete(self):
     kind = self.request.get('kind')

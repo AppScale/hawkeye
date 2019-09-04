@@ -702,26 +702,32 @@ class ScatterPropTest(HawkeyeTestCase):
   AppScale uses the Murmur3 hash function, and there's a .78% chance for an
   entity to get the property.
   """
-  KEY_NAMES = {
-    'normal': ['1', '2'],  # These shouldn't get the property.
-    'scattered': ['8', '86']  # These should get the property.
-  }
+  BATCH_SIZE = 20
+  SCATTER_CHANCE = .0078
   KIND = 'ScatterEntity'
 
   def tearDown(self):
     self.app.delete('/python/datastore/scatter_prop?kind={}'.format(self.KIND))
 
-  def setUp(self):
-    for type, key_names in self.KEY_NAMES.items():
-      for name in key_names:
-        self.app.post('/python/datastore/scatter_prop',
-                      data={'kind': self.KIND, 'name': name})
-
   def test_scatter_prop(self):
-    response = self.app.get(
-      '/python/datastore/scatter_prop?kind={}'.format(self.KIND))
-    keys = response.json()
-    self.assertListEqual(keys, self.KEY_NAMES['scattered'])
+    max_to_create = int(10 / self.SCATTER_CHANCE)
+    num_created = 0
+    while True:
+      self.app.post('/python/datastore/scatter_prop',
+                    data={'kind': self.KIND, 'count': self.BATCH_SIZE})
+      num_created += self.BATCH_SIZE
+
+      keys = self.app.get(
+        '/python/datastore/scatter_prop?kind={}'.format(self.KIND)).json()
+      if keys:
+        break
+
+      if num_created >= max_to_create:
+        break
+
+    self.assertGreaterEqual(len(keys), 1)
+    expected_results = max(1.0, num_created * self.SCATTER_CHANCE)
+    self.assertLessEqual(len(keys), expected_results * 10)
 
 
 class SinglePropKeyInequality(HawkeyeTestCase):
