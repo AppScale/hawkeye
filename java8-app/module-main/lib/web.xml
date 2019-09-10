@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>JSPTest</servlet-name>
-        <jsp-file>jsp_test.jsp</jsp-file>
+	<jsp-file>/jsp_test.jsp</jsp-file>
     </servlet>
 
     <servlet>
