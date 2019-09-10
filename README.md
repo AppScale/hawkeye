@@ -18,25 +18,32 @@ Get Hawkeye from git:
 git clone git@github.com:AppScale/hawkeye.git
 ```
 
-compile the Java version as indicated in java-app/README.md
-and deploy the Java, and Python 2.7 versions:
+compile the Java version(s) as indicated in java-app/README.md
+and deploy the Java, Java 8, and Python 2.7 versions:
 
 ```
 appscale deploy hawkeye/java-app/module-main/war
+appscale deploy hawkeye/java8-app/module-main/war
 appscale deploy hawkeye/python27-app/module-main
 ```
 if you're going to test modules suite
 you also need to deploy additional python module:
 ```
 appscale deploy hawkeye/java-app/module-a/war
+appscale deploy hawkeye/java8-app/module-a/war
 appscale deploy hawkeye/python27-app/module-a
 ```
+for warmup tests you should also deploy:
+```
+appscale deploy hawkeye/java-app/module-warmup/war
+appscale deploy hawkeye/java8-app/module-warmup/war
+appscale deploy hawkeye/python27-app/module-warmup
+```
+To determine ports for deployed applications use:
 
-Assuming that your head node runs on 192.168.33.10, you'll now have
-Hawkeye Java (module-main) running at 192.168.33.10:8080,
-Hawkeye Java (module-a) running at 192.168.33.10:8081,
-Hawkeye Python 2.7 (module-main) running at 192.168.33.10:8082,
-Hawkeye Python 2.7 (module-a) running at 192.168.33.10:8083.
+```
+appscale status
+```
 
 run hawkeye
 =======
@@ -47,21 +54,19 @@ Go into the `test-suite` directory:
 cd test-suite
 ```
 
-Create 2 csv files containing app modules and versions info:
+Create csv files containing app modules and versions info:
 
 ```
 cat > versions-java.csv << APP_VERSIONS
 MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
 default,1,http://192.168.33.10:8080,https://192.168.33.10:4380,yes
 module-a,1,http://192.168.33.10:8081,https://192.168.33.10:4381,yes
-APP_VERSIONS
-
-cat > versions-python.csv << APP_VERSIONS
-MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
-default,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
-module-a,1,http://192.168.33.10:8083,https://192.168.33.10:4383,yes
+warmup,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
 APP_VERSIONS
 ```
+
+Using `versions-java.csv`, `versions-java8.csv`, and
+`versions-python27.csv` for the different runtimes.
 
 and run it:
 
@@ -75,10 +80,16 @@ For this example, running Hawkeye Java would be:
 python hawkeye.py --app hawkeyejava --versions-csv versions-java.csv --lang java --baseline
 ```
 
+and Java 8 would be:
+
+```
+python hawkeye.py --app hawkeyejava8 --versions-csv versions-java8.csv --lang java --baseline --baseline-file hawkeye_baseline_java8.csv
+```
+
 and Python 2.7 would be:
 
 ```
-python hawkeye.py --app hawkeyepython27 --versions-csv versions-python.csv --lang python --baseline
+python hawkeye.py --app hawkeyepython27 --versions-csv versions-python27.csv --lang python --baseline
 ```
 
 hawkeye output
