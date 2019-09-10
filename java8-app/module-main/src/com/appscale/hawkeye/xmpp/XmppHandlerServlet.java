@@ -2,10 +2,12 @@ package com.appscale.hawkeye.xmpp;
 
 import com.google.appengine.api.xmpp.*;
 import com.google.appengine.api.datastore.*;
+import com.google.apphosting.api.ApiProxy;
 
 import com.appscale.hawkeye.JSONUtils;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -94,9 +96,16 @@ public class XmppHandlerServlet extends HttpServlet
 
     private String getUserName()
     {
-        Map<String, String> env = System.getenv();
-        String appId = System.getProperty("APPLICATION_ID");
-        String loginServer = System.getProperty("LOGIN_SERVER");
-        return appId + "@" + loginServer;
+        ApiProxy.Environment apiEnv = ApiProxy.getCurrentEnvironment();
+        String appId = apiEnv.getAppId();
+
+        Object defaultHostname = apiEnv.getAttributes().get("com.google.appengine.runtime.default_version_hostname");
+        String domain = Objects.toString(defaultHostname, "localhost");
+        int portIndex = domain.indexOf(':');
+        if (portIndex > 0) {
+          domain = domain.substring(0, portIndex);
+        }
+
+        return appId + "@" + domain;
     }
 }
