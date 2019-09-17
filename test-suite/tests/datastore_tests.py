@@ -997,6 +997,27 @@ class QueryInTransaction(HawkeyeTestCase):
     self.assertEqual(len([code for code in status_codes if code == 200]), 1)
 
 
+class MetadataQueries(HawkeyeTestCase):
+  KIND = 'MetadataQueryTest'
+
+  def setUp(self):
+    self.app.post('/{lang}/datastore/manage_entity', json={'kind': self.KIND})
+
+  def tearDown(self):
+    entities = self.app.get(
+      '/{{lang}}/datastore/kind_query?kind={}'.format(self.KIND)).json()
+    paths = [entity['path'] for entity in entities]
+    for path in paths:
+      encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+      self.app.delete('/{{lang}}/datastore/manage_entity'
+                      '?pathBase64={}'.format(encoded_path))
+
+  def test_kind_list(self):
+    results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
+    kinds = [entity['path'][-1] for entity in results]
+    self.assertIn(self.KIND, kinds)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -1045,6 +1066,7 @@ def suite(lang, app):
     suite.addTests(TestBatchQueries.all_cases(app))
     suite.addTests(TestMoreResults.all_cases(app))
     suite.addTests(QueryInTransaction.all_cases(app))
+    suite.addTests(MetadataQueries.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
