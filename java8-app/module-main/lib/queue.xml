@@ -1,0 +1,25 @@
+<queue-entries>
+    <queue>
+        <name>hawkeyejava-PushQueue-0</name>
+        <rate>5/s</rate>
+    </queue>
+    <queue>
+        <name>hawkeyejava-PullQueue-0</name>
+        <mode>pull</mode>
+    </queue>
+
+    <queue>
+        <name>queue-with-missed-target</name>
+        <rate>50/s</rate>
+    </queue>
+    <queue>
+        <name>queue-for-module-a</name>
+        <target>module-a</target>
+        <rate>50/s</rate>
+    </queue>
+    <queue>
+        <name>queue-for-default</name>
+        <target>default</target>
+        <rate>50/s</rate>
+    </queue>
+</queue-entries>

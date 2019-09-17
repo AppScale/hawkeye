@@ -16,6 +16,7 @@ Options:
   --suites=SUITES      # A comma separated list of suites to run
   --exclude-suites=EXCLUDE_SUITES # A comma separated list of suites to exclude
   --baseline           # Turn on verbose reporting for baseline comparison
+  --baseline-file FILE # File for baseline results [default is baseline for lang]
   --log-dir=BASE_DIR   # Directory to store error logs
   --keep-old-logs      # Keep existing hawkeye logs
 """
@@ -191,7 +192,9 @@ def process_command_line_options():
   hawkeye_params = HawkeyeParameters()
   hawkeye_params.language = language
   hawkeye_params.suites = suites
-  hawkeye_params.baseline_file = "hawkeye_baseline_{}.csv".format(language)
+  hawkeye_params.baseline_file = (options["--baseline-file"]
+    if options.get("--baseline-file")
+    else "hawkeye_baseline_{}.csv".format(language))
   hawkeye_params.test_result_verbosity = 2 if options["--console"] else 1
   hawkeye_params.baseline_verbosity = 2 if options["--baseline"] else 1
   hawkeye_params.log_dir = hawkeye_logs

@@ -1,4 +1,4 @@
-<project name="java-warmup" default="build">
+<project name="java8-module-a" default="build">
     <property name="sdk.dir" location="../../../appengine-java-sdk-1.8.4" />
 
     <import file="${sdk.dir}/config/user/ant-macros.xml" />

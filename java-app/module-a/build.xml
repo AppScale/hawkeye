@@ -1,4 +1,4 @@
-<project>
+<project name="java-module-a" default="build">
     <property name="sdk.dir" location="../../../appengine-java-sdk-1.8.4" />
 
     <import file="${sdk.dir}/config/user/ant-macros.xml" />
@@ -73,6 +73,14 @@
                 <arg value="v2"/>
             </args>
         </enhance_war>
+    </target>
+
+    <target name="build" depends="datanucleusenhance">
+        <copy todir="war/">
+            <fileset dir=".">
+                <include name="*.jsp" />
+            </fileset>
+        </copy>
     </target>
 
     <target name="runserver" depends="datanucleusenhance"

@@ -1,4 +1,4 @@
-<project name="java-warmup" default="build">
+<project name="java8-default" default="build">
     <property name="sdk.dir" location="../../../appengine-java-sdk-1.8.4" />
 
     <import file="${sdk.dir}/config/user/ant-macros.xml" />
@@ -23,6 +23,7 @@
                 <include name="**/appengine-api-1.0-sdk*.jar" />
             </fileset>
             <fileset dir="lib/lib">
+                <include name="**/commons-codec*.jar" />
                 <include name="**/commons-fileupload*.jar" />
                 <include name="**/json-*.jar" />
             </fileset>
@@ -41,6 +42,9 @@
             <fileset dir="src">
                 <exclude name="**/*.java" />
             </fileset>
+        </copy>
+        <copy todir="war">
+            <fileset dir="src/main/webapp"><include name="*.jsp" /></fileset>
         </copy>
         <copy
                 todir="war/WEB-INF">
