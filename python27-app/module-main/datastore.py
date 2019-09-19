@@ -1876,7 +1876,8 @@ class LongTransactionRead(webapp2.RequestHandler):
 class ManageEntity(webapp2.RequestHandler):
   def post(self):
     entity_info = json.loads(self.request.body)
-    params = {'kind': entity_info['kind'],
+    params = {'namespace': entity_info.get('namespace'),
+              'kind': entity_info['kind'],
               'name': entity_info.get('name'),
               'id': entity_info.get('id')}
     if 'parent' in entity_info:
@@ -2049,7 +2050,8 @@ class MergeJoinWithKey(webapp2.RequestHandler):
 class KindQuery(webapp2.RequestHandler):
   def get(self):
     kind = self.request.get('kind')
-    query = datastore.Query(kind)
+    namespace = self.request.get('namespace')
+    query = datastore.Query(kind, namespace=namespace)
     entities = query.Get(limit=None)
     response = [
       {'path': entity.key().to_path(), 'properties': entity}

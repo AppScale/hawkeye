@@ -1002,6 +1002,8 @@ class MetadataQueries(HawkeyeTestCase):
 
   def setUp(self):
     self.app.post('/{lang}/datastore/manage_entity', json={'kind': self.KIND})
+    self.app.post('/{lang}/datastore/manage_entity', json={'kind': self.KIND,
+                                                           'namespace': 'ns2'})
 
   def tearDown(self):
     entities = self.app.get(
@@ -1011,6 +1013,12 @@ class MetadataQueries(HawkeyeTestCase):
       encoded_path = base64.urlsafe_b64encode(json.dumps(path))
       self.app.delete('/{{lang}}/datastore/manage_entity'
                       '?pathBase64={}'.format(encoded_path))
+
+  def test_namespace_list(self):
+    results = self.app.get('/{lang}/datastore/kind_query?'
+                           'kind=__namespace__').json()
+    namespaces = [entity['path'][-1] for entity in results]
+    self.assertIn('ns2', namespaces)
 
   def test_kind_list(self):
     results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
