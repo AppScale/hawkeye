@@ -53,6 +53,9 @@
                 <include name="**/*.properties" />
             </fileset>
         </copy>
+        <copy todir="war/static">
+            <fileset dir="static" includes="**" />
+        </copy>
         <copy
                 todir="war/WEB-INF/classes/META-INF">
             <fileset dir="lib/classes/META-INF">
