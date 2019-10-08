@@ -4,6 +4,10 @@
   <version>v1</version>
   <threadsafe>true</threadsafe>
 
+  <static-files>
+    <include path="/static/**" />
+  </static-files>
+
   <inbound-services>
     <service>xmpp_message</service>
     <service>xmpp_presence</service>

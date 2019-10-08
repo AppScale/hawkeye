@@ -3,3 +3,4 @@ futures
 pillow>=3.3.2,<=5.2.0
 requests
 docopt
+selenium

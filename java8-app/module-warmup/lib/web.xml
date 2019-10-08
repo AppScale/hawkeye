@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+           version="2.5">
+
+    <!-- Servlets for testing warmup functionality-->
+    <servlet>
+        <servlet-name>_ah_warmup</servlet-name>
+        <servlet-class>com.appscale.hawkeye.warmup.WarmUpServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>WarmUpCheckServlet</servlet-name>
+        <servlet-class>com.appscale.hawkeye.warmup.WarmUpCheckServlet</servlet-class>
+    </servlet>
+    <!-- End servlets -->
+    <!-- URLs for testing Warmup functionality -->
+    <servlet-mapping>
+        <servlet-name>WarmUpCheckServlet</servlet-name>
+        <url-pattern>/warmup_status</url-pattern>
+    </servlet-mapping>
+    <!-- End URLs -->
+
+</web-app>

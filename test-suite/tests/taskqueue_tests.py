@@ -372,8 +372,7 @@ class RESTPullQueueTest(DeprecatedHawkeyeTestCase):
     self.assertTrue(task_info['success'])
     self.assertIn('stats', task_info['queue'])
     self.assertEquals(task_info['queue']['stats']['totalTasks'], 3)
-    self.assertEquals(task_info['queue']['stats']['leasedLastMinute'], 1)
-    self.assertEquals(task_info['queue']['stats']['leasedLastHour'], 1)
+    # TODO check leasedLastMinute and leasedLastHour when it's implemented in TQ
 
     # List all enqueued Pull Tasks, leased/non-leased/expired.
     response = self.http_get('/taskqueue/pull/rest?test=list')

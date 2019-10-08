@@ -18,10 +18,7 @@ def verify_signature(data, signature, x509_certificate):
     public_key.verify(
       signature,
       data,
-      padding.PSS(
-        mgf=padding.MGF1(hashes.SHA256()),
-        salt_length=padding.PSS.MAX_LENGTH
-      ),
+      padding.PKCS1v15(),
       hashes.SHA256()
     )
   except InvalidSignature:

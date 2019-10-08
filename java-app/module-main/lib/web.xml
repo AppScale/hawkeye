@@ -36,6 +36,15 @@
     </servlet>
 
     <servlet>
+        <servlet-name>TokenHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.channel.TokenHandler</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MessageHandler</servlet-name>
+        <servlet-class>com.appscale.hawkeye.channel.MessageHandler</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>SessionHandler</servlet-name>
         <servlet-class>com.appscale.hawkeye.sessions.SessionHandler</servlet-class>
     </servlet>
@@ -277,6 +286,15 @@
     <servlet-mapping>
         <servlet-name>ServiceAccountNameHandler</servlet-name>
         <url-pattern>/java/app_identity/service_account_name</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TokenHandler</servlet-name>
+        <url-pattern>/java/channel/get-token</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MessageHandler</servlet-name>
+        <url-pattern>/java/channel/send-message</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>

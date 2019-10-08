@@ -1,3 +1,4 @@
 MODULE,VERSION,HTTP-URL,HTTPS-URL,IS-DEFAULT
-default,1,http://192.168.33.10:8080,https://192.168.33.10:8081,yes
-module-a,1,http://192.168.33.10:8082,https://192.168.33.10:8083,yes
+default,1,http://192.168.33.10:8080,https://192.168.33.10:4380,yes
+module-a,1,http://192.168.33.10:8081,https://192.168.33.10:4381,yes
+warmup,1,http://192.168.33.10:8082,https://192.168.33.10:4382,yes
