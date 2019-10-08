@@ -10,7 +10,8 @@ from hawkeye_test_runner import HawkeyeTestCase, HawkeyeTestSuite
 class TestChannelAPI(HawkeyeTestCase):
   CONTAINER_ID = 'message'
 
-  CHANNEL_ID = 'channelTest'
+  # TODO: Fix issue with upper-case characters in username and channel ID.
+  CHANNEL_ID = 'channeltest'
 
   MESSAGE = "wow it's like real-time!"
 
