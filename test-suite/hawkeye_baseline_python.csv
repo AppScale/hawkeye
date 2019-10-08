@@ -35,7 +35,6 @@ tests.blobstore_tests.QueryBlobByKeyTest.runTest,ok
 tests.blobstore_tests.QueryBlobByPropertyTest.runTest,ok
 tests.blobstore_tests.QueryBlobDataTest.runTest,ok
 tests.blobstore_tests.UploadBlobTest.test_blobstore_upload_handler,ok
-tests.channel_tests.TestChannelAPI.test_js_receive,ok
 tests.cron_tests.CronTest.runTest,ok
 tests.cron_tests.CronTargetTest.test_cron_target,ok
 tests.datastore_tests.AncestorQueryTest.runTest,ok
