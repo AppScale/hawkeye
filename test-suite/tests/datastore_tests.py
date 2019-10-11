@@ -1025,6 +1025,17 @@ class MetadataQueries(HawkeyeTestCase):
     kinds = [entity['path'][-1] for entity in results]
     self.assertIn(self.KIND, kinds)
 
+    # Add and delete separate kind to see if it shows up in a metadata query.
+    path = ('MetadataQueryDeleted', 'foo')
+    self.app.post('/{lang}/datastore/manage_entity',
+                  json={'kind': path[0], 'name': path[1]})
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    self.app.delete('/{{lang}}/datastore/manage_entity'
+                    '?pathBase64={}'.format(encoded_path))
+    results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
+    kinds = [entity['path'][-1] for entity in results]
+    self.assertNotIn(path[0], kinds)
+
 
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
