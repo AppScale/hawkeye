@@ -1020,6 +1020,20 @@ class MetadataQueries(HawkeyeTestCase):
     namespaces = [entity['path'][-1] for entity in results]
     self.assertIn('ns2', namespaces)
 
+    # Add and delete separate namespace to see if it shows up in a metadata
+    # query.
+    namespace = 'ns3'
+    path = ('MetadataQueryDeleted', 'foo')
+    self.app.post('/{lang}/datastore/manage_entity',
+                  json={'namespace': namespace, 'kind': path[0], 'name': path[1]})
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    self.app.delete('/{{lang}}/datastore/manage_entity'
+                    '?pathBase64={}&namespace={}'.format(encoded_path, namespace))
+    results = self.app.get('/{lang}/datastore/kind_query'
+                           '?kind=__namespace__').json()
+    namespaces = [entity['path'][-1] for entity in results]
+    self.assertNotIn(namespace, namespaces)
+
   def test_kind_list(self):
     results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
     kinds = [entity['path'][-1] for entity in results]

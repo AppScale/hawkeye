@@ -1896,9 +1896,10 @@ class ManageEntity(webapp2.RequestHandler):
     json.dump(entity, self.response)
 
   def delete(self):
+    namespace = self.request.get('namespace', default_value=None)
     encoded_path = self.request.get('pathBase64').encode('utf-8')
     path = json.loads(base64.urlsafe_b64decode(encoded_path))
-    key = datastore.Key.from_path(*path)
+    key = datastore.Key.from_path(*path, namespace=namespace)
     datastore.Delete(key)
 
 
