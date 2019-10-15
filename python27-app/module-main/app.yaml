@@ -84,6 +84,10 @@ handlers:
   script: main.app
   login: admin
 
+- url: /python/taskqueue/secure_worker
+  script: main.app
+  secure: always
+
 - url: /_ah/xmpp/message/chat/?
   script: main.app
 

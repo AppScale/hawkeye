@@ -566,6 +566,25 @@ class AdminWorkerTest(HawkeyeTestCase):
       break
 
 
+class SecureWorkerTest(HawkeyeTestCase):
+  def tearDown(self):
+    self.app.delete('/{lang}/taskqueue/secure_manager')
+
+  def test_secure_worker(self):
+    response = self.app.post('/{lang}/taskqueue/secure_manager')
+    self.assertEqual(response.status_code, 200)
+    deadline = time.time() + 10
+    while True:
+      self.assertLess(time.time(), deadline)
+      response = self.app.get('/{lang}/taskqueue/secure_manager')
+      if response.status_code == 404:
+        time.sleep(1)
+        continue
+
+      self.assertEqual(response.status_code, 200)
+      break
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Task Queue Test Suite', 'taskqueue')
   suite.addTests(QueueExistsTest.all_cases(app))
@@ -588,6 +607,7 @@ def suite(lang, app):
     suite.addTests(DeleteTaskTest.all_cases(app))
     suite.addTests(CleanUpTaskEntities.all_cases(app))
     suite.addTests(PurgePullQueueTest.all_cases(app))
+    suite.addTests(SecureWorkerTest.all_cases(app))
 
   # Does not work due to a bug in the dev server
   # Check SO/questions/13273067/app-engine-python-development-server-taskqueue-backend

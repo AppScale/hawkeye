@@ -726,7 +726,7 @@ class AdminManagerHandler(webapp2.RequestHandler):
   def get(self):
     key = datastore.Key.from_path('Task', 'admin')
     try:
-      entity = datastore.Get(key)
+      datastore.Get(key)
     except datastore_errors.EntityNotFoundError:
       self.response.set_status(404)
 
@@ -738,6 +738,30 @@ class AdminManagerHandler(webapp2.RequestHandler):
 class AdminWorkerHandler(webapp2.RequestHandler):
   def post(self):
     entity = datastore.Entity('Task', name='admin')
+    datastore.Put(entity)
+
+
+class SecureManagerHandler(webapp2.RequestHandler):
+  def post(self):
+    queue = DEFAULT_PUSH_QUEUE
+    taskqueue.Queue(queue).add(
+      taskqueue.Task(url='/python/taskqueue/secure_worker'))
+
+  def get(self):
+    key = datastore.Key.from_path('Task', 'secure')
+    try:
+      datastore.Get(key)
+    except datastore_errors.EntityNotFoundError:
+      self.response.set_status(404)
+
+  def delete(self):
+    key = datastore.Key.from_path('Task', 'secure')
+    datastore.Delete(key)
+
+
+class SecureWorkerHandler(webapp2.RequestHandler):
+  def post(self):
+    entity = datastore.Entity('Task', name='secure')
     datastore.Put(entity)
 
 
@@ -757,5 +781,7 @@ urls = [
   ('/python/taskqueue/empty_callback', EmptyCallback),
   ('/python/taskqueue/task', TaskHandler),
   ('/python/taskqueue/admin_manager', AdminManagerHandler),
-  ('/python/taskqueue/admin_worker', AdminWorkerHandler)
+  ('/python/taskqueue/admin_worker', AdminWorkerHandler),
+  ('/python/taskqueue/secure_manager', SecureManagerHandler),
+  ('/python/taskqueue/secure_worker', SecureWorkerHandler)
 ]
