@@ -1043,6 +1043,42 @@ class MetadataQueries(HawkeyeTestCase):
     self.assertNotIn(path[0], kinds)
 
 
+class AllocateIDs(HawkeyeTestCase):
+  def test_sequential_allocation(self):
+    # Choose a kind name randomly to ensure no allocations have been made for
+    # the given model key.
+    kind = 'allocate-{}'.format(
+      ''.join(random.choice(string.ascii_letters) for _ in range(5)))
+    root_path = [kind, 1]
+    nonroot_path = [kind, 1, 'Child', 'a']
+
+    # Test allocateSize for root entities.
+    size = 10
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': root_path, 'size': size}).json()
+    self.assertEqual(max - min, size - 1)
+
+    # Test allocateSize for nonroot entities.
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': nonroot_path, 'size': size}).json()
+    self.assertEqual(max - min, size - 1)
+
+    # Test allocateMax for root entities.
+    size = 50
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': root_path, 'max': size}).json()
+    # The datastore may have already allocated up to the given max.
+    self.assertGreaterEqual(max + 1, min)
+    self.assertLess(max - min, size)
+
+    # Test allocateMax for nonroot entities.
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': nonroot_path, 'max': size}).json()
+    # The datastore may have already allocated up to the given max.
+    self.assertGreaterEqual(max + 1, min)
+    self.assertLess(max - min, size)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -1092,6 +1128,7 @@ def suite(lang, app):
     suite.addTests(TestMoreResults.all_cases(app))
     suite.addTests(QueryInTransaction.all_cases(app))
     suite.addTests(MetadataQueries.all_cases(app))
+    suite.addTests(AllocateIDs.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
