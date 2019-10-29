@@ -23,6 +23,16 @@ ALL_PROJECTS = {}
 SYNAPSE_MODULES = {}
 
 
+def clear_kind(requests, kind):
+  entities = requests.get(
+    '/{{lang}}/datastore/kind_query?kind={}'.format(kind)).json()
+  paths = [entity['path'] for entity in entities]
+  for path in paths:
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    requests.delete('/{{lang}}/datastore/manage_entity'
+                    '?pathBase64={}'.format(encoded_path))
+
+
 class DataStoreCleanupTest(DeprecatedHawkeyeTestCase):
   def run_hawkeye_test(self):
     response = self.http_delete('/datastore/module')
@@ -1043,6 +1053,21 @@ class MetadataQueries(HawkeyeTestCase):
     self.assertNotIn(path[0], kinds)
 
 
+class AutoIDsInTransaction(HawkeyeTestCase):
+  KIND = 'AutoIDsInTx'
+
+  def test_entities_were_written(self):
+    response = self.app.post('/{lang}/datastore/rpc',
+                             json={'wrapInTx': True, 'method': 'Put'})
+    self.assertEqual(response.status_code, 200)
+    entities = self.app.get(
+      '/{{lang}}/datastore/kind_query?kind={}'.format(self.KIND)).json()
+    self.assertEqual(len(entities), 2)
+
+  def tearDown(self):
+    clear_kind(self.app, self.KIND)
+
+
 def suite(lang, app):
   suite = HawkeyeTestSuite('Datastore Test Suite', 'datastore')
   suite.addTests(DataStoreCleanupTest.all_cases(app))
@@ -1092,6 +1117,7 @@ def suite(lang, app):
     suite.addTests(TestMoreResults.all_cases(app))
     suite.addTests(QueryInTransaction.all_cases(app))
     suite.addTests(MetadataQueries.all_cases(app))
+    suite.addTests(AutoIDsInTransaction.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))
     suite.addTests(JPAIntegrationTest.all_cases(app))
