@@ -2114,6 +2114,19 @@ class QueryInTransaction(webapp2.RequestHandler):
     datastore.Put(entity)
 
 
+class AllocateIDs(webapp2.RequestHandler):
+  def post(self):
+    request_info = json.loads(self.request.body)
+    model_key = datastore.Key.from_path(*request_info['path'])
+    if 'max' in request_info:
+      kwargs = {'max': request_info['max']}
+    else:
+      kwargs = {'size': request_info['size']}
+
+    response = datastore.AllocateIds(model_key, **kwargs)
+    json.dump(response, self.response)
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -2151,5 +2164,6 @@ urls = [
   ('/python/datastore/merge_join_with_key', MergeJoinWithKey),
   ('/python/datastore/batch_query', BatchQuery),
   ('/python/datastore/more_results', CheckMoreResults),
-  ('/python/datastore/query_in_transaction', QueryInTransaction)
+  ('/python/datastore/query_in_transaction', QueryInTransaction),
+  ('/python/datastore/allocate_ids', AllocateIDs)
 ]
