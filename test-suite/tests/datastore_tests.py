@@ -1036,6 +1036,20 @@ class MetadataQueries(HawkeyeTestCase):
     namespaces = [entity['path'][-1] for entity in results]
     self.assertIn('ns2', namespaces)
 
+    # Add and delete separate namespace to see if it shows up in a metadata
+    # query.
+    namespace = 'ns3'
+    path = ('MetadataQueryDeleted', 'foo')
+    self.app.post('/{lang}/datastore/manage_entity',
+                  json={'namespace': namespace, 'kind': path[0], 'name': path[1]})
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    self.app.delete('/{{lang}}/datastore/manage_entity'
+                    '?pathBase64={}&namespace={}'.format(encoded_path, namespace))
+    results = self.app.get('/{lang}/datastore/kind_query'
+                           '?kind=__namespace__').json()
+    namespaces = [entity['path'][-1] for entity in results]
+    self.assertNotIn(namespace, namespaces)
+
   def test_kind_list(self):
     results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
     kinds = [entity['path'][-1] for entity in results]
@@ -1051,6 +1065,42 @@ class MetadataQueries(HawkeyeTestCase):
     results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
     kinds = [entity['path'][-1] for entity in results]
     self.assertNotIn(path[0], kinds)
+
+
+class AllocateIDs(HawkeyeTestCase):
+  def test_sequential_allocation(self):
+    # Choose a kind name randomly to ensure no allocations have been made for
+    # the given model key.
+    kind = 'allocate-{}'.format(
+      ''.join(random.choice(string.ascii_letters) for _ in range(5)))
+    root_path = [kind, 1]
+    nonroot_path = [kind, 1, 'Child', 'a']
+
+    # Test allocateSize for root entities.
+    size = 10
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': root_path, 'size': size}).json()
+    self.assertEqual(max - min, size - 1)
+
+    # Test allocateSize for nonroot entities.
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': nonroot_path, 'size': size}).json()
+    self.assertEqual(max - min, size - 1)
+
+    # Test allocateMax for root entities.
+    size = 50
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': root_path, 'max': size}).json()
+    # The datastore may have already allocated up to the given max.
+    self.assertGreaterEqual(max + 1, min)
+    self.assertLess(max - min, size)
+
+    # Test allocateMax for nonroot entities.
+    min, max = self.app.post('/{lang}/datastore/allocate_ids',
+                             json={'path': nonroot_path, 'max': size}).json()
+    # The datastore may have already allocated up to the given max.
+    self.assertGreaterEqual(max + 1, min)
+    self.assertLess(max - min, size)
 
 
 class AutoIDsInTransaction(HawkeyeTestCase):
@@ -1117,6 +1167,7 @@ def suite(lang, app):
     suite.addTests(TestMoreResults.all_cases(app))
     suite.addTests(QueryInTransaction.all_cases(app))
     suite.addTests(MetadataQueries.all_cases(app))
+    suite.addTests(AllocateIDs.all_cases(app))
     suite.addTests(AutoIDsInTransaction.all_cases(app))
   elif lang == 'java':
     suite.addTests(JDOIntegrationTest.all_cases(app))

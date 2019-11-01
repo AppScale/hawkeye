@@ -1908,9 +1908,10 @@ class ManageEntity(webapp2.RequestHandler):
     json.dump(entity, self.response)
 
   def delete(self):
+    namespace = self.request.get('namespace', default_value=None)
     encoded_path = self.request.get('pathBase64').encode('utf-8')
     path = json.loads(base64.urlsafe_b64decode(encoded_path))
-    key = datastore.Key.from_path(*path)
+    key = datastore.Key.from_path(*path, namespace=namespace)
     datastore.Delete(key)
 
 
@@ -2125,6 +2126,19 @@ class QueryInTransaction(webapp2.RequestHandler):
     datastore.Put(entity)
 
 
+class AllocateIDs(webapp2.RequestHandler):
+  def post(self):
+    request_info = json.loads(self.request.body)
+    model_key = datastore.Key.from_path(*request_info['path'])
+    if 'max' in request_info:
+      kwargs = {'max': request_info['max']}
+    else:
+      kwargs = {'size': request_info['size']}
+
+    response = datastore.AllocateIds(model_key, **kwargs)
+    json.dump(response, self.response)
+
+
 class RPC(webapp2.RequestHandler):
   def post(self):
     request_info = json.loads(self.request.body)
@@ -2209,5 +2223,6 @@ urls = [
   ('/python/datastore/batch_query', BatchQuery),
   ('/python/datastore/more_results', CheckMoreResults),
   ('/python/datastore/query_in_transaction', QueryInTransaction),
+  ('/python/datastore/allocate_ids', AllocateIDs),
   ('/python/datastore/rpc', RPC)
 ]
