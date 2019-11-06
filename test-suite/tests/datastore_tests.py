@@ -1020,6 +1020,12 @@ class MetadataQueries(HawkeyeTestCase):
       self.app.delete('/{{lang}}/datastore/manage_entity'
                       '?pathBase64={}'.format(encoded_path))
 
+    manual_paths = [('PropQueryTest', 'foo'), ('PropQueryTest', 'bar')]
+    for path in manual_paths:
+      encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+      self.app.delete('/{{lang}}/datastore/manage_entity'
+                      '?pathBase64={}'.format(encoded_path))
+
   def test_namespace_list(self):
     results = self.app.get('/{lang}/datastore/kind_query?'
                            'kind=__namespace__').json()
@@ -1055,6 +1061,39 @@ class MetadataQueries(HawkeyeTestCase):
     results = self.app.get('/{lang}/datastore/kind_query?kind=__kind__').json()
     kinds = [entity['path'][-1] for entity in results]
     self.assertNotIn(path[0], kinds)
+
+  def test_prop_list(self):
+    self.app.post(
+      '/{lang}/datastore/manage_entity',
+      json={'kind': 'PropQueryTest', 'name': 'foo',
+            'properties': {'value': 'foo'}})
+    self.app.post(
+      '/{lang}/datastore/manage_entity',
+      json={'kind': 'PropQueryTest', 'name': 'bar',
+            'properties': {'value': 1}})
+
+    expected_path = ['__kind__', 'PropQueryTest', '__property__', 'value']
+    results = self.app.get(
+      '/{lang}/datastore/kind_query?kind=__property__').json()
+    paths = [entity['path'] for entity in results]
+    self.assertIn(expected_path, paths)
+    prop_info = next(entity for entity in results
+                     if entity['path'] == expected_path)
+    self.assertEqual(prop_info['properties']['property_representation'],
+                     [u'INT64', u'STRING'])
+
+    # Delete property type to see if it shows up in a metadata query.
+    path = ('PropQueryTest', 'foo')
+    encoded_path = base64.urlsafe_b64encode(json.dumps(path))
+    self.app.delete('/{{lang}}/datastore/manage_entity'
+                    '?pathBase64={}'.format(encoded_path))
+
+    results = self.app.get(
+      '/{lang}/datastore/kind_query?kind=__property__').json()
+    prop_info = next(entity for entity in results
+                     if entity['path'] == expected_path)
+    self.assertEqual(prop_info['properties']['property_representation'],
+                     [u'INT64'])
 
 
 class AllocateIDs(HawkeyeTestCase):
