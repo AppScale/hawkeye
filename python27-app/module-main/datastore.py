@@ -2,15 +2,17 @@ import base64
 import datetime
 import json
 import logging
+import os
 import random
 import string
 import time
 import unittest
 import uuid
 
+from google.appengine.api import app_identity
 from google.appengine.api import datastore
 from google.appengine.api import datastore_errors
-from google.appengine.datastore import datastore_query
+from google.appengine.datastore import datastore_pb, datastore_query
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
@@ -35,6 +37,16 @@ def remove_db_entities(query):
     time.sleep(SDK_CONSISTENCY_WAIT)
     if entities_fetched < batch_size:
       break
+
+
+def prefixed_id():
+  project_id = app_identity.get_application_id()
+  if os.environ['SERVER_SOFTWARE'].startswith('Development'):
+    return 'dev~' + project_id
+  elif os.environ['SERVER_SOFTWARE'].startswith('Google App Engine'):
+    return 'm~' + project_id
+  else:
+    return project_id
 
 
 class Project(db.Model):
@@ -2127,6 +2139,52 @@ class AllocateIDs(webapp2.RequestHandler):
     json.dump(response, self.response)
 
 
+class RPC(webapp2.RequestHandler):
+  def post(self):
+    request_info = json.loads(self.request.body)
+
+    connection = datastore._GetConnection()
+    config = datastore._GetConfigFromKwargs({})
+
+    transaction = None
+    if request_info.get('wrapInTx'):
+      request = datastore_pb.BeginTransactionRequest()
+      request.set_app(prefixed_id())
+      request.set_allow_multiple_eg(True)
+      transaction = datastore_pb.Transaction()
+      connection.make_rpc_call(config, 'BeginTransaction', request,
+                               transaction).get_result()
+
+    if request_info['method'] == 'Put':
+      request = datastore_pb.PutRequest()
+      response = datastore_pb.PutResponse()
+
+      # TODO: Make this more generic so the client can create their own
+      #  requests.
+      for _ in range(2):
+        entity = request.add_entity()
+        entity.mutable_entity_group()
+        key = entity.mutable_key()
+        key.set_app(prefixed_id())
+        path = key.mutable_path()
+        element = path.add_element()
+        element.set_type('AutoIDsInTx')
+
+      if request_info.get('wrapInTx'):
+        request.mutable_transaction().CopyFrom(transaction)
+
+      connection.make_rpc_call(config, 'Put', request, response).get_result()
+    else:
+      raise Exception('Unexpected RPC method')
+
+    if request_info.get('wrapInTx'):
+      response = datastore_pb.CommitResponse()
+      connection.make_rpc_call(config, 'Commit', transaction, response).\
+        get_result()
+
+    self.response.write(response.Encode())
+
+
 urls = [
   ('/python/datastore/project', ProjectHandler),
   ('/python/datastore/module', ModuleHandler),
@@ -2165,5 +2223,6 @@ urls = [
   ('/python/datastore/batch_query', BatchQuery),
   ('/python/datastore/more_results', CheckMoreResults),
   ('/python/datastore/query_in_transaction', QueryInTransaction),
-  ('/python/datastore/allocate_ids', AllocateIDs)
+  ('/python/datastore/allocate_ids', AllocateIDs),
+  ('/python/datastore/rpc', RPC)
 ]

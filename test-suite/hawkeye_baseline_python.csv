@@ -39,6 +39,7 @@ tests.cron_tests.CronTest.runTest,ok
 tests.cron_tests.CronTargetTest.test_cron_target,ok
 tests.datastore_tests.AllocateIDs.test_sequential_allocation,ok
 tests.datastore_tests.AncestorQueryTest.runTest,ok
+tests.datastore_tests.AutoIDsInTransaction.test_entities_were_written,ok
 tests.datastore_tests.TestMoreResults.test_more_results,ok
 tests.datastore_tests.ComplexQueryCursorTest.runTest,ok
 tests.datastore_tests.CompositeMultiple.runTest,ok
